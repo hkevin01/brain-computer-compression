@@ -1,0 +1,26 @@
+# Development dependencies
+-r requirements.txt
+
+# Additional testing tools
+pytest-xdist>=2.3.0  # Parallel test execution
+pytest-mock>=3.6.0
+coverage>=5.5
+tox>=3.24.0
+
+# Code quality and formatting
+pre-commit>=2.13.0
+bandit>=1.7.0  # Security linting
+safety>=1.10.0  # Dependency vulnerability checking
+
+# Documentation building
+sphinx-autobuild>=2021.3.14
+myst-parser>=0.15.0  # Markdown support for Sphinx
+
+# Performance profiling
+py-spy>=0.3.8  # Production profiling
+snakeviz>=2.1.0  # Profiler visualization
+
+# Jupyter development
+jupyterlab>=3.0.0
+nbconvert>=6.1.0
+nbformat>=5.1.0
