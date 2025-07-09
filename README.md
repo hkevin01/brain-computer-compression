@@ -47,7 +47,43 @@ Brain-computer interfaces generate massive amounts of neural data that must be p
 
 ### Prerequisites
 - Python 3.8 or higher
-- CUDA 11.0+ (for GPU acceleration)
+- 8GB+ RAM recommended  
+- CUDA 11.0+ (optional, for GPU acceleration)
+- Git for cloning the repository
+
+### 5-Minute Setup
+
+```bash
+# 1. Clone and enter directory
+git clone https://github.com/yourusername/brain-computer-compression.git
+cd brain-computer-compression
+
+# 2. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 3. Install package
+pip install -e .
+
+# 4. Test installation
+python -c "from bci_compression import NeuralCompressor; print('✅ Installation successful!')"
+
+# 5. Run example
+python -c "
+import numpy as np
+from bci_compression import NeuralCompressor
+data = np.random.randn(32, 10000)  # 32 channels, 10k samples
+compressor = NeuralCompressor()
+compressed = compressor.compress(data)
+print(f'✅ Compression ratio: {compressor.compression_ratio:.1f}:1')
+"
+```
+
+### Next Steps
+- 📓 **Explore notebooks**: `jupyter lab notebooks/` 
+- 🧪 **Run benchmarks**: `python scripts/benchmark_runner.py --help`
+- 📖 **Read documentation**: `docs/project_plan.md`
+- 💻 **Start developing**: See development section below
 - 8GB+ RAM recommended
 
 ### Installation
@@ -66,56 +102,105 @@ pip install -r requirements.txt
 
 # Install package in development mode
 pip install -e .
+
+# For development with additional tools
+pip install -r requirements-dev.txt
+```
+
+### Verify Installation
+
+```bash
+# Run basic tests to verify installation
+python -c "from bci_compression import NeuralCompressor; print('Installation successful!')"
+
+# Check GPU acceleration availability (optional)
+python -c "import cupy; print('GPU acceleration available')" 2>/dev/null || echo "GPU acceleration not available (CPU-only mode)"
 ```
 
 ### Basic Usage
 
 ```python
 from bci_compression import NeuralCompressor, load_neural_data
+import numpy as np
 
-# Load neural data
+# Load neural data (various formats supported)
 data = load_neural_data("path/to/neural_recording.nev")
+# Or use synthetic data for testing
+data = np.random.randn(64, 30000)  # 64 channels, 30k samples
 
-# Initialize compressor
+# Initialize compressor with different algorithms
 compressor = NeuralCompressor(
-    algorithm="adaptive_lz",
-    quality_level=0.95,
-    real_time=True
+    algorithm="adaptive_lz",    # Options: adaptive_lz, neural_quantization, 
+                               #          wavelet_transform, deep_autoencoder
+    quality_level=0.95,        # For lossy compression (0.0 to 1.0)
+    real_time=True            # Enable real-time optimizations
 )
 
 # Compress data
 compressed_data = compressor.compress(data)
+print(f"Original size: {data.nbytes} bytes")
+print(f"Compressed size: {len(compressed_data)} bytes") 
 print(f"Compression ratio: {compressor.compression_ratio:.2f}:1")
 
-# Decompress
+# Decompress and verify
 reconstructed_data = compressor.decompress(compressed_data)
+print(f"Reconstruction error: {np.mean((data - reconstructed_data)**2):.6f}")
 ```
 
-## 📊 Performance
+### Advanced Usage
 
-Our compression algorithms achieve:
+```python
+from bci_compression.algorithms import AdaptiveLZCompressor, WaveletCompressor
+from bci_compression.benchmarking import CompressionBenchmark
 
-| Algorithm | Compression Ratio | Latency | SNR Preservation |
-|-----------|------------------|---------|------------------|
-| Adaptive LZ | 12.3:1 | 0.8ms | 98.5% |
-| Neural Quantization | 45.7:1 | 0.3ms | 92.1% |
-| Wavelet Transform | 28.4:1 | 1.2ms | 95.8% |
-| Deep Autoencoder | 67.2:1 | 2.1ms | 89.3% |
+# Use specific algorithm directly
+lz_compressor = AdaptiveLZCompressor(dictionary_size=8192, lookahead_buffer=512)
+wavelet_compressor = WaveletCompressor(wavelet='db8', levels=6)
 
-*Benchmarked on 64-channel neural recordings at 30kHz sampling rate*
+# Run comparative benchmark
+benchmark = CompressionBenchmark(algorithms=[lz_compressor, wavelet_compressor])
+results = benchmark.run(data)
+benchmark.plot_results()
+```
+
+## 📊 Performance Targets
+
+Our compression algorithms are designed to achieve:
+
+| Algorithm | Target Compression | Target Latency | Target SNR |
+|-----------|------------------|----------------|------------|
+| Adaptive LZ | 8-15:1 | < 1.0ms | > 98% |
+| Neural Quantization | 20-50:1 | < 0.5ms | > 90% |
+| Wavelet Transform | 15-30:1 | < 1.5ms | > 95% |
+| Deep Autoencoder | 30-70:1 | < 3.0ms | > 88% |
+
+*Target performance on 64-channel neural recordings at 30kHz sampling rate*
+
+> **Note**: This project is in active development. Current implementations are foundational and performance optimization is ongoing. See [project roadmap](#-current-status--roadmap) for development status.
 
 ## 🔧 Project Structure
 
 ```
 brain-computer-compression/
-├── src/                           # Source code
-│   ├── bci_compression/          # Main package
-│   │   ├── algorithms/           # Compression algorithms
-│   │   ├── benchmarking/         # Benchmarking tools
-│   │   ├── data_processing/      # Signal processing
-│   │   └── visualization/        # Data visualization
-│   └── examples/                 # Usage examples
-├── notebooks/                    # Jupyter notebooks
+├── .github/                      # GitHub configuration
+│   └── copilot-instructions.md   # Copilot customization
+├── .copilot/                     # Additional Copilot configs
+├── .vscode/                      # VS Code configuration
+│   └── tasks.json               # Build and run tasks
+├── src/                         # Source code
+│   └── bci_compression/         # Main package
+│       ├── algorithms/          # Compression algorithms
+│       │   ├── lossless.py     # Lossless compression methods
+│       │   ├── lossy.py        # Lossy compression methods
+│       │   └── deep_learning.py # ML-based compression
+│       ├── benchmarking/        # Benchmarking tools
+│       ├── data_processing/     # Signal processing utilities
+│       └── core.py             # Core compression classes
+├── scripts/                     # Utility scripts
+│   ├── benchmark_runner.py     # Run benchmarking suite
+│   ├── data_generator.py       # Generate synthetic neural data
+│   └── performance_profiler.py # Performance analysis
+├── notebooks/                   # Jupyter notebooks
 │   ├── compression_analysis.ipynb
 │   ├── signal_processing_demo.ipynb
 │   └── benchmarking_results.ipynb
@@ -127,15 +212,31 @@ brain-computer-compression/
 
 ## 🧪 Running Benchmarks
 
+### Quick Benchmark Run
 ```bash
-# Run full benchmark suite
-python scripts/benchmark_runner.py --config configs/benchmark_config.yaml
+# Navigate to project directory
+cd brain-computer-compression
 
 # Generate synthetic test data
-python scripts/data_generator.py --channels 64 --duration 300 --output data/synthetic/
+python scripts/data_generator.py --channels 64 --duration 60 --sampling-rate 30000
 
-# Profile performance
-python scripts/performance_profiler.py --algorithm adaptive_lz --data data/samples/
+# Run basic compression benchmark
+python scripts/benchmark_runner.py --algorithm adaptive_lz --data data/synthetic/
+
+# Profile algorithm performance
+python scripts/performance_profiler.py --algorithm all --output results/
+```
+
+### Advanced Benchmarking
+```bash
+# Run comprehensive benchmark suite with custom configuration
+python scripts/benchmark_runner.py --config configs/full_benchmark.yaml
+
+# Compare multiple algorithms
+python scripts/benchmark_runner.py --algorithms adaptive_lz,neural_quantization,wavelet --data data/samples/
+
+# GPU vs CPU performance comparison
+python scripts/benchmark_runner.py --compare-devices --algorithms all
 ```
 
 ## 📓 Jupyter Notebooks
@@ -151,21 +252,53 @@ Explore the toolkit through interactive notebooks:
 ### Setting up Development Environment
 
 ```bash
-# Install development dependencies
-pip install -r requirements-dev.txt
+# Clone and setup for development
+git clone https://github.com/yourusername/brain-computer-compression.git
+cd brain-computer-compression
 
-# Run tests
-pytest tests/
+# Install in development mode with all dependencies
+pip install -e ".[dev,gpu,deep-learning]"
+
+# Install pre-commit hooks for code quality
+pre-commit install
+
+# Run the test suite
+pytest tests/ -v
+
+# Run with coverage report
+pytest tests/ --cov=bci_compression --cov-report=html
 
 # Check code quality
 flake8 src/
-black src/
+black src/ --check
 mypy src/
+```
+
+### VS Code Integration
+
+The project includes VS Code configuration for optimal development:
+
+```bash
+# Open in VS Code
+code .
+
+# Available tasks (Ctrl+Shift+P -> "Tasks: Run Task"):
+# - Install Dependencies
+# - Run Tests
+# - Format Code
+# - Type Check
+# - Generate Documentation
 ```
 
 ### Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+
+- Code contribution standards
+- Testing requirements  
+- Documentation expectations
+- Review processes
+- Setting up development environment
 
 ## 📖 Documentation
 
@@ -173,25 +306,57 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 - **[API Documentation](docs/api_documentation.md)** - Complete API reference
 - **[Benchmarking Guide](docs/benchmarking_guide.md)** - How to run and interpret benchmarks
 
-## 🎯 Use Cases
+## 🎯 Current Status & Roadmap
+
+### ✅ Completed (Phase 1)
+- [x] Project structure and development environment
+- [x] Core compression framework with pluggable algorithms
+- [x] Basic lossless compression implementations  
+- [x] Synthetic neural data generation
+- [x] Documentation and coding standards
+- [x] VS Code development integration
+
+### 🚧 In Progress (Phase 2)
+- [ ] Complete lossless compression algorithms (LZ variants, arithmetic coding)
+- [ ] Lossy compression methods (quantization, transform-based)
+- [ ] GPU acceleration with CuPy
+- [ ] Real-time streaming support
+- [ ] Comprehensive test suite
+
+### 📋 Planned (Phases 3-5)
+- [ ] Deep learning-based compression (autoencoders, transformers)
+- [ ] Multi-channel correlation exploitation
+- [ ] Adaptive compression strategies
+- [ ] Complete benchmarking framework
+- [ ] Performance optimization and profiling
+- [ ] API documentation and tutorials
+- [ ] Community contribution guidelines
+
+### 📊 Target Metrics
+- **Compression Ratio**: 10:1+ (lossless), 50:1+ (lossy)
+- **Processing Speed**: < 1ms latency for real-time
+- **Signal Quality**: > 95% SNR preservation
+- **Memory Usage**: < 100MB for real-time processing
+
+## 🎯 Use Cases & Applications
 
 ### Research Applications
-- Neural signal compression for large-scale studies
-- Real-time BCI experimentation
-- Data archival and sharing
-- Bandwidth-limited neural telemetry
+- **Large-scale neural studies** - Compress terabytes of multi-electrode recordings
+- **Real-time BCI experiments** - Enable low-latency neural control interfaces  
+- **Data sharing & collaboration** - Efficient transmission of neural datasets
+- **Bandwidth-limited telemetry** - Wireless neural implant data transmission
 
-### Clinical Applications
-- Implantable device data transmission
-- Remote patient monitoring
-- Neural prosthetic control
-- Seizure detection systems
+### Clinical Applications  
+- **Implantable devices** - Reduce power consumption in neural prosthetics
+- **Remote patient monitoring** - Continuous neural activity tracking
+- **Seizure detection systems** - Real-time analysis with compressed data streams
+- **Neural rehabilitation** - Portable BCI systems for therapy
 
-### Industrial Applications
-- High-density electrode arrays
-- Multi-subject parallel recording
-- Cloud-based neural data processing
-- Edge computing implementations
+### Industrial & Research Infrastructure
+- **High-density electrode arrays** - Handle 1000+ channel recordings
+- **Multi-subject studies** - Parallel compression for multiple participants
+- **Cloud-based processing** - Efficient neural data workflows
+- **Edge computing** - On-device compression for portable BCIs
 
 ## 🔬 Research Impact
 
