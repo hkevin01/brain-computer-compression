@@ -29,22 +29,28 @@ def test_signal_processing():
         test_data = np.random.randn(n_channels, n_samples)
         
         # Test bandpass filter
+        print("  Testing bandpass filter...")
         filtered = processor.bandpass_filter(test_data, 8.0, 30.0)
-        assert filtered.shape == test_data.shape, "Bandpass filter shape mismatch"
+        assert filtered.shape == test_data.shape, f"Bandpass filter shape mismatch: {filtered.shape} vs {test_data.shape}"
         
         # Test normalization
-        normalized = processor.normalize_signals(test_data)
-        assert normalized.shape == test_data.shape, "Normalization shape mismatch"
+        print("  Testing normalization...")
+        normalized, params = processor.normalize_signals(test_data)
+        assert normalized.shape == test_data.shape, f"Normalization shape mismatch: {normalized.shape} vs {test_data.shape}"
+        assert isinstance(params, dict), f"Normalization params should be dict, got {type(params)}"
         
         # Test feature extraction
+        print("  Testing feature extraction...")
         features = processor.extract_features(test_data)
-        assert isinstance(features, dict), "Features should be a dictionary"
+        assert isinstance(features, dict), f"Features should be a dictionary, got {type(features)}"
         
         print("✅ NeuralSignalProcessor tests passed")
         return True
         
     except Exception as e:
         print(f"❌ NeuralSignalProcessor test failed: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 
