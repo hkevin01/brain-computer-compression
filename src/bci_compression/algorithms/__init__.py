@@ -31,8 +31,8 @@ except ImportError:
 
 try:
     from .neural_arithmetic import (
-        NeuralArithmeticModel, 
-        NeuralArithmeticCoder, 
+        NeuralArithmeticModel,
+        NeuralArithmeticCoder,
         MultiChannelArithmeticCoder,
         create_neural_arithmetic_coder
     )
@@ -60,6 +60,30 @@ try:
     _has_gpu_acceleration = True
 except ImportError:
     _has_gpu_acceleration = False
+
+# Phase 3: Advanced techniques
+try:
+    from .predictive import (
+        NeuralLinearPredictor,
+        AdaptiveNeuralPredictor,
+        MultiChannelPredictiveCompressor,
+        create_predictive_compressor
+    )
+    _has_predictive = True
+except ImportError:
+    _has_predictive = False
+
+try:
+    from .context_aware import (
+        BrainStateDetector,
+        HierarchicalContextModel,
+        SpatialContextModel,
+        ContextAwareCompressor,
+        create_context_aware_compressor
+    )
+    _has_context_aware = True
+except ImportError:
+    _has_context_aware = False
 
 # Base exports
 __all__ = [
