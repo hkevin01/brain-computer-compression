@@ -1,14 +1,23 @@
-# Contributing to BCI Data Compression Toolkit
+# Contributing to BCI Compression Toolkit
 
-We welcome contributions to the Brain-Computer Interface Data Compression Challenge Toolkit! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to the Brain-Computer Interface Data Compression Toolkit! This is an individual research project exploring neural data compression techniques, and community contributions are welcome.
 
-## Development Setup
+*Note: This project was developed with assistance from Claude AI for algorithm implementation and documentation.*
 
-1. Fork the repository
-2. Clone your fork:
-   ```bash
-   git clone https://github.com/yourusername/brain-computer-compression.git
-   cd brain-computer-compression
+## 🚀 Getting Started
+
+### Prerequisites
+- Python 3.8+
+- Git knowledge  
+- Familiarity with neural data or compression algorithms
+- Understanding of brain-computer interfaces (helpful but not required)
+
+### Development Setup
+
+```bash
+# Fork and clone the repository
+git clone https://github.com/YOUR_USERNAME/brain-computer-compression.git
+cd brain-computer-compression
    ```
 
 3. Create a virtual environment:

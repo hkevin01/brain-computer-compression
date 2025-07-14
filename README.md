@@ -3,13 +3,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![CUDA](https://img.shields.io/badge/CUDA-11.0+-green.svg)](https://developer.nvidia.com/cuda-toolkit)
-[![PyPI version](https://img.shields.io/badge/PyPI-v1.0.0-blue.svg)](https://pypi.org/project/bci-compression-toolkit/)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/hkevin01/brain-computer-compression)
-[![Code Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen.svg)](https://codecov.io/gh/hkevin01/brain-computer-compression)
-[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://bci-compression-toolkit.readthedocs.io/)
-[![DOI](https://img.shields.io/badge/DOI-10.1000%2F182-blue.svg)](https://doi.org/10.1000/182)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#testing-and-validation)
+[![Code Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen.svg)](#testing-and-validation)
 
 > **A state-of-the-art toolkit for neural data compression in brain-computer interfaces**
+
+*This is an individual research project created with assistance from Claude AI to explore advanced compression techniques for neural data.*
 
 ## 🧠 Overview
 
@@ -259,9 +258,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 ## 📖 Documentation
 
 - **[Implementation Summary](docs/phase2_summary.md)** - Core algorithms overview
-- **[Advanced Techniques](docs/phase3_summary.md)** - Predictive and context-aware methods
+- **[Advanced Techniques](docs/phase3_summary.md)** - Predictive and context-aware methods  
 - **[API Reference](docs/api_documentation.md)** - Complete API documentation
-- **[Benchmarking Guide](docs/benchmarking_guide.md)** - Performance evaluation
+- **[Benchmarking Guide](docs/benchmarking_guide.md)** - Performance evaluation methodology
+- **[Project Plan](docs/project_plan.md)** - Development roadmap and technical details
 
 ## 🎯 Use Cases & Applications
 
@@ -312,16 +312,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Inspired by the [Neuralink Compression Challenge](https://neuralink.com)
-- Built on open-source neural data standards (Neo, MNE-Python)
-- Supported by the global BCI research community
-- Contributions from researchers worldwide
+- Individual research project exploring neural data compression techniques
+- Developed with assistance from Claude AI (Anthropic) for algorithm implementation and documentation
+- Inspired by neural compression challenges and open-source BCI research
+- Built on established neural data standards and scientific computing libraries
+- Thanks to the open-source community for foundational tools (NumPy, SciPy, PyTorch)
 
 ## 📞 Contact & Support
 
 - **Issues**: [GitHub Issues](https://github.com/hkevin01/brain-computer-compression/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/hkevin01/brain-computer-compression/discussions)
-- **Documentation**: [Online Docs](https://bci-compression-toolkit.readthedocs.io/)
+- **Author**: Kevin ([GitHub Profile](https://github.com/hkevin01))
+
+*Note: This is a research project and not affiliated with any commercial organization.*
 
 ## 🔗 Related Projects
 
