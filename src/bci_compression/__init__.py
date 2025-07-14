@@ -12,8 +12,34 @@ __email__ = "contact@bci-compression.org"
 from .core import NeuralCompressor, load_neural_data
 from .algorithms import *
 from .data_processing import *
+from .neural_decoder import (
+    NeuralDecoder, 
+    MotorImageryDecoder, 
+    RealTimeDecoder,
+    DeviceController,
+    create_motor_imagery_system
+)
+from .data_acquisition import (
+    BaseDataAcquisition,
+    SimulatedDataAcquisition,
+    FileDataAcquisition,
+    DataAcquisitionManager,
+    create_test_acquisition_system
+)
 
 __all__ = [
     "NeuralCompressor",
     "load_neural_data",
+    # Neural decoding
+    "NeuralDecoder",
+    "MotorImageryDecoder",
+    "RealTimeDecoder",
+    "DeviceController",
+    "create_motor_imagery_system",
+    # Data acquisition
+    "BaseDataAcquisition",
+    "SimulatedDataAcquisition",
+    "FileDataAcquisition",
+    "DataAcquisitionManager",
+    "create_test_acquisition_system",
 ]
