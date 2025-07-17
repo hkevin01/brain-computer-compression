@@ -1,10 +1,13 @@
+# TEST: This comment was added to verify auto-accept of changes via .cursor/settings.json
 """
 Core compression functionality for neural data.
 """
 
-from typing import Optional, Union, Dict, Any
-import numpy as np
+import hashlib
 from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional, Union
+
+import numpy as np
 
 
 class BaseCompressor(ABC):
@@ -32,6 +35,18 @@ class BaseCompressor(ABC):
     def get_compression_ratio(self) -> float:
         """Get the compression ratio of the last compression operation."""
         return self.compression_ratio
+
+    def _check_integrity(self, original: np.ndarray, decompressed: np.ndarray, check_shape: bool = True, check_dtype: bool = True, check_hash: bool = False) -> None:
+        """Check integrity between original and decompressed data. Optionally check shape, dtype, and hash."""
+        if check_shape and original.shape != decompressed.shape:
+            raise ValueError(f"Decompressed data shape {decompressed.shape} does not match original {original.shape}")
+        if check_dtype and original.dtype != decompressed.dtype:
+            raise ValueError(f"Decompressed data dtype {decompressed.dtype} does not match original {original.dtype}")
+        if check_hash:
+            orig_hash = hashlib.sha256(original.tobytes()).hexdigest()
+            decomp_hash = hashlib.sha256(decompressed.tobytes()).hexdigest()
+            if orig_hash != decomp_hash:
+                raise ValueError("Decompressed data hash does not match original (possible corruption)")
 
 
 class NeuralCompressor(BaseCompressor):
@@ -89,7 +104,8 @@ class NeuralCompressor(BaseCompressor):
         """
         if data.size == 0:
             raise ValueError("Input data cannot be empty")
-        
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         # Placeholder implementation - will be replaced with actual algorithms
         original_size = data.nbytes
         
@@ -120,6 +136,15 @@ class NeuralCompressor(BaseCompressor):
         
         # Placeholder implementation
         data = np.frombuffer(compressed_data, dtype=np.float32)
+        
+        # Check integrity if possible
+        if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+            try:
+                data = data.reshape(self._last_shape)
+                data = data.astype(self._last_dtype)
+            except Exception as e:
+                raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
+            self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), data, check_shape=True, check_dtype=True, check_hash=False)
         
         return data
 

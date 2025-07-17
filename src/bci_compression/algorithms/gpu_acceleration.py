@@ -5,10 +5,11 @@ This module provides GPU-accelerated implementations of compression
 algorithms optimized for real-time brain-computer interface applications.
 """
 
-import numpy as np
-from typing import Dict, List, Tuple, Optional, Union
 import time
 import warnings
+from typing import Dict, List, Optional, Tuple, Union
+
+import numpy as np
 
 
 class GPUCompressionBackend:
@@ -53,12 +54,12 @@ class GPUCompressionBackend:
                     mempool = cp.get_default_memory_pool()
                     mempool.set_limit(size=2**30)  # 1GB limit
                 
-                print(f"GPU acceleration enabled on device {device_id}")
+                warnings.warn(f"GPU acceleration enabled on device {device_id}")
                 
         except ImportError:
-            print("CuPy not available, using CPU fallback")
+            warnings.warn("CuPy not available, using CPU fallback")
         except Exception as e:
-            print(f"GPU initialization failed: {e}, using CPU fallback")
+            warnings.warn(f"GPU initialization failed: {e}, using CPU fallback")
         
         # Performance monitoring
         self.performance_stats = {
@@ -222,7 +223,7 @@ class GPUCompressionBackend:
         start_time = time.time()
         
         from scipy import signal
-        
+
         # Design filter
         nyquist = sampling_rate / 2
         low_norm = low_freq / nyquist
@@ -479,6 +480,15 @@ class GPUCompressionBackend:
             with self.cp.cuda.Device(self.device_id):
                 mempool = self.cp.get_default_memory_pool()
                 mempool.free_all_blocks()
+
+    def get_status(self) -> dict:
+        """Return current backend status (CPU/GPU, device, memory pool, etc.)."""
+        return {
+            'gpu_available': self.gpu_available,
+            'cupy_available': self.cupy_available,
+            'device_id': self.device_id,
+            'enable_memory_pool': self.enable_memory_pool
+        }
 
 
 class RealTimeGPUPipeline:

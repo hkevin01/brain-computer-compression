@@ -5,12 +5,13 @@ This module implements temporal prediction models that exploit the predictable
 components of neural signals to achieve superior compression performance.
 """
 
-import numpy as np
-import time
-from typing import Dict, List, Tuple, Optional, Union
-from dataclasses import dataclass
-from collections import deque
 import struct
+import time
+from collections import deque
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple, Union
+
+import numpy as np
 
 
 @dataclass
@@ -409,15 +410,8 @@ class MultiChannelPredictiveCompressor:
         return relationships
     
     def compress(self, data: np.ndarray) -> Tuple[List[bytes], PredictionMetadata]:
-        """
-        Compress multi-channel neural data using predictive coding.
-        
-        Args:
-            data: Multi-channel neural data (channels x samples)
-            
-        Returns:
-            Compressed data and metadata
-        """
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         start_time = time.time()
         n_channels, n_samples = data.shape
         
@@ -509,6 +503,12 @@ class MultiChannelPredictiveCompressor:
                 # For now, return zeros as placeholder
                 reconstructed_data[ch_idx] = np.zeros(n_samples)
         
+        try:
+            if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+                reconstructed_data = reconstructed_data.reshape(self._last_shape)
+                reconstructed_data = reconstructed_data.astype(self._last_dtype)
+        except Exception as e:
+            raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
         return reconstructed_data
 
 

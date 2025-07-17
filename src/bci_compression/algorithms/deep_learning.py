@@ -2,8 +2,10 @@
 Deep learning-based compression algorithms for neural data.
 """
 
-import numpy as np
 from typing import Optional, Tuple
+
+import numpy as np
+
 from ..core import BaseCompressor
 
 
@@ -66,30 +68,30 @@ class AutoencoderCompressor(BaseCompressor):
         """Compress data using trained autoencoder."""
         if not self._is_trained:
             raise ValueError("Model must be trained before compression")
-        
-        # Encode to latent space
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         latent = self._encode(data)
-        
-        # Calculate compression ratio
         original_size = data.nbytes
         compressed_size = latent.nbytes
         self.compression_ratio = original_size / compressed_size
-        
         return latent.astype(np.float32).tobytes()
     
     def decompress(self, compressed_data: bytes) -> np.ndarray:
         """Decompress using trained autoencoder."""
         if not self._is_trained:
             raise ValueError("Model must be trained before decompression")
-        
-        # Reconstruct from latent representation
         latent = np.frombuffer(compressed_data, dtype=np.float32)
-        
-        # Reshape if necessary (simplified)
         if len(latent.shape) == 1 and self.latent_dim:
             latent = latent.reshape(-1, self.latent_dim)
-        
-        return self._decode(latent)
+        data = self._decode(latent)
+        if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+            try:
+                data = data.reshape(self._last_shape)
+                data = data.astype(self._last_dtype)
+            except Exception as e:
+                raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
+            self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), data, check_shape=True, check_dtype=True, check_hash=False)
+        return data
     
     def save_model(self, filepath: str) -> None:
         """Save trained model weights."""

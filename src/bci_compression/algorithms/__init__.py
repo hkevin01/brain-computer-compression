@@ -6,6 +6,8 @@ brain-computer interface applications, including both lossless and
 lossy compression methods.
 """
 
+import warnings
+
 # Core compression algorithms
 from .lossless import AdaptiveLZCompressor, DictionaryCompressor
 
@@ -15,75 +17,87 @@ try:
     _has_base_lossy = True
 except ImportError:
     _has_base_lossy = False
+    warnings.warn("Lossy compression algorithms (QuantizationCompressor, WaveletCompressor) not available. Some features will be disabled.")
 
 try:
     from .deep_learning import AutoencoderCompressor
     _has_autoencoder = True
 except ImportError:
     _has_autoencoder = False
+    warnings.warn("Deep learning compression (AutoencoderCompressor) not available. Some features will be disabled.")
 
 # Phase 2: Advanced neural-optimized algorithms
 try:
-    from .neural_lz import NeuralLZ77Compressor, MultiChannelNeuralLZ, create_neural_lz_compressor
+    from .neural_lz import (
+        MultiChannelNeuralLZ,
+        NeuralLZ77Compressor,
+        create_neural_lz_compressor,
+    )
     _has_neural_lz = True
 except ImportError:
     _has_neural_lz = False
+    warnings.warn("Neural LZ compression algorithms not available. Some features will be disabled.")
 
 try:
     from .neural_arithmetic import (
-        NeuralArithmeticModel,
-        NeuralArithmeticCoder,
         MultiChannelArithmeticCoder,
-        create_neural_arithmetic_coder
+        NeuralArithmeticCoder,
+        NeuralArithmeticModel,
+        create_neural_arithmetic_coder,
     )
     _has_neural_arithmetic = True
 except ImportError:
     _has_neural_arithmetic = False
+    warnings.warn("Neural arithmetic coding algorithms not available. Some features will be disabled.")
 
 try:
     from .lossy_neural import (
-        PerceptualQuantizer,
         AdaptiveWaveletCompressor,
         NeuralAutoencoder,
-        create_lossy_compressor_suite
+        PerceptualQuantizer,
+        create_lossy_compressor_suite,
     )
     _has_lossy_neural = True
 except ImportError:
     _has_lossy_neural = False
+    warnings.warn("Advanced lossy neural compression algorithms not available. Some features will be disabled.")
 
 try:
     from .gpu_acceleration import (
         GPUCompressionBackend,
         RealTimeGPUPipeline,
-        create_gpu_compression_system
+        create_gpu_compression_system,
     )
     _has_gpu_acceleration = True
 except ImportError:
     _has_gpu_acceleration = False
+    warnings.warn("GPU acceleration modules not available. Some features will be disabled.")
 
 # Phase 3: Advanced techniques
 try:
     from .predictive import (
-        NeuralLinearPredictor,
         AdaptiveNeuralPredictor,
         MultiChannelPredictiveCompressor,
-        create_predictive_compressor
+        NeuralLinearPredictor,
+        create_predictive_compressor,
     )
     _has_predictive = True
 except ImportError:
     _has_predictive = False
+    warnings.warn("Predictive compression algorithms not available. Some features will be disabled.")
 
 try:
     from .context_aware import (
         BrainStateDetector,
+        ContextAwareCompressor,
         HierarchicalContextModel,
         SpatialContextModel,
-        ContextAwareCompressor,
-        create_context_aware_compressor
+        create_context_aware_compressor,
     )
     _has_context_aware = True
 except ImportError:
     _has_context_aware = False
+    warnings.warn("Context-aware compression algorithms not available. Some features will be disabled.")
 
 # Base exports
 __all__ = [
@@ -132,3 +146,24 @@ FEATURES = {
     'lossy_neural': _has_lossy_neural,
     'gpu_acceleration': _has_gpu_acceleration
 }
+
+# At the end, aggregate missing features and warn if any are missing
+missing_features = []
+if not _has_base_lossy:
+    missing_features.append("Lossy compression")
+if not _has_autoencoder:
+    missing_features.append("Deep learning compression")
+if not _has_neural_lz:
+    missing_features.append("Neural LZ compression")
+if not _has_neural_arithmetic:
+    missing_features.append("Neural arithmetic coding")
+if not _has_lossy_neural:
+    missing_features.append("Advanced lossy neural compression")
+if not _has_gpu_acceleration:
+    missing_features.append("GPU acceleration")
+if not _has_predictive:
+    missing_features.append("Predictive compression")
+if not _has_context_aware:
+    missing_features.append("Context-aware compression")
+if missing_features:
+    warnings.warn(f"The following features are unavailable due to missing dependencies: {', '.join(missing_features)}.")

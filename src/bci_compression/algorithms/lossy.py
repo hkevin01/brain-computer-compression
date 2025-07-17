@@ -2,9 +2,11 @@
 Lossy compression algorithms for neural data.
 """
 
+from typing import Optional
+
 import numpy as np
 import pywt
-from typing import Optional
+
 from ..core import BaseCompressor
 
 
@@ -21,8 +23,8 @@ class QuantizationCompressor(BaseCompressor):
         self.offset: Optional[float] = None
     
     def compress(self, data: np.ndarray) -> bytes:
-        """Compress using uniform quantization."""
-        # Calculate quantization parameters
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         if self.adaptive:
             self.scale_factor = (data.max() - data.min()) / (2**self.bits - 1)
             self.offset = data.min()
@@ -42,8 +44,6 @@ class QuantizationCompressor(BaseCompressor):
         return metadata.tobytes() + quantized.tobytes()
     
     def decompress(self, compressed_data: bytes) -> np.ndarray:
-        """Decompress quantized data."""
-        # Unpack metadata
         metadata_size = 16  # 2 float64 values
         metadata = np.frombuffer(
             compressed_data[:metadata_size], dtype=np.float64
@@ -54,7 +54,15 @@ class QuantizationCompressor(BaseCompressor):
         quantized = np.frombuffer(compressed_data[metadata_size:], dtype=np.uint8)
         
         # Dequantize
-        return (quantized.astype(np.float32) * scale_factor) + offset
+        data = (quantized.astype(np.float32) * scale_factor) + offset
+        if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+            try:
+                data = data.reshape(self._last_shape)
+                data = data.astype(self._last_dtype)
+            except Exception as e:
+                raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
+            self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), data, check_shape=True, check_dtype=True, check_hash=False)
+        return data
 
 
 class WaveletCompressor(BaseCompressor):
@@ -69,6 +77,8 @@ class WaveletCompressor(BaseCompressor):
         self.threshold = threshold
     
     def compress(self, data: np.ndarray) -> bytes:
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         """Compress using wavelet transform and thresholding."""
         # Wavelet decomposition
         coeffs = pywt.wavedec(data.flatten(), self.wavelet, level=self.levels)
@@ -89,10 +99,13 @@ class WaveletCompressor(BaseCompressor):
         return compressed
     
     def decompress(self, compressed_data: bytes) -> np.ndarray:
-        """Decompress wavelet-compressed data."""
-        # This is a simplified implementation
-        # In practice, would need to store coefficient structure
         coeffs_flat = np.frombuffer(compressed_data, dtype=np.float32)
-        
-        # Simplified reconstruction (would need proper coefficient structure)
-        return coeffs_flat
+        data = coeffs_flat
+        if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+            try:
+                data = data.reshape(self._last_shape)
+                data = data.astype(self._last_dtype)
+            except Exception as e:
+                raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
+            self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), data, check_shape=True, check_dtype=True, check_hash=False)
+        return data

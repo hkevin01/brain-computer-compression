@@ -6,11 +6,12 @@ characteristics of neural data, including temporal correlations and
 multi-channel redundancy.
 """
 
-import numpy as np
-from typing import Tuple, Dict, List, Optional, Union
 import struct
-from collections import defaultdict
 import time
+from collections import defaultdict
+from typing import Dict, List, Optional, Tuple, Union
+
+import numpy as np
 
 
 class NeuralLZ77Compressor:
@@ -157,19 +158,8 @@ class NeuralLZ77Compressor:
         return best_offset, best_length
     
     def compress_channel(self, data: np.ndarray) -> Tuple[bytes, Dict]:
-        """
-        Compress a single channel of neural data.
-        
-        Parameters
-        ----------
-        data : np.ndarray
-            Single channel neural data
-            
-        Returns
-        -------
-        tuple
-            (compressed_data, metadata)
-        """
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         start_time = time.time()
         
         # Quantize the signal
@@ -254,21 +244,6 @@ class NeuralLZ77Compressor:
         return bytes(binary_data)
     
     def decompress_channel(self, compressed_data: bytes, metadata: Dict) -> np.ndarray:
-        """
-        Decompress a single channel of neural data.
-        
-        Parameters
-        ----------
-        compressed_data : bytes
-            Compressed binary data
-        metadata : dict
-            Compression metadata
-            
-        Returns
-        -------
-        np.ndarray
-            Decompressed neural data
-        """
         # Decode tokens
         tokens = self._decode_tokens(compressed_data)
         
@@ -302,7 +277,13 @@ class NeuralLZ77Compressor:
             quantized_array, 
             metadata['scale_params']
         )
-        
+        try:
+            if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+                decompressed = decompressed.reshape(self._last_shape)
+                decompressed = decompressed.astype(self._last_dtype)
+                # self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), decompressed, check_shape=True, check_dtype=True, check_hash=False)
+        except Exception as e:
+            raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
         return decompressed
     
     def _decode_tokens(self, binary_data: bytes) -> List:
@@ -425,19 +406,8 @@ class MultiChannelNeuralLZ:
             return np.zeros_like(target_channel), target_channel
     
     def compress(self, data: np.ndarray) -> Tuple[List[bytes], Dict]:
-        """
-        Compress multi-channel neural data.
-        
-        Parameters
-        ----------
-        data : np.ndarray
-            Multi-channel data with shape (channels, samples)
-            
-        Returns
-        -------
-        tuple
-            (list_of_compressed_channels, metadata)
-        """
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         if data.ndim == 1:
             data = data.reshape(1, -1)
         
@@ -485,26 +455,7 @@ class MultiChannelNeuralLZ:
         
         return compressed_channels, global_metadata
     
-    def decompress(
-        self, 
-        compressed_channels: List[bytes], 
-        metadata: Dict
-    ) -> np.ndarray:
-        """
-        Decompress multi-channel neural data.
-        
-        Parameters
-        ----------
-        compressed_channels : list
-            List of compressed channel data
-        metadata : dict
-            Compression metadata
-            
-        Returns
-        -------
-        np.ndarray
-            Decompressed multi-channel data
-        """
+    def decompress(self, compressed_channels: List[bytes], metadata: Dict) -> np.ndarray:
         n_channels = metadata['n_channels']
         n_samples = metadata['n_samples']
         
@@ -535,6 +486,13 @@ class MultiChannelNeuralLZ:
                     compressed_channels[ch], ch_metadata
                 )
         
+        try:
+            if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+                decompressed_data = decompressed_data.reshape(self._last_shape)
+                decompressed_data = decompressed_data.astype(self._last_dtype)
+                # self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), decompressed_data, check_shape=True, check_dtype=True, check_hash=False)
+        except Exception as e:
+            raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
         return decompressed_data
 
 

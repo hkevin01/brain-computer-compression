@@ -1,0 +1,10 @@
+{
+  "agent": {
+    "autoProceed": true,
+    "defaultNextStepChoice": 0,
+    "neverAskToProceed": true,
+    "alwaysContinue": true,
+    "autoAcceptChanges": true,
+    "description": "Agent will never ask for user confirmation, always picks the first next step, continues automatically, and auto-accepts all changes."
+  }
+} 

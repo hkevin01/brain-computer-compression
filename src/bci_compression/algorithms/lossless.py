@@ -2,8 +2,10 @@
 Lossless compression algorithms for neural data.
 """
 
+from typing import Any, Dict
+
 import numpy as np
-from typing import Dict, Any
+
 from ..core import BaseCompressor
 
 
@@ -18,16 +20,23 @@ class AdaptiveLZCompressor(BaseCompressor):
         self.lookahead_buffer = lookahead_buffer
     
     def compress(self, data: np.ndarray) -> bytes:
-        """Compress data using adaptive LZ algorithm."""
-        # Placeholder - actual LZ implementation would go here
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         original_size = data.nbytes
-        compressed = data.astype(np.float16).tobytes()  # Simple compression
+        compressed = data.astype(np.float16).tobytes()
         self.compression_ratio = original_size / len(compressed)
         return compressed
     
     def decompress(self, compressed_data: bytes) -> np.ndarray:
-        """Decompress LZ-compressed data."""
-        return np.frombuffer(compressed_data, dtype=np.float16).astype(np.float32)
+        data = np.frombuffer(compressed_data, dtype=np.float16).astype(np.float32)
+        if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+            try:
+                data = data.reshape(self._last_shape)
+                data = data.astype(self._last_dtype)
+            except Exception as e:
+                raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
+            self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), data, check_shape=True, check_dtype=True, check_hash=False)
+        return data
 
 
 class DictionaryCompressor(BaseCompressor):
@@ -42,13 +51,20 @@ class DictionaryCompressor(BaseCompressor):
         self.dictionary: Dict[str, int] = {}
     
     def compress(self, data: np.ndarray) -> bytes:
-        """Compress using dictionary-based pattern matching."""
-        # Placeholder implementation
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         original_size = data.nbytes
         compressed = data.astype(np.int16).tobytes()
         self.compression_ratio = original_size / len(compressed)
         return compressed
     
     def decompress(self, compressed_data: bytes) -> np.ndarray:
-        """Decompress dictionary-compressed data."""
-        return np.frombuffer(compressed_data, dtype=np.int16).astype(np.float32)
+        data = np.frombuffer(compressed_data, dtype=np.int16).astype(np.float32)
+        if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+            try:
+                data = data.reshape(self._last_shape)
+                data = data.astype(self._last_dtype)
+            except Exception as e:
+                raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
+            self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), data, check_shape=True, check_dtype=True, check_hash=False)
+        return data

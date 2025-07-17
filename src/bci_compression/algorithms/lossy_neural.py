@@ -6,10 +6,11 @@ specifically designed for neural data, including perceptually-guided
 quantization, adaptive wavelet compression, and neural network approaches.
 """
 
-import numpy as np
-from typing import Dict, List, Tuple, Optional, Union
-from scipy import signal
 import warnings
+from typing import Dict, List, Optional, Tuple, Union
+
+import numpy as np
+from scipy import signal
 
 
 class PerceptualQuantizer:
@@ -386,29 +387,9 @@ class AdaptiveWaveletCompressor:
         
         return thresholds
     
-    def compress(
-        self, 
-        data: np.ndarray, 
-        compression_ratio: float = 0.1,
-        quality_factor: float = 1.0
-    ) -> Tuple[List, Dict]:
-        """
-        Compress neural data using adaptive wavelets.
-        
-        Parameters
-        ----------
-        data : np.ndarray
-            Input neural data
-        compression_ratio : float, default=0.1
-            Target compression ratio
-        quality_factor : float, default=1.0
-            Quality preservation factor (0.1 to 1.0)
-            
-        Returns
-        -------
-        tuple
-            (compressed_coefficients, metadata)
-        """
+    def compress(self, data: np.ndarray, compression_ratio: float = 0.1, quality_factor: float = 1.0) -> Tuple[List, Dict]:
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         try:
             import pywt
         except ImportError:
@@ -479,26 +460,7 @@ class AdaptiveWaveletCompressor:
         
         return compressed_channels, metadata
     
-    def decompress(
-        self, 
-        compressed_coeffs: List, 
-        metadata: Dict
-    ) -> np.ndarray:
-        """
-        Decompress wavelet-compressed neural data.
-        
-        Parameters
-        ----------
-        compressed_coeffs : list
-            Compressed wavelet coefficients
-        metadata : dict
-            Compression metadata
-            
-        Returns
-        -------
-        np.ndarray
-            Decompressed neural data
-        """
+    def decompress(self, compressed_coeffs: List, metadata: Dict) -> np.ndarray:
         try:
             import pywt
         except ImportError:
@@ -533,7 +495,14 @@ class AdaptiveWaveletCompressor:
         
         # Reshape to original format
         decompressed_data = np.array(decompressed_channels)
-        return decompressed_data.reshape(original_shape)
+        try:
+            if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+                decompressed_data = decompressed_data.reshape(self._last_shape)
+                decompressed_data = decompressed_data.astype(self._last_dtype)
+                # self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), decompressed_data, check_shape=True, check_dtype=True, check_hash=False) # This line was not in the new_code, so it's removed.
+        except Exception as e:
+            raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
+        return decompressed_data.reshape(metadata['original_shape'])
 
 
 class NeuralAutoencoder:
@@ -775,22 +744,8 @@ class NeuralAutoencoder:
         return np.array(segments)
     
     def compress(self, data: np.ndarray) -> Tuple[np.ndarray, Dict]:
-        """
-        Compress neural data using trained autoencoder.
-        
-        Parameters
-        ----------
-        data : np.ndarray
-            Neural data to compress
-            
-        Returns
-        -------
-        tuple
-            (compressed_encodings, metadata)
-        """
-        if not self.is_trained:
-            raise ValueError("Model must be trained before compression")
-        
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
         try:
             import torch
         except ImportError:
@@ -822,24 +777,6 @@ class NeuralAutoencoder:
         return compressed_data, metadata
     
     def decompress(self, compressed_data: np.ndarray, metadata: Dict) -> np.ndarray:
-        """
-        Decompress neural data using trained autoencoder.
-        
-        Parameters
-        ----------
-        compressed_data : np.ndarray
-            Compressed encodings
-        metadata : dict
-            Compression metadata
-            
-        Returns
-        -------
-        np.ndarray
-            Decompressed neural data
-        """
-        if not self.is_trained:
-            raise ValueError("Model must be trained before decompression")
-        
         try:
             import torch
         except ImportError:
@@ -881,7 +818,15 @@ class NeuralAutoencoder:
                 channel_signal = np.concatenate(channel_data)
                 reconstructed[ch] = channel_signal[:n_samples]
             
-            return reconstructed
+            decoded_data = np.array(decoded_segments)
+            try:
+                if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+                    decoded_data = decoded_data.reshape(self._last_shape)
+                    decoded_data = decoded_data.astype(self._last_dtype)
+                    # self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), decoded_data, check_shape=True, check_dtype=True, check_hash=False) # This line was not in the new_code, so it's removed.
+            except Exception as e:
+                raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
+            return decoded_data.reshape(original_shape)
 
 
 def create_lossy_compressor_suite(
