@@ -1,0 +1,26 @@
+{
+  // Theme and appearance
+  "workbench.colorTheme": "Vitesse Dark",
+  "workbench.iconTheme": "catppuccin-mocha",
+  "workbench.productIconTheme": "carbon",
+  // Font
+  "editor.fontFamily": "Input Mono, Fira Code, monospace",
+  "editor.fontLigatures": true,
+  // Editor preferences
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.formatOnSave": true,
+  "editor.minimap.enabled": false,
+  "editor.renderWhitespace": "all",
+  "editor.rulers": [80, 120],
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.autoSave": "onFocusChange",
+  // Python specific
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.formatting.provider": "black",
+  // Misc
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false
+} 

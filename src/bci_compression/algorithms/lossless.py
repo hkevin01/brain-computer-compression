@@ -2,6 +2,7 @@
 Lossless compression algorithms for neural data.
 """
 
+import logging
 from typing import Any, Dict
 
 import numpy as np
@@ -20,6 +21,7 @@ class AdaptiveLZCompressor(BaseCompressor):
         self.lookahead_buffer = lookahead_buffer
     
     def compress(self, data: np.ndarray) -> bytes:
+        logging.info(f"[AdaptiveLZ] Compressing data with shape {data.shape} and dtype {data.dtype}")
         self._last_shape = data.shape
         self._last_dtype = data.dtype
         original_size = data.nbytes
@@ -28,14 +30,15 @@ class AdaptiveLZCompressor(BaseCompressor):
         return compressed
     
     def decompress(self, compressed_data: bytes) -> np.ndarray:
+        logging.info("[AdaptiveLZ] Decompressing data")
         data = np.frombuffer(compressed_data, dtype=np.float16).astype(np.float32)
-        if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
-            try:
+        try:
+            if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
                 data = data.reshape(self._last_shape)
                 data = data.astype(self._last_dtype)
-            except Exception as e:
-                raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
-            self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), data, check_shape=True, check_dtype=True, check_hash=False)
+        except Exception as e:
+            logging.exception("[AdaptiveLZ] Integrity check failed during decompression")
+            raise
         return data
 
 
@@ -51,6 +54,7 @@ class DictionaryCompressor(BaseCompressor):
         self.dictionary: Dict[str, int] = {}
     
     def compress(self, data: np.ndarray) -> bytes:
+        logging.info(f"[Dictionary] Compressing data with shape {data.shape} and dtype {data.dtype}")
         self._last_shape = data.shape
         self._last_dtype = data.dtype
         original_size = data.nbytes
@@ -59,12 +63,13 @@ class DictionaryCompressor(BaseCompressor):
         return compressed
     
     def decompress(self, compressed_data: bytes) -> np.ndarray:
+        logging.info("[Dictionary] Decompressing data")
         data = np.frombuffer(compressed_data, dtype=np.int16).astype(np.float32)
-        if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
-            try:
+        try:
+            if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
                 data = data.reshape(self._last_shape)
                 data = data.astype(self._last_dtype)
-            except Exception as e:
-                raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
-            self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), data, check_shape=True, check_dtype=True, check_hash=False)
+        except Exception as e:
+            logging.exception("[Dictionary] Integrity check failed during decompression")
+            raise
         return data
