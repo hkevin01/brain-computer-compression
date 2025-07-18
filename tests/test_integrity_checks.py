@@ -4,15 +4,19 @@ import sys
 import numpy as np
 import pytest
 
-# sys.path.insert(0, 'src')
-# Disabled for PYTHONPATH=src compatibility
+sys.path.insert(0, 'src')
 from bci_compression.algorithms.context_aware import ContextAwareCompressor
 from bci_compression.algorithms.deep_learning import AutoencoderCompressor
+from bci_compression.algorithms.gpu_acceleration import (
+    GPUCompressionBackend,
+    RealTimeGPUPipeline,
+)
 from bci_compression.algorithms.lossless import (
     AdaptiveLZCompressor,
     DictionaryCompressor,
 )
 from bci_compression.algorithms.lossy import QuantizationCompressor, WaveletCompressor
+from bci_compression.algorithms.lossy_neural import NeuralAutoencoder
 from bci_compression.algorithms.predictive import MultiChannelPredictiveCompressor
 from bci_compression.data_processing.filters import (
     apply_bandpass_filter,
@@ -168,3 +172,52 @@ def test_signal_processor_artifact_detection():
     artifacts = processor.detect_artifacts(data, threshold_std=0.01)
     assert artifacts.shape == data.shape
     assert np.any(artifacts)
+
+
+def test_autoencoder_compressor_roundtrip():
+    compressor = AutoencoderCompressor(latent_dim=8, epochs=1)
+    data = np.random.randn(4, 8).astype(np.float32)
+    compressor.fit(data)
+    compressed = compressor.compress(data)
+    decompressed = compressor.decompress(compressed)
+    assert decompressed.shape == data.shape
+    assert decompressed.dtype == data.dtype
+
+
+def test_neural_autoencoder_roundtrip():
+    autoencoder = NeuralAutoencoder(input_size=16, encoding_size=4)
+    data = np.random.randn(2, 16).astype(np.float32)
+    # Ensure model is built and trained before compress
+    autoencoder._build_model()
+    autoencoder.is_trained = True  # Simulate trained model for test
+    compressed, meta = autoencoder.compress(data)
+    decompressed = autoencoder.decompress(compressed, meta)
+    assert decompressed.shape == data.shape
+
+
+def test_gpu_compression_backend_fallback():
+    backend = GPUCompressionBackend()
+    data = np.random.randn(2, 100).astype(np.float32)
+    # Should work even if no GPU is available
+    filtered = backend.gpu_bandpass_filter(data, 1.0, 50.0, 1000.0)
+    assert filtered.shape == data.shape
+
+
+def test_realtime_gpu_pipeline_process_chunk():
+    pipeline = RealTimeGPUPipeline()
+    data = np.random.randn(2, 100).astype(np.float32)
+    processed, meta = pipeline.process_chunk(data)
+    assert processed.shape == data.shape
+    assert isinstance(meta, dict)
+
+
+def test_context_aware_compressor_compress():
+    compressor = ContextAwareCompressor()
+    data = np.random.randn(4, 200).astype(np.float32)
+    compressed, meta = compressor.compress(data)
+    assert isinstance(compressed, list)
+    # Accept both dict and dataclass for meta
+    if isinstance(meta, dict):
+        assert 'compression_ratio' in meta
+    else:
+        assert hasattr(meta, 'compression_ratio')

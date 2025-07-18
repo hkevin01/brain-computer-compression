@@ -1,0 +1,163 @@
+{
+  "data_info": {
+    "n_channels": 8,
+    "n_samples": 1000,
+    "fs": 1000.0,
+    "seed": 42
+  },
+  "benchmark_config": {
+    "algorithms": [
+      "adaptive_lz",
+      "neural_quantization",
+      "wavelet_transform"
+    ],
+    "runs_per_algorithm": 3,
+    "timestamp": "2025-07-18 15:42:56"
+  },
+  "results": [
+    {
+      "algorithm": "adaptive_lz",
+      "runs": 3,
+      "avg_compression_ratio": 2.0,
+      "avg_compression_time": 2.1219253540039062e-05,
+      "avg_decompression_time": 2.3206075032552082e-05,
+      "avg_throughput_mbps": 3342.561640673641,
+      "avg_snr_db": 151.98530717927846,
+      "std_compression_ratio": 0.0,
+      "individual_runs": [
+        {
+          "algorithm": "adaptive_lz",
+          "compression_ratio": 2.0,
+          "compression_time": 5.245208740234375e-05,
+          "decompression_time": 5.340576171875e-05,
+          "total_time": 0.00010585784912109375,
+          "throughput_mbps": 604.5843603603604,
+          "snr_db": 151.98530717927846,
+          "mse": 6.421816001480135e-16,
+          "original_size_bytes": 64000,
+          "compressed_size_bytes": 32000
+        },
+        {
+          "algorithm": "adaptive_lz",
+          "compression_ratio": 2.0,
+          "compression_time": 6.4373016357421875e-06,
+          "decompression_time": 8.58306884765625e-06,
+          "total_time": 1.5020370483398438e-05,
+          "throughput_mbps": 4260.880253968254,
+          "snr_db": 151.98530717927846,
+          "mse": 6.421816001480135e-16,
+          "original_size_bytes": 64000,
+          "compressed_size_bytes": 32000
+        },
+        {
+          "algorithm": "adaptive_lz",
+          "compression_ratio": 2.0,
+          "compression_time": 4.76837158203125e-06,
+          "decompression_time": 7.62939453125e-06,
+          "total_time": 1.239776611328125e-05,
+          "throughput_mbps": 5162.220307692308,
+          "snr_db": 151.98530717927846,
+          "mse": 6.421816001480135e-16,
+          "original_size_bytes": 64000,
+          "compressed_size_bytes": 32000
+        }
+      ]
+    },
+    {
+      "algorithm": "neural_quantization",
+      "runs": 3,
+      "avg_compression_ratio": 2.0,
+      "avg_compression_time": 4.609425862630208e-06,
+      "avg_decompression_time": 6.9141387939453125e-06,
+      "avg_throughput_mbps": 5573.285998860399,
+      "avg_snr_db": 151.98530717927846,
+      "std_compression_ratio": 0.0,
+      "individual_runs": [
+        {
+          "algorithm": "neural_quantization",
+          "compression_ratio": 2.0,
+          "compression_time": 5.245208740234375e-06,
+          "decompression_time": 7.152557373046875e-06,
+          "total_time": 1.239776611328125e-05,
+          "throughput_mbps": 5162.220307692308,
+          "snr_db": 151.98530717927846,
+          "mse": 6.421816001480135e-16,
+          "original_size_bytes": 64000,
+          "compressed_size_bytes": 32000
+        },
+        {
+          "algorithm": "neural_quantization",
+          "compression_ratio": 2.0,
+          "compression_time": 4.5299530029296875e-06,
+          "decompression_time": 6.9141387939453125e-06,
+          "total_time": 1.1444091796875e-05,
+          "throughput_mbps": 5592.405333333333,
+          "snr_db": 151.98530717927846,
+          "mse": 6.421816001480135e-16,
+          "original_size_bytes": 64000,
+          "compressed_size_bytes": 32000
+        },
+        {
+          "algorithm": "neural_quantization",
+          "compression_ratio": 2.0,
+          "compression_time": 4.0531158447265625e-06,
+          "decompression_time": 6.67572021484375e-06,
+          "total_time": 1.0728836059570312e-05,
+          "throughput_mbps": 5965.232355555556,
+          "snr_db": 151.98530717927846,
+          "mse": 6.421816001480135e-16,
+          "original_size_bytes": 64000,
+          "compressed_size_bytes": 32000
+        }
+      ]
+    },
+    {
+      "algorithm": "wavelet_transform",
+      "runs": 3,
+      "avg_compression_ratio": 2.0,
+      "avg_compression_time": 4.609425862630208e-06,
+      "avg_decompression_time": 6.357828776041667e-06,
+      "avg_throughput_mbps": 5856.773585454546,
+      "avg_snr_db": 151.98530717927846,
+      "std_compression_ratio": 0.0,
+      "individual_runs": [
+        {
+          "algorithm": "wavelet_transform",
+          "compression_ratio": 2.0,
+          "compression_time": 4.76837158203125e-06,
+          "decompression_time": 7.152557373046875e-06,
+          "total_time": 1.1920928955078125e-05,
+          "throughput_mbps": 5368.70912,
+          "snr_db": 151.98530717927846,
+          "mse": 6.421816001480135e-16,
+          "original_size_bytes": 64000,
+          "compressed_size_bytes": 32000
+        },
+        {
+          "algorithm": "wavelet_transform",
+          "compression_ratio": 2.0,
+          "compression_time": 4.5299530029296875e-06,
+          "decompression_time": 5.9604644775390625e-06,
+          "total_time": 1.049041748046875e-05,
+          "throughput_mbps": 6100.805818181819,
+          "snr_db": 151.98530717927846,
+          "mse": 6.421816001480135e-16,
+          "original_size_bytes": 64000,
+          "compressed_size_bytes": 32000
+        },
+        {
+          "algorithm": "wavelet_transform",
+          "compression_ratio": 2.0,
+          "compression_time": 4.5299530029296875e-06,
+          "decompression_time": 5.9604644775390625e-06,
+          "total_time": 1.049041748046875e-05,
+          "throughput_mbps": 6100.805818181819,
+          "snr_db": 151.98530717927846,
+          "mse": 6.421816001480135e-16,
+          "original_size_bytes": 64000,
+          "compressed_size_bytes": 32000
+        }
+      ]
+    }
+  ]
+}

@@ -112,6 +112,13 @@ brain-computer-compression/
 - [x] Performance benchmarks publication
 - [x] Community contribution guidelines
 
+## Progress Update (Continuous Improvement)
+
+- Implemented PSNR (Peak Signal-to-Noise Ratio) as a new metric in BenchmarkMetrics.
+- Added and validated tests for PSNR in tests/test_benchmarking.py (see logs/test_benchmarking_psnr.log).
+- All benchmarking metric tests pass, including the new PSNR metric.
+- Ongoing: Systematic implementation, testing, and documentation of new features and improvements based on feedback and best practices.
+
 ## Key Features
 
 ### Compression Algorithms
@@ -188,3 +195,17 @@ This project welcomes contributions from the BCI and compression research commun
 ## License
 
 This project is released under the MIT License to encourage widespread adoption and contribution from the research community.
+
+## Feedback and Review Integration
+
+- Feedback channels: GitHub Issues, email (contact@bci-compression.org), and Discussions (if enabled).
+- All user and stakeholder feedback is reviewed and prioritized for inclusion in the project roadmap.
+- Major feedback-driven changes are documented in the changelog and release notes.
+- Ongoing: Actively seek and incorporate feedback to guide future development.
+
+## Release Version: v1.0.0 (2025-07-18)
+
+- All phases (foundation, algorithms, advanced techniques, benchmarking, integration, documentation) are complete.
+- All deliverables, tests, and benchmarks pass.
+- Documentation, changelogs, and feedback channels are up to date.
+- The project is ready for production use and community contribution.

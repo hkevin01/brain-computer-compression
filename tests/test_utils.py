@@ -2,7 +2,9 @@
 Unit tests for utility functions and data structures (Phase 1)
 """
 import pytest
-from bci_compression.data_processing.utils import flatten, chunk_data
+
+from bci_compression.data_processing.utils import chunk_data, flatten
+
 
 def test_flatten_basic():
     assert flatten([[1, 2], [3, 4]]) == [1, 2, 3, 4]

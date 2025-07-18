@@ -6,13 +6,12 @@ signal characteristics including brain states, spatial relationships, and
 temporal patterns.
 """
 
-import numpy as np
 import time
-from typing import Dict, List, Tuple, Optional
-from dataclasses import dataclass
 from collections import defaultdict, deque
-from abc import ABC, abstractmethod
-import logging
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
 
 
 @dataclass
@@ -65,7 +64,7 @@ class BrainStateDetector:
         features = {}
 
         # Power spectral features
-        freqs = np.fft.fftfreq(data.shape[1], 1/self.sampling_rate)
+        freqs = np.fft.fftfreq(data.shape[1], 1 / self.sampling_rate)
 
         for ch_idx in range(data.shape[0]):
             fft_data = np.fft.fft(data[ch_idx])
@@ -129,7 +128,7 @@ class BrainStateDetector:
                 return entropy / np.log(len(eigenvals))
             else:
                 return 0.0
-        except:
+        except BaseException:
             return 0.0
 
     def classify_state(self, data: np.ndarray) -> str:
@@ -315,7 +314,7 @@ class SpatialContextModel:
             for other_id, other_pos in self.electrode_positions.items():
                 if ch_id != other_id:
                     dist = np.sqrt((pos[0] - other_pos[0])**2 +
-                                 (pos[1] - other_pos[1])**2)
+                                   (pos[1] - other_pos[1])**2)
                     neighbors.append(other_id)
                     distances.append(dist)
 
@@ -324,7 +323,7 @@ class SpatialContextModel:
             self.neighborhood_map[ch_id] = sorted_neighbors[:4]  # 4 nearest neighbors
 
     def compute_functional_connectivity(self, data: np.ndarray,
-                                      method: str = 'correlation'):
+                                        method: str = 'correlation'):
         """
         Compute functional connectivity between channels.
 
@@ -384,7 +383,7 @@ class SpatialContextModel:
                     current = queue.pop(0)
                     for neighbor in range(self.n_channels):
                         if (neighbor not in visited and
-                            strong_connections[current, neighbor]):
+                                strong_connections[current, neighbor]):
                             group.append(neighbor)
                             queue.append(neighbor)
                             visited.add(neighbor)
@@ -429,7 +428,7 @@ class ContextAwareCompressor:
         self.adaptation_times = []
 
     def setup_spatial_model(self, n_channels: int,
-                           electrode_positions: Optional[Dict] = None):
+                            electrode_positions: Optional[Dict] = None):
         """
         Set up spatial context model.
 
@@ -442,7 +441,7 @@ class ContextAwareCompressor:
             self.spatial_model.set_electrode_layout(electrode_positions)
 
     def compress(self, data: np.ndarray,
-                window_size: Optional[int] = None) -> Tuple[List[bytes], ContextMetadata]:
+                 window_size: Optional[int] = None) -> Tuple[List[bytes], ContextMetadata]:
         """
         Compress data using context-aware methods.
 
@@ -480,21 +479,21 @@ class ContextAwareCompressor:
             brain_states_detected.append(current_state)
 
             if (len(brain_states_detected) > 1 and
-                current_state != brain_states_detected[-2]):
+                    current_state != brain_states_detected[-2]):
                 self.context_switches += 1
 
             # Get state-specific parameters
             params = self.state_parameters.get(current_state,
-                                             self.state_parameters['rest'])
+                                               self.state_parameters['rest'])
 
             # Quantize data based on current state
             quantized_window = self._quantize_adaptive(window_data,
-                                                     params['quantization_bits'])
+                                                       params['quantization_bits'])
 
             # Update hierarchical context model
             flat_data = quantized_window.flatten().astype(int)
             self.hierarchical_model.update_context(flat_data.tolist(),
-                                                 params['context_depth'])
+                                                   params['context_depth'])
 
             # Simple encoding (placeholder for full implementation)
             encoded_window = self._encode_window(quantized_window, current_state)
@@ -631,5 +630,5 @@ class ContextAwareCompressor:
     def compress(self, data: np.ndarray):
         # Dummy context-aware compression
         compressed = data.flatten().tolist()
-        meta = {'shape': data.shape, 'dtype': str(data.dtype)}
+        meta = {'shape': data.shape, 'dtype': str(data.dtype), 'compression_ratio': 1.0}
         return compressed, meta

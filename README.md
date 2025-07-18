@@ -24,7 +24,7 @@ Brain-computer interfaces generate massive amounts of neural data that must be p
 
 ### 🔧 Advanced Compression Algorithms
 - **Neural-Optimized Lossless**: LZ variants with temporal correlation detection
-- **Perceptual Lossy**: Frequency-domain quantization preserving neural features  
+- **Perceptual Lossy**: Frequency-domain quantization preserving neural features
 - **Predictive Coding**: Linear and adaptive prediction models for neural signals
 - **Context-Aware**: Brain state adaptive compression with real-time switching
 - **Multi-Channel**: Spatial correlation exploitation across electrode arrays
@@ -98,6 +98,24 @@ Our algorithms achieve state-of-the-art performance on neural data:
 
 *Performance measured on 64-channel neural recordings at 30kHz sampling rate*
 
+### Quality Metrics
+- **SNR (Signal-to-Noise Ratio)**: Measures signal fidelity after compression.
+- **PSNR (Peak Signal-to-Noise Ratio)**: Measures peak error, especially useful for lossy compression.
+- **Spectral Preservation**: Assesses preservation of neural oscillations.
+- **Compression Ratio**: Data reduction achieved.
+
+#### Example: Calculating PSNR
+
+```python
+from bci_compression.benchmarking.metrics import BenchmarkMetrics
+import numpy as np
+
+original = np.ones(1000)
+reconstructed = np.ones(1000) * 0.99
+psnr = BenchmarkMetrics.psnr(original, reconstructed, max_value=1.0)
+print(f"PSNR: {psnr:.2f} dB")
+```
+
 ## 🔧 Algorithm Categories
 
 ### Lossless Compression
@@ -105,7 +123,7 @@ Our algorithms achieve state-of-the-art performance on neural data:
 - **Arithmetic Coding**: Context-aware entropy coding for neural patterns
 - **Multi-Channel**: Spatial correlation exploitation across electrodes
 
-### Lossy Compression  
+### Lossy Compression
 - **Perceptual Quantization**: Frequency-domain bit allocation preserving neural features
 - **Adaptive Wavelets**: Neural-specific wavelet compression with smart thresholding
 - **Deep Autoencoders**: Neural network learned compression representations
@@ -258,7 +276,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 ## 📖 Documentation
 
 - **[Implementation Summary](docs/phase2_summary.md)** - Core algorithms overview
-- **[Advanced Techniques](docs/phase3_summary.md)** - Predictive and context-aware methods  
+- **[Advanced Techniques](docs/phase3_summary.md)** - Predictive and context-aware methods
 - **[API Reference](docs/api_documentation.md)** - Complete API documentation
 - **[Benchmarking Guide](docs/benchmarking_guide.md)** - Performance evaluation methodology
 - **[Project Plan](docs/project_plan.md)** - Development roadmap and technical details
@@ -267,11 +285,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ### Research Applications
 - **Large-scale neural studies** - Compress terabytes of multi-electrode recordings
-- **Real-time BCI experiments** - Enable low-latency neural control interfaces  
+- **Real-time BCI experiments** - Enable low-latency neural control interfaces
 - **Data sharing & collaboration** - Efficient transmission of neural datasets
 - **Bandwidth-limited telemetry** - Wireless neural implant data transmission
 
-### Clinical Applications  
+### Clinical Applications
 - **Implantable devices** - Reduce power consumption in neural prosthetics
 - **Remote patient monitoring** - Continuous neural activity tracking
 - **Seizure detection systems** - Real-time analysis with compressed data streams
@@ -336,3 +354,38 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **⭐ Star this repository if you find it useful for your neural data compression needs!**
+
+## 🙋 How to Give Feedback
+
+We welcome your feedback, suggestions, and bug reports!
+
+- **GitHub Issues**: [Submit an issue](https://github.com/hkevin01/brain-computer-compression/issues) for bugs, feature requests, or questions.
+- **Email**: Contact the team at contact@bci-compression.org
+- **Discussions**: (If enabled) Join the GitHub Discussions tab for open Q&A and brainstorming.
+
+Your input helps us improve the toolkit for everyone!
+
+## 🛠️ Troubleshooting
+
+If you encounter issues running the toolkit, try the following steps:
+
+- **Check the logs:**
+  - Benchmarking errors are logged to `logs/benchmark_runner_errors.log`.
+  - Review the log file for detailed error messages and stack traces.
+- **Common issues:**
+  - *Missing dependencies*: Ensure all requirements are installed (`pip install -r requirements.txt`).
+  - *File not found*: Double-check data file paths and permissions.
+  - *Unsupported algorithm*: Verify the algorithm name and that all dependencies are installed.
+  - *GPU errors*: If using GPU features, ensure CUDA and CuPy are installed and your GPU is supported.
+- **Get help:**
+  - Submit an issue on GitHub with the error message and relevant log output.
+  - Email the team at contact@bci-compression.org for support.
+
+### Example: Handling Errors in Benchmarking
+
+If a run fails, check the console output and `logs/benchmark_runner_errors.log` for details:
+
+```bash
+python scripts/benchmark_runner.py --synthetic --channels 8 --samples 1000
+# If an error occurs, see logs/benchmark_runner_errors.log
+```

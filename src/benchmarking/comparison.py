@@ -8,16 +8,17 @@ References:
 - IEEE benchmarking standards
 """
 
-from typing import List, Dict, Any
 import time
+from typing import Any, Dict, List
 
-from .metrics import BenchmarkMetrics
+from src.bci_compression.benchmarking.metrics import BenchmarkMetrics
 
 
 class CompressionComparison:
     """
     Framework for comparing compression algorithms.
     """
+
     def __init__(self, methods: List[Any]):
         self.methods = methods
 

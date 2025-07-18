@@ -10,7 +10,7 @@ import struct
 import time
 from collections import deque
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -62,7 +62,7 @@ class NeuralLinearPredictor:
         for lag in range(self.order + 1):
             if lag < n:
                 autocorr[lag] = np.sum(signal_normalized[:-lag or None] *
-                                     signal_normalized[lag:]) / (n - lag)
+                                       signal_normalized[lag:]) / (n - lag)
 
         return autocorr
 
@@ -192,7 +192,7 @@ class NeuralLinearPredictor:
             return np.array([])
 
         for i in range(self.order, self.order + max_predictions):
-            prediction = np.dot(coeffs, padded_history[i-self.order:i][::-1])
+            prediction = np.dot(coeffs, padded_history[i - self.order:i][::-1])
             predictions.append(prediction)
 
         # Denormalize predictions
@@ -204,7 +204,7 @@ class NeuralLinearPredictor:
         return predictions
 
     def encode_residuals(self, signal: np.ndarray, predictions: np.ndarray,
-                        quantization_bits: int = 12) -> Tuple[bytes, Dict]:
+                         quantization_bits: int = 12) -> Tuple[bytes, Dict]:
         """
         Encode prediction residuals efficiently.
 
@@ -224,7 +224,7 @@ class NeuralLinearPredictor:
         if residual_max == 0:
             residual_max = 1.0
 
-        scale_factor = (2**(quantization_bits-1) - 1) / residual_max
+        scale_factor = (2**(quantization_bits - 1) - 1) / residual_max
         quantized_residuals = np.round(residuals * scale_factor).astype(np.int16)
 
         # Encode residuals using variable length encoding
@@ -304,7 +304,7 @@ class AdaptiveNeuralPredictor:
         self.adaptation_history = []
 
     def update_predictor(self, channel_id: int, sample: float,
-                        target: Optional[float] = None) -> float:
+                         target: Optional[float] = None) -> float:
         """
         Update predictor coefficients and predict next sample.
 
@@ -406,7 +406,7 @@ class MultiChannelPredictiveCompressor:
         relationships = {}
         for i in range(n_channels):
             # Find channels with high correlation
-            corr_indices = np.argsort(np.abs(correlations[i]))[::-1][1:self.cross_channel_order+1]
+            corr_indices = np.argsort(np.abs(correlations[i]))[::-1][1:self.cross_channel_order + 1]
             corr_values = correlations[i][corr_indices]
 
             relationships[i] = {
@@ -478,7 +478,7 @@ class MultiChannelPredictiveCompressor:
             channels=n_channels,
             samples=n_samples,
             coefficients={ch: self.temporal_predictors[ch].coefficients[ch]
-                         for ch in range(n_channels)},
+                          for ch in range(n_channels)},
             prediction_accuracy=np.mean(channel_accuracies),
             compression_time=compression_time,
             original_bits=total_original_bits,
@@ -488,7 +488,7 @@ class MultiChannelPredictiveCompressor:
         return compressed_channels, metadata
 
     def decompress(self, compressed_channels: List[bytes],
-                  metadata: PredictionMetadata) -> np.ndarray:
+                   metadata: PredictionMetadata) -> np.ndarray:
         logging.info(f"Decompressing with metadata: channels={metadata.channels}, samples={metadata.samples}")
         n_channels = metadata.channels
         n_samples = metadata.samples
@@ -504,12 +504,18 @@ class MultiChannelPredictiveCompressor:
             if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
                 if reconstructed_data.shape != self._last_shape:
                     logging.error(f"Shape mismatch: {reconstructed_data.shape} vs {self._last_shape}")
-                    raise ValueError(f"Decompressed data shape {reconstructed_data.shape} does not match original {self._last_shape}")
+                    raise ValueError(
+                        f"Decompressed data shape {
+                            reconstructed_data.shape} does not match original {
+                            self._last_shape}")
                 reconstructed_data = reconstructed_data.astype(self._last_dtype)
                 if reconstructed_data.dtype != self._last_dtype:
                     logging.error(f"Dtype mismatch: {reconstructed_data.dtype} vs {self._last_dtype}")
-                    raise ValueError(f"Decompressed data dtype {reconstructed_data.dtype} does not match original {self._last_dtype}")
-        except Exception as e:
+                    raise ValueError(
+                        f"Decompressed data dtype {
+                            reconstructed_data.dtype} does not match original {
+                            self._last_dtype}")
+        except Exception:
             logging.exception("Integrity check failed during decompression")
             raise
         return reconstructed_data
@@ -553,7 +559,7 @@ def benchmark_predictive_compression():
     sampling_rate = 30000
 
     # Synthetic neural data with correlations
-    t = np.linspace(0, n_samples/sampling_rate, n_samples)
+    t = np.linspace(0, n_samples / sampling_rate, n_samples)
     data = np.zeros((n_channels, n_samples))
 
     # Add correlated components

@@ -2,7 +2,7 @@
 Deep learning-based compression algorithms for neural data.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
 

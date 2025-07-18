@@ -4,7 +4,7 @@ Signal filtering utilities for neural data.
 
 import numpy as np
 from scipy import signal
-from typing import Optional, Tuple
+from typing import Tuple
 
 
 def apply_bandpass_filter(

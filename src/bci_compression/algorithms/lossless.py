@@ -3,7 +3,7 @@ Lossless compression algorithms for neural data.
 """
 
 import logging
-from typing import Any, Dict
+from typing import Dict
 
 import numpy as np
 
@@ -37,7 +37,7 @@ class AdaptiveLZCompressor(BaseCompressor):
         try:
             data = data.reshape(self._last_shape)
             data = data.astype(self._last_dtype)
-        except Exception as e:
+        except Exception:
             logging.exception("[AdaptiveLZ] Integrity check failed during decompression")
             raise
         return data
@@ -45,9 +45,11 @@ class AdaptiveLZCompressor(BaseCompressor):
 
 class NeuralLZ77Compressor:
     """LZ77 variant for neural data."""
+
     def compress(self, data: np.ndarray) -> bytes:
         # Dummy implementation
         return data.tobytes()
+
     def decompress(self, compressed: bytes) -> np.ndarray:
         # Dummy implementation
         return np.frombuffer(compressed, dtype=np.float32)
@@ -55,8 +57,10 @@ class NeuralLZ77Compressor:
 
 class NeuralArithmeticCoder:
     """Arithmetic coding for neural data."""
+
     def compress(self, data: np.ndarray) -> bytes:
         return data.tobytes()
+
     def decompress(self, compressed: bytes) -> np.ndarray:
         return np.frombuffer(compressed, dtype=np.float32)
 
@@ -88,7 +92,7 @@ class DictionaryCompressor(BaseCompressor):
             if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
                 data = data.reshape(self._last_shape)
                 data = data.astype(self._last_dtype)
-        except Exception as e:
+        except Exception:
             logging.exception("[Dictionary] Integrity check failed during decompression")
             raise
         return data

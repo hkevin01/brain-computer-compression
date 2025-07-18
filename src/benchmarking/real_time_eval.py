@@ -16,6 +16,7 @@ class RealTimeEvaluator:
     """
     Evaluates compression in streaming scenarios.
     """
+
     def __init__(self, compressor: Any, buffer_size: int = 1024, overlap: int = 256):
         self.compressor = compressor
         self.buffer_size = buffer_size

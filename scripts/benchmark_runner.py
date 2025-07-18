@@ -4,39 +4,49 @@ Benchmark runner for compression algorithms.
 """
 
 import argparse
-import time
 import json
-import numpy as np
+import logging
+import time
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
-from bci_compression import NeuralCompressor, load_neural_data
-from bci_compression.data_processing import generate_synthetic_neural_data
+import numpy as np
+
+from bci_compression.core import NeuralCompressor, load_neural_data
+from bci_compression.data_processing.synthetic import generate_synthetic_neural_data
 
 
 def run_benchmark(algorithm: str, data: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
     """Run benchmark for a single algorithm."""
-    compressor = NeuralCompressor(algorithm=algorithm, **config)
-    
-    # Measure compression time
-    start_time = time.time()
-    compressed_data = compressor.compress(data)
-    compression_time = time.time() - start_time
-    
-    # Measure decompression time
-    start_time = time.time()
-    decompressed_data = compressor.decompress(compressed_data)
-    decompression_time = time.time() - start_time
-    
+    try:
+        compressor = NeuralCompressor(algorithm=algorithm, **config)
+    except Exception as e:
+        logging.error(f"Failed to initialize compressor for algorithm '{algorithm}': {e}")
+        raise
+
+    try:
+        # Measure compression time
+        start_time = time.time()
+        compressed_data = compressor.compress(data)
+        compression_time = time.time() - start_time
+
+        # Measure decompression time
+        start_time = time.time()
+        decompressed_data = compressor.decompress(compressed_data)
+        decompression_time = time.time() - start_time
+    except Exception as e:
+        logging.error(f"Compression/decompression failed for algorithm '{algorithm}': {e}")
+        raise
+
     # Calculate metrics
     original_size = data.nbytes
     compressed_size = len(compressed_data)
     compression_ratio = original_size / compressed_size
-    
+
     # Calculate quality metrics (simplified)
     mse = np.mean((data - decompressed_data) ** 2)
     snr = 10 * np.log10(np.var(data) / mse) if mse > 0 else float('inf')
-    
+
     return {
         'algorithm': algorithm,
         'compression_ratio': compression_ratio,
@@ -54,13 +64,13 @@ def run_benchmark(algorithm: str, data: np.ndarray, config: Dict[str, Any]) -> D
 def main():
     """Main benchmark runner."""
     parser = argparse.ArgumentParser(description='Run compression benchmarks')
-    parser.add_argument('--algorithms', nargs='+', 
+    parser.add_argument('--algorithms', nargs='+',
                        default=['adaptive_lz', 'neural_quantization', 'wavelet_transform'],
                        help='Algorithms to benchmark')
     parser.add_argument('--data-file', type=str, help='Path to neural data file')
-    parser.add_argument('--synthetic', action='store_true', 
+    parser.add_argument('--synthetic', action='store_true',
                        help='Use synthetic data instead of file')
-    parser.add_argument('--channels', type=int, default=64, 
+    parser.add_argument('--channels', type=int, default=64,
                        help='Number of channels for synthetic data')
     parser.add_argument('--samples', type=int, default=30000,
                        help='Number of samples for synthetic data')
@@ -68,36 +78,53 @@ def main():
                        help='Output file for results')
     parser.add_argument('--runs', type=int, default=3,
                        help='Number of runs per algorithm')
-    
+
     args = parser.parse_args()
-    
+
+    # Set up logging
+    logging.basicConfig(
+        filename='logs/benchmark_runner_errors.log',
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s %(message)s'
+    )
+
     # Load or generate data
-    if args.synthetic or args.data_file is None:
-        print(f"Generating synthetic data: {args.channels} channels, {args.samples} samples")
-        data, metadata = generate_synthetic_neural_data(
-            n_channels=args.channels,
-            n_samples=args.samples,
-            seed=42
-        )
-        data_info = metadata
-    else:
-        print(f"Loading data from: {args.data_file}")
-        data = load_neural_data(args.data_file)
-        data_info = {
-            'source': args.data_file,
-            'shape': data.shape,
-            'dtype': str(data.dtype)
-        }
-    
+    try:
+        if args.synthetic or args.data_file is None:
+            print(f"Generating synthetic data: {args.channels} channels, {args.samples} samples")
+            data, metadata = generate_synthetic_neural_data(
+                n_channels=args.channels,
+                n_samples=args.samples,
+                seed=42
+            )
+            data_info = metadata
+        else:
+            print(f"Loading data from: {args.data_file}")
+            try:
+                data = load_neural_data(args.data_file)
+            except Exception as e:
+                logging.error(f"Failed to load data file '{args.data_file}': {e}")
+                print(f"Error: Failed to load data file '{args.data_file}': {e}")
+                return
+            data_info = {
+                'source': args.data_file,
+                'shape': data.shape,
+                'dtype': str(data.dtype)
+            }
+    except Exception as e:
+        logging.error(f"Data loading/generation failed: {e}")
+        print(f"Error: Data loading/generation failed: {e}")
+        return
+
     print(f"Data shape: {data.shape}")
     print(f"Data size: {data.nbytes / 1e6:.2f} MB")
-    
+
     # Run benchmarks
     all_results = []
-    
+
     for algorithm in args.algorithms:
         print(f"\nBenchmarking {algorithm}...")
-        
+
         algorithm_results = []
         for run in range(args.runs):
             try:
@@ -106,8 +133,9 @@ def main():
                 print(f"  Run {run + 1}: {result['compression_ratio']:.2f}:1, "
                       f"{result['throughput_mbps']:.2f} MB/s")
             except Exception as e:
+                logging.error(f"Run {run + 1} failed for algorithm '{algorithm}': {e}")
                 print(f"  Run {run + 1} failed: {e}")
-        
+
         # Calculate average results
         if algorithm_results:
             avg_result = {
@@ -122,7 +150,7 @@ def main():
                 'individual_runs': algorithm_results
             }
             all_results.append(avg_result)
-    
+
     # Save results
     output_data = {
         'data_info': data_info,
@@ -133,18 +161,21 @@ def main():
         },
         'results': all_results
     }
-    
-    with open(args.output, 'w') as f:
-        json.dump(output_data, f, indent=2, default=str)
-    
-    print(f"\nBenchmark results saved to: {args.output}")
-    
+
+    try:
+        with open(args.output, 'w') as f:
+            json.dump(output_data, f, indent=2, default=str)
+        print(f"\nBenchmark results saved to: {args.output}")
+    except Exception as e:
+        logging.error(f"Failed to save benchmark results to '{args.output}': {e}")
+        print(f"Error: Failed to save benchmark results to '{args.output}': {e}")
+
     # Print summary
     print("\nSummary:")
     print("-" * 80)
     print(f"{'Algorithm':<20} {'Ratio':<10} {'Time (ms)':<12} {'Throughput':<12} {'SNR (dB)':<10}")
     print("-" * 80)
-    
+
     for result in all_results:
         print(f"{result['algorithm']:<20} "
               f"{result['avg_compression_ratio']:<10.2f} "

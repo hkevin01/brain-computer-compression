@@ -5,7 +5,7 @@ Core compression functionality for neural data.
 
 import hashlib
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import numpy as np
 
@@ -21,12 +21,10 @@ class BaseCompressor(ABC):
     @abstractmethod
     def compress(self, data: np.ndarray) -> bytes:
         """Compress neural data."""
-        pass
 
     @abstractmethod
     def decompress(self, compressed_data: bytes) -> np.ndarray:
         """Decompress neural data."""
-        pass
 
     def fit(self, data: np.ndarray) -> None:
         """Fit compressor parameters to training data."""
@@ -36,7 +34,13 @@ class BaseCompressor(ABC):
         """Get the compression ratio of the last compression operation."""
         return self.compression_ratio
 
-    def _check_integrity(self, original: np.ndarray, decompressed: np.ndarray, check_shape: bool = True, check_dtype: bool = True, check_hash: bool = False) -> None:
+    def _check_integrity(
+            self,
+            original: np.ndarray,
+            decompressed: np.ndarray,
+            check_shape: bool = True,
+            check_dtype: bool = True,
+            check_hash: bool = False) -> None:
         """Check integrity between original and decompressed data. Optionally check shape, dtype, and hash."""
         if check_shape and original.shape != decompressed.shape:
             raise ValueError(f"Decompressed data shape {decompressed.shape} does not match original {original.shape}")
@@ -144,7 +148,14 @@ class NeuralCompressor(BaseCompressor):
                 data = data.astype(self._last_dtype)
             except Exception as e:
                 raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
-            self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), data, check_shape=True, check_dtype=True, check_hash=False)
+            self._check_integrity(
+                np.zeros(
+                    self._last_shape,
+                    dtype=self._last_dtype),
+                data,
+                check_shape=True,
+                check_dtype=True,
+                check_hash=False)
 
         return data
 

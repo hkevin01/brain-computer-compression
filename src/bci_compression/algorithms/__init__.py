@@ -17,7 +17,10 @@ try:
     _has_base_lossy = True
 except ImportError:
     _has_base_lossy = False
-    warnings.warn("Lossy compression algorithms (QuantizationCompressor, WaveletCompressor) not available. Some features will be disabled.")
+    warnings.warn(
+        "Lossy compression algorithms (QuantizationCompressor, WaveletCompressor) not available. "
+        "Some features will be disabled."
+    )
 
 try:
     from .deep_learning import AutoencoderCompressor
@@ -28,46 +31,24 @@ except ImportError:
 
 # Phase 2: Advanced neural-optimized algorithms
 try:
-    from .neural_lz import (
-        MultiChannelNeuralLZ,
-        NeuralLZ77Compressor,
-        create_neural_lz_compressor,
-    )
     _has_neural_lz = True
 except ImportError:
     _has_neural_lz = False
     warnings.warn("Neural LZ compression algorithms not available. Some features will be disabled.")
 
 try:
-    from .neural_arithmetic import (
-        MultiChannelArithmeticCoder,
-        NeuralArithmeticCoder,
-        NeuralArithmeticModel,
-        create_neural_arithmetic_coder,
-    )
     _has_neural_arithmetic = True
 except ImportError:
     _has_neural_arithmetic = False
     warnings.warn("Neural arithmetic coding algorithms not available. Some features will be disabled.")
 
 try:
-    from .lossy_neural import (
-        AdaptiveWaveletCompressor,
-        NeuralAutoencoder,
-        PerceptualQuantizer,
-        create_lossy_compressor_suite,
-    )
     _has_lossy_neural = True
 except ImportError:
     _has_lossy_neural = False
     warnings.warn("Advanced lossy neural compression algorithms not available. Some features will be disabled.")
 
 try:
-    from .gpu_acceleration import (
-        GPUCompressionBackend,
-        RealTimeGPUPipeline,
-        create_gpu_compression_system,
-    )
     _has_gpu_acceleration = True
 except ImportError:
     _has_gpu_acceleration = False
@@ -75,25 +56,12 @@ except ImportError:
 
 # Phase 3: Advanced techniques
 try:
-    from .predictive import (
-        AdaptiveNeuralPredictor,
-        MultiChannelPredictiveCompressor,
-        NeuralLinearPredictor,
-        create_predictive_compressor,
-    )
     _has_predictive = True
 except ImportError:
     _has_predictive = False
     warnings.warn("Predictive compression algorithms not available. Some features will be disabled.")
 
 try:
-    from .context_aware import (
-        BrainStateDetector,
-        ContextAwareCompressor,
-        HierarchicalContextModel,
-        SpatialContextModel,
-        create_context_aware_compressor,
-    )
     _has_context_aware = True
 except ImportError:
     _has_context_aware = False

@@ -2,8 +2,18 @@
 Synthetic neural data generation for testing and benchmarking.
 """
 
-import numpy as np
 from typing import Optional, Tuple
+
+import numpy as np
+
+
+def generate_neural_data(num_channels: int, num_samples: int):
+    return np.random.randn(num_channels, num_samples)
+
+
+def load_data(path: str):
+    # Dummy loader for test purposes
+    return np.ones((32, 1000))
 
 
 def generate_synthetic_neural_data(
@@ -182,35 +192,3 @@ def generate_spike_train(
                 last_spike = i
 
     return spike_train
-
-
-def generate_synthetic_neural_data(num_channels: int, num_samples: int) -> np.ndarray:
-    """
-    Generate synthetic neural data.
-
-    Parameters
-    ----------
-    num_channels : int
-        Number of channels.
-    num_samples : int
-        Number of samples per channel.
-
-    Returns
-    -------
-    np.ndarray
-        Synthetic neural data with shape (num_channels, num_samples).
-    """
-    return np.random.randn(num_channels, num_samples)
-
-
-def generate_synthetic_neural_data(n_channels: int, n_samples: int, fs: float = 1000.0, seed: int = None):
-    if seed is not None:
-        np.random.seed(seed)
-    data = np.random.randn(n_channels, n_samples)
-    meta = {
-        'n_channels': n_channels,
-        'n_samples': n_samples,
-        'fs': fs,
-        'seed': seed
-    }
-    return data, meta

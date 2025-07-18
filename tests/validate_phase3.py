@@ -12,8 +12,7 @@ import numpy as np
 import time
 
 # Add source to path
-# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-# Disabled for PYTHONPATH=src compatibility
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 
 def generate_realistic_neural_data(n_channels=16, n_samples=4000, sampling_rate=30000):

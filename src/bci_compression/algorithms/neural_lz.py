@@ -8,8 +8,7 @@ multi-channel redundancy.
 
 import struct
 import time
-from collections import defaultdict
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -17,12 +16,12 @@ import numpy as np
 class NeuralLZ77Compressor:
     """
     LZ77 variant optimized for neural signal compression.
-    
+
     This compressor takes advantage of temporal correlations in neural
     signals and optimizes the sliding window and lookahead buffer sizes
     for typical neural data characteristics.
     """
-    
+
     def __init__(
         self,
         window_size: int = 4096,  # Optimized for neural sampling rates
@@ -32,7 +31,7 @@ class NeuralLZ77Compressor:
     ):
         """
         Initialize Neural LZ77 compressor.
-        
+
         Parameters
         ----------
         window_size : int, default=4096
@@ -49,7 +48,7 @@ class NeuralLZ77Compressor:
         self.min_match_length = min_match_length
         self.quantization_bits = quantization_bits
         self.quantization_levels = 2 ** quantization_bits
-        
+
         # Statistics for optimization
         self.compression_stats = {
             'matches_found': 0,
@@ -57,16 +56,16 @@ class NeuralLZ77Compressor:
             'compression_ratio': 0.0,
             'processing_time': 0.0
         }
-    
+
     def _quantize_signal(self, data: np.ndarray) -> np.ndarray:
         """
         Quantize neural signal to specified bit depth.
-        
+
         Parameters
         ----------
         data : np.ndarray
             Input neural data
-            
+
         Returns
         -------
         np.ndarray
@@ -78,48 +77,48 @@ class NeuralLZ77Compressor:
             normalized = (data - data_min) / (data_max - data_min)
         else:
             normalized = np.zeros_like(data)
-        
+
         # Quantize to integer levels
         quantized = np.round(normalized * (self.quantization_levels - 1))
         return quantized.astype(np.uint16), (data_min, data_max)
-    
+
     def _dequantize_signal(
-        self, 
-        quantized: np.ndarray, 
+        self,
+        quantized: np.ndarray,
         scale_params: Tuple[float, float]
     ) -> np.ndarray:
         """
         Dequantize signal back to original range.
-        
+
         Parameters
         ----------
         quantized : np.ndarray
             Quantized integer data
         scale_params : tuple
             (min_val, max_val) for rescaling
-            
+
         Returns
         -------
         np.ndarray
             Dequantized signal
         """
         data_min, data_max = scale_params
-        
+
         # Convert back to [0, 1] range
         normalized = quantized.astype(np.float64) / (self.quantization_levels - 1)
-        
+
         # Rescale to original range
         return normalized * (data_max - data_min) + data_min
-    
+
     def _find_longest_match(
-        self, 
-        data: np.ndarray, 
-        pos: int, 
+        self,
+        data: np.ndarray,
+        pos: int,
         window_start: int
     ) -> Tuple[int, int]:
         """
         Find the longest match in the sliding window.
-        
+
         Parameters
         ----------
         data : np.ndarray
@@ -128,7 +127,7 @@ class NeuralLZ77Compressor:
             Current position in data
         window_start : int
             Start of sliding window
-            
+
         Returns
         -------
         tuple
@@ -136,49 +135,49 @@ class NeuralLZ77Compressor:
         """
         best_offset = 0
         best_length = 0
-        
+
         # Lookahead buffer
         lookahead_end = min(pos + self.lookahead_size, len(data))
-        
+
         # Search in sliding window
         for i in range(window_start, pos):
             match_length = 0
-            
+
             # Count matching symbols
             while (pos + match_length < lookahead_end and
                    i + match_length < pos and
                    data[i + match_length] == data[pos + match_length]):
                 match_length += 1
-            
+
             # Update best match if longer and meets minimum length
             if match_length >= self.min_match_length and match_length > best_length:
                 best_offset = pos - i
                 best_length = match_length
-        
+
         return best_offset, best_length
-    
+
     def compress_channel(self, data: np.ndarray) -> Tuple[bytes, Dict]:
         self._last_shape = data.shape
         self._last_dtype = data.dtype
         start_time = time.time()
-        
+
         # Quantize the signal
         quantized_data, scale_params = self._quantize_signal(data)
-        
+
         # Initialize compression
         compressed = []
         pos = 0
         matches_found = 0
-        
+
         while pos < len(quantized_data):
             # Define sliding window
             window_start = max(0, pos - self.window_size)
-            
+
             # Find longest match
             offset, length = self._find_longest_match(
                 quantized_data, pos, window_start
             )
-            
+
             if length >= self.min_match_length:
                 # Encode as (offset, length) pair
                 compressed.append(('match', offset, length))
@@ -188,22 +187,22 @@ class NeuralLZ77Compressor:
                 # Encode as literal symbol
                 compressed.append(('literal', int(quantized_data[pos])))
                 pos += 1
-        
+
         # Convert to binary format
         binary_data = self._encode_tokens(compressed)
-        
+
         # Update statistics
         processing_time = time.time() - start_time
         original_size = len(data) * 4  # Assuming 32-bit floats
         compressed_size = len(binary_data)
-        
+
         self.compression_stats.update({
             'matches_found': matches_found,
             'total_symbols': len(data),
             'compression_ratio': original_size / compressed_size if compressed_size > 0 else 0,
             'processing_time': processing_time
         })
-        
+
         metadata = {
             'scale_params': scale_params,
             'original_length': len(data),
@@ -212,25 +211,25 @@ class NeuralLZ77Compressor:
             'lookahead_size': self.lookahead_size,
             'compression_stats': self.compression_stats.copy()
         }
-        
+
         return binary_data, metadata
-    
+
     def _encode_tokens(self, tokens: List) -> bytes:
         """
         Encode tokens to binary format.
-        
+
         Parameters
         ----------
         tokens : list
             List of tokens (literals or matches)
-            
+
         Returns
         -------
         bytes
             Binary encoded data
         """
         binary_data = bytearray()
-        
+
         for token in tokens:
             if token[0] == 'literal':
                 # Flag (1 bit) + literal value
@@ -240,29 +239,29 @@ class NeuralLZ77Compressor:
                 # Flag (1 bit) + offset (15 bits) + length (16 bits)
                 flag_offset_length = (token[1] << 16) | token[2]  # Clear MSB for match
                 binary_data.extend(struct.pack('>I', flag_offset_length))
-        
+
         return bytes(binary_data)
-    
+
     def decompress_channel(self, compressed_data: bytes, metadata: Dict) -> np.ndarray:
         # Decode tokens
         tokens = self._decode_tokens(compressed_data)
-        
+
         # Reconstruct quantized data
         reconstructed = []
-        
+
         for token in tokens:
             if token[0] == 'literal':
                 reconstructed.append(token[1])
             else:  # match
                 offset, length = token[1], token[2]
                 start_pos = len(reconstructed) - offset
-                
+
                 for i in range(length):
                     reconstructed.append(reconstructed[start_pos + i])
-        
+
         # Convert to numpy array and dequantize
         quantized_array = np.array(reconstructed, dtype=np.uint16)
-        
+
         # Pad or truncate to original length
         original_length = metadata['original_length']
         if len(quantized_array) > original_length:
@@ -271,30 +270,31 @@ class NeuralLZ77Compressor:
             # This shouldn't happen in correct implementation
             padding = np.zeros(original_length - len(quantized_array), dtype=np.uint16)
             quantized_array = np.concatenate([quantized_array, padding])
-        
+
         # Dequantize
         decompressed = self._dequantize_signal(
-            quantized_array, 
+            quantized_array,
             metadata['scale_params']
         )
         try:
             if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
                 decompressed = decompressed.reshape(self._last_shape)
                 decompressed = decompressed.astype(self._last_dtype)
-                # self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), decompressed, check_shape=True, check_dtype=True, check_hash=False)
+                # self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype),
+                #                      decompressed, check_shape=True, check_dtype=True, check_hash=False)
         except Exception as e:
             raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
         return decompressed
-    
+
     def _decode_tokens(self, binary_data: bytes) -> List:
         """
         Decode binary data to tokens.
-        
+
         Parameters
         ----------
         binary_data : bytes
             Binary encoded data
-            
+
         Returns
         -------
         list
@@ -302,15 +302,15 @@ class NeuralLZ77Compressor:
         """
         tokens = []
         pos = 0
-        
+
         while pos < len(binary_data):
             if pos + 4 > len(binary_data):
                 break
-                
+
             # Unpack 32-bit value
-            value = struct.unpack('>I', binary_data[pos:pos+4])[0]
+            value = struct.unpack('>I', binary_data[pos:pos + 4])[0]
             pos += 4
-            
+
             if value & 0x80000000:  # MSB set -> literal
                 literal_value = value & 0x7FFFFFFF
                 tokens.append(('literal', literal_value))
@@ -318,18 +318,18 @@ class NeuralLZ77Compressor:
                 offset = (value >> 16) & 0x7FFF
                 length = value & 0xFFFF
                 tokens.append(('match', offset, length))
-        
+
         return tokens
 
 
 class MultiChannelNeuralLZ:
     """
     Multi-channel neural LZ compressor that exploits spatial correlations.
-    
+
     This compressor processes multiple neural channels simultaneously,
     taking advantage of correlations between nearby electrodes.
     """
-    
+
     def __init__(
         self,
         single_channel_compressor: Optional[NeuralLZ77Compressor] = None,
@@ -338,7 +338,7 @@ class MultiChannelNeuralLZ:
     ):
         """
         Initialize multi-channel compressor.
-        
+
         Parameters
         ----------
         single_channel_compressor : NeuralLZ77Compressor, optional
@@ -352,25 +352,25 @@ class MultiChannelNeuralLZ:
             self.channel_compressor = NeuralLZ77Compressor()
         else:
             self.channel_compressor = single_channel_compressor
-            
+
         self.use_channel_prediction = use_channel_prediction
         self.prediction_order = prediction_order
-    
+
     def _predict_channel(
-        self, 
-        target_channel: np.ndarray, 
+        self,
+        target_channel: np.ndarray,
         reference_channels: List[np.ndarray]
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Predict target channel from reference channels.
-        
+
         Parameters
         ----------
         target_channel : np.ndarray
             Channel to predict
         reference_channels : list
             List of reference channel data
-            
+
         Returns
         -------
         tuple
@@ -378,54 +378,54 @@ class MultiChannelNeuralLZ:
         """
         if not reference_channels or not self.use_channel_prediction:
             return np.zeros_like(target_channel), target_channel
-        
+
         # Simple linear prediction using reference channels
-        n_samples = len(target_channel)
+        len(target_channel)
         n_refs = min(len(reference_channels), self.prediction_order)
-        
+
         if n_refs == 0:
             return np.zeros_like(target_channel), target_channel
-        
+
         # Stack reference channels
         ref_matrix = np.column_stack(reference_channels[:n_refs])
-        
+
         # Solve least squares for prediction coefficients
         try:
             # Add small regularization to avoid singular matrices
             A = ref_matrix.T @ ref_matrix + 1e-6 * np.eye(n_refs)
             b = ref_matrix.T @ target_channel
             coeffs = np.linalg.solve(A, b)
-            
+
             # Generate prediction
             prediction = ref_matrix @ coeffs
             residual = target_channel - prediction
-            
+
             return prediction, residual
         except np.linalg.LinAlgError:
             # Fallback if matrix is singular
             return np.zeros_like(target_channel), target_channel
-    
+
     def compress(self, data: np.ndarray) -> Tuple[List[bytes], Dict]:
         self._last_shape = data.shape
         self._last_dtype = data.dtype
         if data.ndim == 1:
             data = data.reshape(1, -1)
-        
+
         n_channels, n_samples = data.shape
         compressed_channels = []
         channel_metadata = []
         total_start_time = time.time()
-        
+
         for ch in range(n_channels):
             current_channel = data[ch]
-            
+
             if self.use_channel_prediction and ch > 0:
                 # Use previous channels for prediction
                 reference_channels = [data[i] for i in range(ch)]
                 prediction, residual = self._predict_channel(
                     current_channel, reference_channels
                 )
-                
+
                 # Compress the residual instead of original signal
                 compressed_data, metadata = self.channel_compressor.compress_channel(residual)
                 metadata['has_prediction'] = True
@@ -434,16 +434,16 @@ class MultiChannelNeuralLZ:
                 # Compress original signal
                 compressed_data, metadata = self.channel_compressor.compress_channel(current_channel)
                 metadata['has_prediction'] = False
-            
+
             compressed_channels.append(compressed_data)
             channel_metadata.append(metadata)
-        
+
         total_processing_time = time.time() - total_start_time
-        
+
         # Calculate overall statistics
         original_size = data.size * 4  # 32-bit floats
         compressed_size = sum(len(ch_data) for ch_data in compressed_channels)
-        
+
         global_metadata = {
             'n_channels': n_channels,
             'n_samples': n_samples,
@@ -452,25 +452,25 @@ class MultiChannelNeuralLZ:
             'total_processing_time': total_processing_time,
             'use_channel_prediction': self.use_channel_prediction
         }
-        
+
         return compressed_channels, global_metadata
-    
+
     def decompress(self, compressed_channels: List[bytes], metadata: Dict) -> np.ndarray:
         n_channels = metadata['n_channels']
         n_samples = metadata['n_samples']
-        
+
         decompressed_data = np.zeros((n_channels, n_samples))
-        
+
         for ch in range(n_channels):
             ch_metadata = metadata['channel_metadata'][ch]
-            
+
             # Decompress channel
             if ch_metadata['has_prediction']:
                 # Decompress residual
                 residual = self.channel_compressor.decompress_channel(
                     compressed_channels[ch], ch_metadata
                 )
-                
+
                 # Reconstruct original signal
                 if ch > 0:
                     reference_channels = [decompressed_data[i] for i in range(ch)]
@@ -485,12 +485,13 @@ class MultiChannelNeuralLZ:
                 decompressed_data[ch] = self.channel_compressor.decompress_channel(
                     compressed_channels[ch], ch_metadata
                 )
-        
+
         try:
             if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
                 decompressed_data = decompressed_data.reshape(self._last_shape)
                 decompressed_data = decompressed_data.astype(self._last_dtype)
-                # self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype), decompressed_data, check_shape=True, check_dtype=True, check_hash=False)
+                # self._check_integrity(np.zeros(self._last_shape, dtype=self._last_dtype),
+                #                      decompressed_data, check_shape=True, check_dtype=True, check_hash=False)
         except Exception as e:
             raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
         return decompressed_data
@@ -501,12 +502,12 @@ def create_neural_lz_compressor(
 ) -> MultiChannelNeuralLZ:
     """
     Factory function to create optimized neural LZ compressor.
-    
+
     Parameters
     ----------
     optimization_preset : str, default='balanced'
         Optimization preset ('speed', 'balanced', 'compression')
-        
+
     Returns
     -------
     MultiChannelNeuralLZ
@@ -531,7 +532,7 @@ def create_neural_lz_compressor(
     else:  # balanced
         # Default balanced settings
         base_compressor = NeuralLZ77Compressor()
-    
+
     return MultiChannelNeuralLZ(
         single_channel_compressor=base_compressor,
         use_channel_prediction=True,

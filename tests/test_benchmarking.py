@@ -2,6 +2,7 @@
 Unit and integration tests for benchmarking framework (Phase 4)
 """
 import numpy as np
+
 from bci_compression.benchmarking.metrics import BenchmarkMetrics
 from bci_compression.benchmarking.profiler import PerformanceProfiler
 
@@ -32,6 +33,17 @@ def test_snr():
     recon = np.ones(1000)
     snr = BenchmarkMetrics.snr(orig, recon)
     assert snr == float('inf')
+
+
+def test_psnr():
+    orig = np.ones(1000)
+    recon = np.ones(1000)
+    psnr = BenchmarkMetrics.psnr(orig, recon, max_value=1.0)
+    assert psnr == float('inf')
+    # Test with a small error
+    recon2 = np.ones(1000) * 0.99
+    psnr2 = BenchmarkMetrics.psnr(orig, recon2, max_value=1.0)
+    assert psnr2 > 20
 
 
 def test_profiler_cpu_memory():
