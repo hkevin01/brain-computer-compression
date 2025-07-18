@@ -1,0 +1,55 @@
+"""
+Benchmarking Metrics for BCI Compression Toolkit
+
+Defines standardized evaluation metrics for neural data compression algorithms.
+
+Metrics:
+- Compression Ratio
+- Processing Speed (Latency)
+- Signal Quality (SNR, PSNR)
+- Memory Usage
+- GPU Utilization
+
+References:
+- Neuralink Compression Challenge
+- IEEE Signal Processing standards
+"""
+
+import numpy as np
+import time
+from typing import Any
+
+
+class BenchmarkMetrics:
+    """
+    Standardized metrics for evaluating compression algorithms.
+    """
+    @staticmethod
+    def compression_ratio(original_size: int, compressed_size: int) -> float:
+        """Calculate compression ratio (original/compressed)."""
+        if compressed_size == 0:
+            raise ValueError("Compressed size must be > 0")
+        return original_size / compressed_size
+
+    @staticmethod
+    def processing_latency(start_time: float, end_time: float) -> float:
+        """Calculate processing latency in milliseconds."""
+        return (end_time - start_time) * 1000
+
+    @staticmethod
+    def snr(original: np.ndarray, reconstructed: np.ndarray) -> float:
+        """Signal-to-noise ratio (SNR) in dB."""
+        noise = original - reconstructed
+        signal_power = np.mean(original ** 2)
+        noise_power = np.mean(noise ** 2)
+        if noise_power == 0:
+            return float('inf')
+        return 10 * np.log10(signal_power / noise_power)
+
+    @staticmethod
+    def memory_usage(obj: Any) -> int:
+        """Estimate memory usage of an object in bytes."""
+        import sys
+        return sys.getsizeof(obj)
+
+    # Add more metrics as needed (PSNR, GPU utilization, etc.)

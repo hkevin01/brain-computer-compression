@@ -67,6 +67,8 @@ class QuantizationCompressor(BaseCompressor):
         data = (quantized.astype(np.float32) * scale_factor) + offset
         try:
             if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+                if not np.issubdtype(self._last_dtype, np.floating):
+                    raise ValueError(f"Decompressed data dtype {self._last_dtype} is not a floating type and is not supported.")
                 data = data.reshape(self._last_shape)
                 data = data.astype(self._last_dtype)
         except Exception as e:

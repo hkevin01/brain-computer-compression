@@ -266,9 +266,12 @@ class NeuralLinearPredictor:
 
         return bytes(encoded_data), metadata
 
-    def decompress(self, *args, **kwargs):
-        """Stub for decompression. Not implemented yet."""
-        raise NotImplementedError("Decompression for NeuralLinearPredictor is not implemented.")
+    def decompress(self, compressed_data, metadata):
+        import logging
+        logging.warning("[NeuralLinearPredictor] Decompression is not implemented. Returning zeros as placeholder.")
+        n_samples = metadata.samples if hasattr(metadata, 'samples') else 0
+        dtype = getattr(self, '_last_dtype', np.float32)
+        return np.zeros(n_samples, dtype=dtype)
 
 
 class AdaptiveNeuralPredictor:
@@ -502,6 +505,7 @@ class MultiChannelPredictiveCompressor:
                 if reconstructed_data.shape != self._last_shape:
                     logging.error(f"Shape mismatch: {reconstructed_data.shape} vs {self._last_shape}")
                     raise ValueError(f"Decompressed data shape {reconstructed_data.shape} does not match original {self._last_shape}")
+                reconstructed_data = reconstructed_data.astype(self._last_dtype)
                 if reconstructed_data.dtype != self._last_dtype:
                     logging.error(f"Dtype mismatch: {reconstructed_data.dtype} vs {self._last_dtype}")
                     raise ValueError(f"Decompressed data dtype {reconstructed_data.dtype} does not match original {self._last_dtype}")

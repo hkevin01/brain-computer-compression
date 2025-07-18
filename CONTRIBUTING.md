@@ -8,7 +8,7 @@ Thank you for your interest in contributing to the Brain-Computer Interface Data
 
 ### Prerequisites
 - Python 3.8+
-- Git knowledge  
+- Git knowledge
 - Familiarity with neural data or compression algorithms
 - Understanding of brain-computer interfaces (helpful but not required)
 
@@ -71,22 +71,22 @@ import numpy as np
 class MyCompressionAlgorithm(BaseCompressor):
     """
     Brief description of the algorithm.
-    
+
     Parameters
     ----------
     param1 : type
         Description of parameter.
     """
-    
+
     def __init__(self, param1: int = 10):
         super().__init__()
         self.param1 = param1
-    
+
     def compress(self, data: np.ndarray) -> bytes:
         """Compress neural data."""
         # Implementation here
         pass
-    
+
     def decompress(self, compressed_data: bytes) -> np.ndarray:
         """Decompress neural data."""
         # Implementation here
@@ -127,6 +127,16 @@ We encourage contributions from the research community:
 - New evaluation metrics
 - Real-world dataset contributions
 - Performance optimizations
+
+## Community Contribution Guidelines
+
+- Follow PEP 8 and project coding standards
+- Add comprehensive docstrings and comments
+- Write unit and integration tests for new features
+- Update documentation for any changes
+- Submit pull requests with clear descriptions
+- Report issues and request features via GitHub Issues
+- Engage in discussions for major changes
 
 ## Code of Conduct
 
