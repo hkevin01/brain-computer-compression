@@ -201,3 +201,16 @@ def generate_synthetic_neural_data(num_channels: int, num_samples: int) -> np.nd
         Synthetic neural data with shape (num_channels, num_samples).
     """
     return np.random.randn(num_channels, num_samples)
+
+
+def generate_synthetic_neural_data(n_channels: int, n_samples: int, fs: float = 1000.0, seed: int = None):
+    if seed is not None:
+        np.random.seed(seed)
+    data = np.random.randn(n_channels, n_samples)
+    meta = {
+        'n_channels': n_channels,
+        'n_samples': n_samples,
+        'fs': fs,
+        'seed': seed
+    }
+    return data, meta

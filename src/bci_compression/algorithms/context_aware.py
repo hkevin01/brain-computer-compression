@@ -628,4 +628,8 @@ Stub for ContextAwareCompressor for test import
 
 
 class ContextAwareCompressor:
-    pass
+    def compress(self, data: np.ndarray):
+        # Dummy context-aware compression
+        compressed = data.flatten().tolist()
+        meta = {'shape': data.shape, 'dtype': str(data.dtype)}
+        return compressed, meta
