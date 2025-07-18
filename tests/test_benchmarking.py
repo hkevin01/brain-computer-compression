@@ -2,8 +2,8 @@
 Unit and integration tests for benchmarking framework (Phase 4)
 """
 import numpy as np
-from src.benchmarking.metrics import BenchmarkMetrics
-from src.benchmarking.profiler import PerformanceProfiler
+from bci_compression.benchmarking.metrics import BenchmarkMetrics
+from bci_compression.benchmarking.profiler import PerformanceProfiler
 
 
 class DummyCompressor:

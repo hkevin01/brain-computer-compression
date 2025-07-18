@@ -407,8 +407,16 @@ import numpy as np
 
 class NeuralSignalProcessor:
     """Neural signal processor for filtering and feature extraction."""
-    def __init__(self):
-        pass
+    def __init__(self, sampling_rate: float = 1000.0):
+        self.sampling_rate = sampling_rate
     def process(self, data: np.ndarray) -> np.ndarray:
         # Dummy processing
         return data
+    def preprocess_pipeline(self, data: np.ndarray):
+        # Dummy pipeline: just return data and metadata
+        meta = {
+            'sampling_rate': self.sampling_rate,
+            'shape': data.shape,
+            'dtype': str(data.dtype)
+        }
+        return data, meta

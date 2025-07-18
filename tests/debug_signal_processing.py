@@ -8,7 +8,8 @@ import os
 import numpy as np
 
 # Add source to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+# Disabled for PYTHONPATH=src compatibility
 
 from bci_compression.data_processing.signal_processing import NeuralSignalProcessor
 

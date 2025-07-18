@@ -1,0 +1,11 @@
+# Phase 1 Change Log
+
+This file records all code and configuration changes made during Phase 1 for traceability and review.
+
+---
+
+- Updated import in tests/test_utils.py to use bci_compression.data_processing.utils instead of src.data_processing.utils (2025-07-18)
+- Found and commented out sys.path.insert statements in test_phase1_foundation.py, validate_phase1.py, debug_signal_processing.py, validate_phase2.py, validate_phase3.py, and test_integrity_checks.py for compatibility with PYTHONPATH=src approach. (2025-07-18)
+- Fixed compression_ratio formula in BenchmarkMetrics to use original_size / compressed_size (was compressed_size / original_size).
+- Implemented missing processing_latency method in BenchmarkMetrics to support latency calculation.
+- Changes made to src/bci_compression/benchmarking/metrics.py to resolve test failures in test_benchmarking.py. (2025-07-18)

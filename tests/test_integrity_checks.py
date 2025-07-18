@@ -4,7 +4,8 @@ import sys
 import numpy as np
 import pytest
 
-sys.path.insert(0, 'src')
+# sys.path.insert(0, 'src')
+# Disabled for PYTHONPATH=src compatibility
 from bci_compression.algorithms.context_aware import ContextAwareCompressor
 from bci_compression.algorithms.deep_learning import AutoencoderCompressor
 from bci_compression.algorithms.lossless import (
