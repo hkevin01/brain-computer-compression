@@ -70,3 +70,5 @@ if _has_data_acquisition:
         "DataAcquisitionManager",
         "create_test_acquisition_system",
     ])
+
+# bci_compression package init

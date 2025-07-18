@@ -1,12 +1,15 @@
 """
-Lossy compression algorithms for neural data.
+Lossy neural data compressors
 """
 
 import logging
 from typing import Optional
 
 import numpy as np
-import pywt
+try:
+    import pywt
+except ImportError:
+    pywt = None
 
 from ..core import BaseCompressor
 
@@ -93,6 +96,8 @@ class WaveletCompressor(BaseCompressor):
         self._last_shape = data.shape
         self._last_dtype = data.dtype
         """Compress using wavelet transform and thresholding."""
+        if pywt is None:
+            raise ImportError("pywt (PyWavelets) is required for wavelet compression.")
         # Wavelet decomposition
         coeffs = pywt.wavedec(data.flatten(), self.wavelet, level=self.levels)
 
@@ -113,6 +118,8 @@ class WaveletCompressor(BaseCompressor):
 
     def decompress(self, compressed_data: bytes) -> np.ndarray:
         logging.info("[Wavelet] Decompressing data")
+        if pywt is None:
+            raise ImportError("pywt (PyWavelets) is required for wavelet decompression.")
         coeffs_flat = np.frombuffer(compressed_data, dtype=np.float32)
         data = coeffs_flat
         try:

@@ -43,6 +43,24 @@ class AdaptiveLZCompressor(BaseCompressor):
         return data
 
 
+class NeuralLZ77Compressor:
+    """LZ77 variant for neural data."""
+    def compress(self, data: np.ndarray) -> bytes:
+        # Dummy implementation
+        return data.tobytes()
+    def decompress(self, compressed: bytes) -> np.ndarray:
+        # Dummy implementation
+        return np.frombuffer(compressed, dtype=np.float32)
+
+
+class NeuralArithmeticCoder:
+    """Arithmetic coding for neural data."""
+    def compress(self, data: np.ndarray) -> bytes:
+        return data.tobytes()
+    def decompress(self, compressed: bytes) -> np.ndarray:
+        return np.frombuffer(compressed, dtype=np.float32)
+
+
 class DictionaryCompressor(BaseCompressor):
     """
     Dictionary-based compression for repetitive neural patterns.

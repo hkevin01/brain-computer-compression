@@ -102,7 +102,7 @@ except ImportError:
 # Base exports
 __all__ = [
     "AdaptiveLZCompressor",
-    "DictionaryCompressor", 
+    "DictionaryCompressor",
     "QuantizationCompressor",
     "WaveletCompressor",
     "AutoencoderCompressor",
@@ -112,7 +112,7 @@ __all__ = [
 if _has_neural_lz:
     __all__.extend([
         "NeuralLZ77Compressor",
-        "MultiChannelNeuralLZ", 
+        "MultiChannelNeuralLZ",
         "create_neural_lz_compressor"
     ])
 
@@ -127,7 +127,7 @@ if _has_neural_arithmetic:
 if _has_lossy_neural:
     __all__.extend([
         "PerceptualQuantizer",
-        "AdaptiveWaveletCompressor", 
+        "AdaptiveWaveletCompressor",
         "NeuralAutoencoder",
         "create_lossy_compressor_suite"
     ])
@@ -167,3 +167,5 @@ if not _has_context_aware:
     missing_features.append("Context-aware compression")
 if missing_features:
     warnings.warn(f"The following features are unavailable due to missing dependencies: {', '.join(missing_features)}.")
+
+# algorithms package init
