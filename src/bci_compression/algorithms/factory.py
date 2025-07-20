@@ -451,6 +451,62 @@ def get_algorithm_metadata(name: str) -> Dict[str, Any]:
     return _global_registry.get_metadata(name)
 
 
+from .hardware.avx_kernels import avx_compress, avx_decompress
+from .hardware.cuda_kernels import cuda_compress, cuda_decompress
+from .hardware.fpga_pipeline import fpga_compress, fpga_decompress
+
+# Hardware-optimized compressor stubs
+from .hardware.neon_kernels import neon_compress, neon_decompress
+from .hardware.wasm_interface import wasm_compress, wasm_decompress
+
+
+class NeonCompressor(BaseCompressor):
+    """Compressor using ARM NEON SIMD acceleration (stub)."""
+    def compress(self, data: np.ndarray) -> bytes:
+        arr = neon_compress(data)
+        return arr.tobytes()
+    def decompress(self, compressed_data: bytes) -> np.ndarray:
+        # Assume float32 for stub
+        arr = np.frombuffer(compressed_data, dtype=np.float32)
+        return neon_decompress(arr)
+
+class AVXCompressor(BaseCompressor):
+    """Compressor using Intel AVX/AVX2 acceleration (stub)."""
+    def compress(self, data: np.ndarray) -> bytes:
+        arr = avx_compress(data)
+        return arr.tobytes()
+    def decompress(self, compressed_data: bytes) -> np.ndarray:
+        arr = np.frombuffer(compressed_data, dtype=np.float32)
+        return avx_decompress(arr)
+
+class CudaCompressor(BaseCompressor):
+    """Compressor using CUDA GPU acceleration (stub)."""
+    def compress(self, data: np.ndarray) -> bytes:
+        arr = cuda_compress(data)
+        return arr.tobytes()
+    def decompress(self, compressed_data: bytes) -> np.ndarray:
+        arr = np.frombuffer(compressed_data, dtype=np.float32)
+        return cuda_decompress(arr)
+
+class FpgaCompressor(BaseCompressor):
+    """Compressor using FPGA acceleration (stub)."""
+    def compress(self, data: np.ndarray) -> bytes:
+        arr = fpga_compress(data)
+        return arr.tobytes()
+    def decompress(self, compressed_data: bytes) -> np.ndarray:
+        arr = np.frombuffer(compressed_data, dtype=np.float32)
+        return fpga_decompress(arr)
+
+class WasmCompressor(BaseCompressor):
+    """Compressor using WebAssembly (WASM) acceleration (stub)."""
+    def compress(self, data: np.ndarray) -> bytes:
+        arr = wasm_compress(data)
+        return arr.tobytes()
+    def decompress(self, compressed_data: bytes) -> np.ndarray:
+        arr = np.frombuffer(compressed_data, dtype=np.float32)
+        return wasm_decompress(arr)
+
+
 def register_default_algorithms(registry: AlgorithmRegistry) -> None:
     """
     Register all default algorithms in the registry.
@@ -530,6 +586,14 @@ def register_default_algorithms(registry: AlgorithmRegistry) -> None:
         logger.info("Registered VAE algorithms")
     except ImportError as e:
         logger.warning(f"Failed to register VAE algorithms: {e}")
+
+    # Hardware-optimized algorithms
+    registry.register("neon", NeonCompressor)
+    registry.register("avx", AVXCompressor)
+    registry.register("cuda", CudaCompressor)
+    registry.register("fpga", FpgaCompressor)
+    registry.register("wasm", WasmCompressor)
+    logger.info("Registered hardware-optimized algorithms")
 
 
 # Initialize global registry with default algorithms
