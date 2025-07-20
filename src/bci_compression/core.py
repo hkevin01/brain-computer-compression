@@ -110,16 +110,48 @@ class NeuralCompressor(BaseCompressor):
             raise ValueError("Input data cannot be empty")
         self._last_shape = data.shape
         self._last_dtype = data.dtype
-        # Placeholder implementation - will be replaced with actual algorithms
-        original_size = data.nbytes
 
-        # Simple demonstration compression (just for structure)
-        compressed = data.astype(np.float32).tobytes()
+        # Real implementation using algorithm registry
+        try:
+            from .algorithms.factory import create_compressor
+            compressor = create_compressor(self.algorithm, quality_level=self.quality_level)
+            compressed = compressor.compress(data)
+            self.compression_ratio = compressor.get_compression_ratio()
+            return compressed
+        except ImportError:
+            # Fallback to basic compression if factory not available
+            original_size = data.nbytes
+            # Use basic LZ-like compression
+            compressed = self._basic_compress(data)
+            self.compression_ratio = float(original_size) / float(len(compressed))
+            return compressed
 
-        # Calculate compression ratio
-        self.compression_ratio = float(original_size) / float(len(compressed))  # type: ignore
+    def _basic_compress(self, data: np.ndarray) -> bytes:
+        """Basic compression implementation as fallback."""
+        import struct
 
-        return compressed
+        # Convert to bytes with metadata
+        header = struct.pack('<II', data.shape[0], data.shape[1] if len(data.shape) > 1 else 1)
+        data_bytes = data.astype(np.float32).tobytes()
+
+        # Simple run-length encoding for zeros
+        compressed = bytearray()
+        compressed.extend(header)
+
+        i = 0
+        while i < len(data_bytes):
+            if data_bytes[i] == 0:
+                # Count consecutive zeros
+                zero_count = 1
+                while i + zero_count < len(data_bytes) and data_bytes[i + zero_count] == 0 and zero_count < 255:
+                    zero_count += 1
+                compressed.extend(struct.pack('<BB', 0, zero_count))
+                i += zero_count
+            else:
+                compressed.extend(struct.pack('<B', data_bytes[i]))
+                i += 1
+
+        return bytes(compressed)
 
     def decompress(self, compressed_data: bytes) -> np.ndarray:
         """
@@ -138,24 +170,54 @@ class NeuralCompressor(BaseCompressor):
         if not compressed_data:
             raise ValueError("Compressed data cannot be empty")
 
-        # Placeholder implementation
-        data = np.frombuffer(compressed_data, dtype=np.float32)
+        # Real implementation using algorithm registry
+        try:
+            from .algorithms.factory import create_compressor
+            compressor = create_compressor(self.algorithm, quality_level=self.quality_level)
+            return compressor.decompress(compressed_data)
+        except ImportError:
+            # Fallback to basic decompression
+            return self._basic_decompress(compressed_data)
 
-        # Check integrity if possible
-        if hasattr(self, '_last_shape') and hasattr(self, '_last_dtype'):
+    def _basic_decompress(self, compressed_data: bytes) -> np.ndarray:
+        """Basic decompression implementation as fallback."""
+        import struct
+
+        # Extract header
+        header_size = struct.calcsize('<II')
+        if len(compressed_data) < header_size:
+            raise ValueError("Compressed data too short")
+
+        shape0, shape1 = struct.unpack('<II', compressed_data[:header_size])
+        data_bytes = compressed_data[header_size:]
+
+        # Decompress run-length encoded data
+        decompressed = bytearray()
+        i = 0
+        while i < len(data_bytes):
+            if data_bytes[i] == 0:
+                # Zero run
+                if i + 1 < len(data_bytes):
+                    zero_count = data_bytes[i + 1]
+                    decompressed.extend([0] * zero_count)
+                    i += 2
+                else:
+                    break
+            else:
+                # Single byte
+                decompressed.append(data_bytes[i])
+                i += 1
+
+        # Convert back to numpy array
+        data = np.frombuffer(bytes(decompressed), dtype=np.float32)
+
+        # Reshape if we have shape information
+        if hasattr(self, '_last_shape'):
             try:
                 data = data.reshape(self._last_shape)
                 data = data.astype(self._last_dtype)
             except Exception as e:
-                raise ValueError(f"Failed to reshape or cast decompressed data: {e}")
-            self._check_integrity(
-                np.zeros(
-                    self._last_shape,
-                    dtype=self._last_dtype),
-                data,
-                check_shape=True,
-                check_dtype=True,
-                check_hash=False)
+                raise ValueError(f"Failed to reshape decompressed data: {e}")
 
         return data
 
