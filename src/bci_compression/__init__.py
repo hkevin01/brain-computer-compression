@@ -9,51 +9,20 @@ __version__ = "1.0.0"
 __author__ = "BCI Compression Team"
 __email__ = "contact@bci-compression.org"
 
-# Core modules (no external dependencies)
-from .core import NeuralCompressor, load_neural_data
+# Import key components to the top level
+from .core import Compressor
+from .data_io import load_neural_data
+from .plugins import get_plugin, register_plugin
+from .utils.configuration import load_config, setup_logging
 
-# Import modules with dependencies conditionally
-try:
-    _has_signal_processing = True
-except ImportError:
-    _has_signal_processing = False
-
-try:
-    _has_neural_decoder = True
-except ImportError:
-    _has_neural_decoder = False
-
-try:
-    _has_data_acquisition = True
-except ImportError:
-    _has_data_acquisition = False
-
-# Base exports
 __all__ = [
-    "NeuralCompressor",
+    "Compressor",
     "load_neural_data",
+    "get_plugin",
+    "register_plugin",
+    "load_config",
+    "setup_logging",
 ]
 
-# Add conditional exports
-if _has_signal_processing:
-    __all__.append("NeuralSignalProcessor")
-
-if _has_neural_decoder:
-    __all__.extend([
-        "NeuralDecoder",
-        "MotorImageryDecoder",
-        "RealTimeDecoder",
-        "DeviceController",
-        "create_motor_imagery_system",
-    ])
-
-if _has_data_acquisition:
-    __all__.extend([
-        "BaseDataAcquisition",
-        "SimulatedDataAcquisition",
-        "FileDataAcquisition",
-        "DataAcquisitionManager",
-        "create_test_acquisition_system",
-    ])
-
-# bci_compression package init
+# Initialize logging when the package is imported
+setup_logging()

@@ -60,4 +60,30 @@ class BenchmarkMetrics:
         import sys
         return sys.getsizeof(obj)
 
-    # Add more metrics as needed (PSNR, GPU utilization, etc.)
+    @staticmethod
+    def power_estimate(processing_time_ms: float, device_power_mw: float = 100.0) -> float:
+        """
+        Estimate energy usage (mJ) for a given processing time and device power.
+        device_power_mw: average power draw in milliwatts (default 100mW)
+        """
+        return (processing_time_ms / 1000.0) * device_power_mw
+        """
+        Estimate energy usage (mJ) for a given processing time and device power.
+        device_power_mw: average power draw in milliwatts (default 100mW)
+        """
+        return (processing_time_ms / 1000.0) * device_power_mw
+        """
+        Estimate energy usage (mJ) for a given processing time and device power.
+        device_power_mw: average power draw in milliwatts (default 100mW)
+        """
+        return (processing_time_ms / 1000.0) * device_power_mw
+        """
+        Estimate energy usage (mJ) for a given processing time and device power.
+        device_power_mw: average power draw in milliwatts (default 100mW)
+        """
+        return (processing_time_ms / 1000.0) * device_power_mw
+        """
+        Estimate energy usage (mJ) for a given processing time and device power.
+        device_power_mw: average power draw in milliwatts (default 100mW)
+        """
+        return (processing_time_ms / 1000.0) * device_power_mw

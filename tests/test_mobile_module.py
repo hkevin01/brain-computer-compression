@@ -1,5 +1,10 @@
+import os
+import sys
+
 import numpy as np
 import pytest
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.bci_compression.mobile.adaptive_quality import AdaptiveQualityController
 from src.bci_compression.mobile.mobile_compressor import MobileBCICompressor
@@ -82,6 +87,22 @@ def test_improved_algorithms():
     compressed_pred = compressor_pred.compress(data)
     decompressed_pred = compressor_pred.decompress(compressed_pred)
     assert decompressed_pred.shape == data.shape
+
+    # Test compression ratios
+    assert len(compressed_lz) < data.nbytes
+    assert len(compressed_pred) < data.nbytes
+
+    # Test compression ratios
+    assert len(compressed_lz) < data.nbytes
+    assert len(compressed_pred) < data.nbytes
+
+    # Test compression ratios
+    assert len(compressed_lz) < data.nbytes
+    assert len(compressed_pred) < data.nbytes
+
+    # Test compression ratios
+    assert len(compressed_lz) < data.nbytes
+    assert len(compressed_pred) < data.nbytes
 
     # Test compression ratios
     assert len(compressed_lz) < data.nbytes

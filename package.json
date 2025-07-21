@@ -1,0 +1,130 @@
+{
+  "name": "brain-computer-compression",
+  "version": "1.0.0",
+  "description": "Toolkit for neural data compression in brain-computer interfaces. Node.js tooling for docs, dashboard, plugin system, FastAPI backend, plugin API endpoint integration, and real-time dashboard live metrics.",
+  "author": "Kevin <contact@bci-compression.org>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx || true",
+    "format": "prettier --write .",
+    "serve-docs": "http-server ./docs -p 8080",
+    "build-dashboard": "cd dashboard && npm run build",
+    "start-backend": "uvicorn src.bci_compression.api:app --reload",
+    "dev-dashboard": "cd dashboard && npm run dev"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "http-server": "^14.1.1",
+    "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
+
+
+  "name": "brain-computer-compression",
+  "version": "1.0.0",
+  "description": "Toolkit for neural data compression in brain-computer interfaces. Node.js tooling for docs, dashboard, plugin system, FastAPI backend, plugin API endpoint integration, and real-time dashboard live metrics.",
+  "author": "Kevin <contact@bci-compression.org>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx || true",
+    "format": "prettier --write .",
+    "serve-docs": "http-server ./docs -p 8080",
+    "build-dashboard": "cd dashboard && npm run build",
+    "start-backend": "uvicorn src.bci_compression.api:app --reload",
+    "dev-dashboard": "cd dashboard && npm run dev"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "http-server": "^14.1.1",
+    "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
+
+
+  "name": "brain-computer-compression",
+  "version": "1.0.0",
+  "description": "Toolkit for neural data compression in brain-computer interfaces. Node.js tooling for docs, dashboard, plugin system, FastAPI backend, plugin API endpoint integration, and real-time dashboard live metrics.",
+  "author": "Kevin <contact@bci-compression.org>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx || true",
+    "format": "prettier --write .",
+    "serve-docs": "http-server ./docs -p 8080",
+    "build-dashboard": "cd dashboard && npm run build",
+    "start-backend": "uvicorn src.bci_compression.api:app --reload",
+    "dev-dashboard": "cd dashboard && npm run dev"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "http-server": "^14.1.1",
+    "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
+
+
+  "name": "brain-computer-compression",
+  "version": "1.0.0",
+  "description": "Toolkit for neural data compression in brain-computer interfaces. Node.js tooling for docs, dashboard, plugin system, FastAPI backend, plugin API endpoint integration, and real-time dashboard live metrics.",
+  "author": "Kevin <contact@bci-compression.org>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx || true",
+    "format": "prettier --write .",
+    "serve-docs": "http-server ./docs -p 8080",
+    "build-dashboard": "cd dashboard && npm run build",
+    "start-backend": "uvicorn src.bci_compression.api:app --reload",
+    "dev-dashboard": "cd dashboard && npm run dev"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "http-server": "^14.1.1",
+    "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
+
+
+  "name": "brain-computer-compression",
+  "version": "1.0.0",
+  "description": "Toolkit for neural data compression in brain-computer interfaces. Node.js tooling for docs, dashboard, plugin system, FastAPI backend, plugin API endpoint integration, and real-time dashboard live metrics.",
+  "author": "Kevin <contact@bci-compression.org>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx || true",
+    "format": "prettier --write .",
+    "serve-docs": "http-server ./docs -p 8080",
+    "build-dashboard": "cd dashboard && npm run build",
+    "start-backend": "uvicorn src.bci_compression.api:app --reload",
+    "dev-dashboard": "cd dashboard && npm run dev"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "http-server": "^14.1.1",
+    "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
+

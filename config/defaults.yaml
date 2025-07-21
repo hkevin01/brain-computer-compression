@@ -1,0 +1,175 @@
+# Brain-Computer Compression Toolkit - Default Configuration
+
+algorithm:
+  default: adaptive_lz
+  quality_level: 0.95
+  real_time: false
+  buffer_size: 512
+  power_mode: balanced
+  max_memory_mb: 50
+
+thresholds:
+  snr_min_db: 20.0
+  psnr_min_db: 30.0
+  compression_ratio_min: 1.0
+  compression_ratio_max: 100.0
+  latency_max_ms: 10.0
+  cpu_usage_max_percent: 90.0
+  memory_usage_max_percent: 90.0
+  error_rate_max: 0.01
+  gpu_usage_max_percent: 95.0
+
+logging:
+  level: INFO
+  file: logs/bci_compression.log
+  format: "%(asctime)s %(levelname)s %(name)s: %(message)s"
+
+hardware:
+  enable_cuda: true
+  enable_neon: true
+  enable_avx: true
+  enable_fpga: false
+  enable_wasm: false
+
+# Add more sections as needed for new modules or features
+
+
+
+algorithm:
+  default: adaptive_lz
+  quality_level: 0.95
+  real_time: false
+  buffer_size: 512
+  power_mode: balanced
+  max_memory_mb: 50
+
+thresholds:
+  snr_min_db: 20.0
+  psnr_min_db: 30.0
+  compression_ratio_min: 1.0
+  compression_ratio_max: 100.0
+  latency_max_ms: 10.0
+  cpu_usage_max_percent: 90.0
+  memory_usage_max_percent: 90.0
+  error_rate_max: 0.01
+  gpu_usage_max_percent: 95.0
+
+logging:
+  level: INFO
+  file: logs/bci_compression.log
+  format: "%(asctime)s %(levelname)s %(name)s: %(message)s"
+
+hardware:
+  enable_cuda: true
+  enable_neon: true
+  enable_avx: true
+  enable_fpga: false
+  enable_wasm: false
+
+# Add more sections as needed for new modules or features
+
+
+
+algorithm:
+  default: adaptive_lz
+  quality_level: 0.95
+  real_time: false
+  buffer_size: 512
+  power_mode: balanced
+  max_memory_mb: 50
+
+thresholds:
+  snr_min_db: 20.0
+  psnr_min_db: 30.0
+  compression_ratio_min: 1.0
+  compression_ratio_max: 100.0
+  latency_max_ms: 10.0
+  cpu_usage_max_percent: 90.0
+  memory_usage_max_percent: 90.0
+  error_rate_max: 0.01
+  gpu_usage_max_percent: 95.0
+
+logging:
+  level: INFO
+  file: logs/bci_compression.log
+  format: "%(asctime)s %(levelname)s %(name)s: %(message)s"
+
+hardware:
+  enable_cuda: true
+  enable_neon: true
+  enable_avx: true
+  enable_fpga: false
+  enable_wasm: false
+
+# Add more sections as needed for new modules or features
+
+
+
+algorithm:
+  default: adaptive_lz
+  quality_level: 0.95
+  real_time: false
+  buffer_size: 512
+  power_mode: balanced
+  max_memory_mb: 50
+
+thresholds:
+  snr_min_db: 20.0
+  psnr_min_db: 30.0
+  compression_ratio_min: 1.0
+  compression_ratio_max: 100.0
+  latency_max_ms: 10.0
+  cpu_usage_max_percent: 90.0
+  memory_usage_max_percent: 90.0
+  error_rate_max: 0.01
+  gpu_usage_max_percent: 95.0
+
+logging:
+  level: INFO
+  file: logs/bci_compression.log
+  format: "%(asctime)s %(levelname)s %(name)s: %(message)s"
+
+hardware:
+  enable_cuda: true
+  enable_neon: true
+  enable_avx: true
+  enable_fpga: false
+  enable_wasm: false
+
+# Add more sections as needed for new modules or features
+
+
+
+algorithm:
+  default: adaptive_lz
+  quality_level: 0.95
+  real_time: false
+  buffer_size: 512
+  power_mode: balanced
+  max_memory_mb: 50
+
+thresholds:
+  snr_min_db: 20.0
+  psnr_min_db: 30.0
+  compression_ratio_min: 1.0
+  compression_ratio_max: 100.0
+  latency_max_ms: 10.0
+  cpu_usage_max_percent: 90.0
+  memory_usage_max_percent: 90.0
+  error_rate_max: 0.01
+  gpu_usage_max_percent: 95.0
+
+logging:
+  level: INFO
+  file: logs/bci_compression.log
+  format: "%(asctime)s %(levelname)s %(name)s: %(message)s"
+
+hardware:
+  enable_cuda: true
+  enable_neon: true
+  enable_avx: true
+  enable_fpga: false
+  enable_wasm: false
+
+# Add more sections as needed for new modules or features
+

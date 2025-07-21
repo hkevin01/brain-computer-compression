@@ -6,12 +6,15 @@ import logging
 from typing import Optional
 
 import numpy as np
+
 try:
     import pywt
 except ImportError:
     pywt = None
 
 from ..core import BaseCompressor
+
+logger = logging.getLogger(__name__)
 
 
 class QuantizationCompressor(BaseCompressor):
@@ -27,7 +30,7 @@ class QuantizationCompressor(BaseCompressor):
         self.offset: Optional[float] = None
 
     def compress(self, data: np.ndarray) -> bytes:
-        logging.info(f"[Quantization] Compressing data with shape {data.shape} and dtype {data.dtype}")
+        logger.info(f"[Quantization] Compressing data with shape {data.shape} and dtype {data.dtype}")
         self._last_shape = data.shape
         self._last_dtype = data.dtype
         if self.adaptive:
@@ -48,7 +51,7 @@ class QuantizationCompressor(BaseCompressor):
             else:
                 self.compression_ratio = float(original_size) / float(compressed_size)
         except Exception as e:
-            logging.exception(f"[Quantization] Error calculating compression ratio: {e}")
+            logger.exception(f"[Quantization] Error calculating compression ratio: {e}")
             self.compression_ratio = 1.0
 
         # Pack metadata and quantized data
@@ -56,7 +59,7 @@ class QuantizationCompressor(BaseCompressor):
         return metadata.tobytes() + quantized.tobytes()
 
     def decompress(self, compressed_data: bytes) -> np.ndarray:
-        logging.info("[Quantization] Decompressing data")
+        logger.info("[Quantization] Decompressing data")
         metadata_size = 16  # 2 float64 values
         metadata = np.frombuffer(
             compressed_data[:metadata_size], dtype=np.float64
@@ -77,7 +80,7 @@ class QuantizationCompressor(BaseCompressor):
                 data = data.reshape(self._last_shape)
                 data = data.astype(self._last_dtype)
         except Exception:
-            logging.exception("[Quantization] Integrity check failed during decompression")
+            logger.exception("[Quantization] Integrity check failed during decompression")
             raise
         return data
 
@@ -94,7 +97,7 @@ class WaveletCompressor(BaseCompressor):
         self.threshold = threshold
 
     def compress(self, data: np.ndarray) -> bytes:
-        logging.info(f"[Wavelet] Compressing data with shape {data.shape} and dtype {data.dtype}")
+        logger.info(f"[Wavelet] Compressing data with shape {data.shape} and dtype {data.dtype}")
         self._last_shape = data.shape
         self._last_dtype = data.dtype
         """Compress using wavelet transform and thresholding."""
@@ -119,7 +122,7 @@ class WaveletCompressor(BaseCompressor):
         return compressed
 
     def decompress(self, compressed_data: bytes) -> np.ndarray:
-        logging.info("[Wavelet] Decompressing data")
+        logger.info("[Wavelet] Decompressing data")
         if pywt is None:
             raise ImportError("pywt (PyWavelets) is required for wavelet decompression.")
         coeffs_flat = np.frombuffer(compressed_data, dtype=np.float32)
@@ -129,6 +132,14 @@ class WaveletCompressor(BaseCompressor):
                 data = data.reshape(self._last_shape)
                 data = data.astype(self._last_dtype)
         except Exception:
-            logging.exception("[Wavelet] Integrity check failed during decompression")
+            logger.exception("[Wavelet] Integrity check failed during decompression")
+            raise
+        return data
+            raise
+        return data
+            raise
+        return data
+            raise
+        return data
             raise
         return data

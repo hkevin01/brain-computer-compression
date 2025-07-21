@@ -1,0 +1,385 @@
+{
+  "language": ["python", "javascript", "typescript"],
+  "linting": {
+    "enabled": true,
+    "tool": "flake8",
+    "maxLineLength": 100
+  },
+  "documentation": {
+    "requireDocstrings": true,
+    "docstringStyle": "google"
+  },
+  "suggestions": {
+    "preferTypeHints": true,
+    "preferFStrings": true,
+    "preferListComprehensions": true,
+    "preferLogging": true,
+    "preferModularDesign": true,
+    "preferPluginArchitecture": true,
+    "preferCentralizedConfig": true,
+    "preferBackendAPI": true,
+    "preferRESTfulEndpoints": true,
+    "preferOpenAPIDocs": true,
+    "preferFastAPI": true,
+    "preferFlask": true,
+    "preferDashboardIntegration": true,
+    "preferFastAPITesting": true,
+    "preferOpenAPISchemaValidation": true,
+    "preferDashboardAPIIntegration": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "completion": {
+    "enable": true,
+    "prioritizeModularCode": true,
+    "preferReusableFunctions": true,
+    "preferPluginEntryPoints": true
+  },
+  "testing": {
+    "suggestTests": true,
+    "preferParameterizedTests": true,
+    "preferFixtureBasedTests": true,
+    "targetCoverage": 90,
+    "preferFastAPITesting": true,
+    "preferOpenAPISchemaValidation": true,
+    "preferDashboardAPIIntegration": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "reporting": {
+    "testRunner": "pytest",
+    "coverageTool": "coverage.py",
+    "logTestResults": true,
+    "logFile": "logs/test_output.log",
+    "suggestBestPractices": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "ignore": [
+    "venv/",
+    "dashboard/node_modules/",
+    "logs/",
+    "__pycache__/"
+  ]
+}
+
+
+  "language": ["python", "javascript", "typescript"],
+  "linting": {
+    "enabled": true,
+    "tool": "flake8",
+    "maxLineLength": 100
+  },
+  "documentation": {
+    "requireDocstrings": true,
+    "docstringStyle": "google"
+  },
+  "suggestions": {
+    "preferTypeHints": true,
+    "preferFStrings": true,
+    "preferListComprehensions": true,
+    "preferLogging": true,
+    "preferModularDesign": true,
+    "preferPluginArchitecture": true,
+    "preferCentralizedConfig": true,
+    "preferBackendAPI": true,
+    "preferRESTfulEndpoints": true,
+    "preferOpenAPIDocs": true,
+    "preferFastAPI": true,
+    "preferFlask": true,
+    "preferDashboardIntegration": true,
+    "preferFastAPITesting": true,
+    "preferOpenAPISchemaValidation": true,
+    "preferDashboardAPIIntegration": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "completion": {
+    "enable": true,
+    "prioritizeModularCode": true,
+    "preferReusableFunctions": true,
+    "preferPluginEntryPoints": true
+  },
+  "testing": {
+    "suggestTests": true,
+    "preferParameterizedTests": true,
+    "preferFixtureBasedTests": true,
+    "targetCoverage": 90,
+    "preferFastAPITesting": true,
+    "preferOpenAPISchemaValidation": true,
+    "preferDashboardAPIIntegration": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "reporting": {
+    "testRunner": "pytest",
+    "coverageTool": "coverage.py",
+    "logTestResults": true,
+    "logFile": "logs/test_output.log",
+    "suggestBestPractices": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "ignore": [
+    "venv/",
+    "dashboard/node_modules/",
+    "logs/",
+    "__pycache__/"
+  ]
+}
+
+
+  "language": ["python", "javascript", "typescript"],
+  "linting": {
+    "enabled": true,
+    "tool": "flake8",
+    "maxLineLength": 100
+  },
+  "documentation": {
+    "requireDocstrings": true,
+    "docstringStyle": "google"
+  },
+  "suggestions": {
+    "preferTypeHints": true,
+    "preferFStrings": true,
+    "preferListComprehensions": true,
+    "preferLogging": true,
+    "preferModularDesign": true,
+    "preferPluginArchitecture": true,
+    "preferCentralizedConfig": true,
+    "preferBackendAPI": true,
+    "preferRESTfulEndpoints": true,
+    "preferOpenAPIDocs": true,
+    "preferFastAPI": true,
+    "preferFlask": true,
+    "preferDashboardIntegration": true,
+    "preferFastAPITesting": true,
+    "preferOpenAPISchemaValidation": true,
+    "preferDashboardAPIIntegration": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "completion": {
+    "enable": true,
+    "prioritizeModularCode": true,
+    "preferReusableFunctions": true,
+    "preferPluginEntryPoints": true
+  },
+  "testing": {
+    "suggestTests": true,
+    "preferParameterizedTests": true,
+    "preferFixtureBasedTests": true,
+    "targetCoverage": 90,
+    "preferFastAPITesting": true,
+    "preferOpenAPISchemaValidation": true,
+    "preferDashboardAPIIntegration": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "reporting": {
+    "testRunner": "pytest",
+    "coverageTool": "coverage.py",
+    "logTestResults": true,
+    "logFile": "logs/test_output.log",
+    "suggestBestPractices": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "ignore": [
+    "venv/",
+    "dashboard/node_modules/",
+    "logs/",
+    "__pycache__/"
+  ]
+}
+
+
+  "language": ["python", "javascript", "typescript"],
+  "linting": {
+    "enabled": true,
+    "tool": "flake8",
+    "maxLineLength": 100
+  },
+  "documentation": {
+    "requireDocstrings": true,
+    "docstringStyle": "google"
+  },
+  "suggestions": {
+    "preferTypeHints": true,
+    "preferFStrings": true,
+    "preferListComprehensions": true,
+    "preferLogging": true,
+    "preferModularDesign": true,
+    "preferPluginArchitecture": true,
+    "preferCentralizedConfig": true,
+    "preferBackendAPI": true,
+    "preferRESTfulEndpoints": true,
+    "preferOpenAPIDocs": true,
+    "preferFastAPI": true,
+    "preferFlask": true,
+    "preferDashboardIntegration": true,
+    "preferFastAPITesting": true,
+    "preferOpenAPISchemaValidation": true,
+    "preferDashboardAPIIntegration": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "completion": {
+    "enable": true,
+    "prioritizeModularCode": true,
+    "preferReusableFunctions": true,
+    "preferPluginEntryPoints": true
+  },
+  "testing": {
+    "suggestTests": true,
+    "preferParameterizedTests": true,
+    "preferFixtureBasedTests": true,
+    "targetCoverage": 90,
+    "preferFastAPITesting": true,
+    "preferOpenAPISchemaValidation": true,
+    "preferDashboardAPIIntegration": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "reporting": {
+    "testRunner": "pytest",
+    "coverageTool": "coverage.py",
+    "logTestResults": true,
+    "logFile": "logs/test_output.log",
+    "suggestBestPractices": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "ignore": [
+    "venv/",
+    "dashboard/node_modules/",
+    "logs/",
+    "__pycache__/"
+  ]
+}
+
+
+  "language": ["python", "javascript", "typescript"],
+  "linting": {
+    "enabled": true,
+    "tool": "flake8",
+    "maxLineLength": 100
+  },
+  "documentation": {
+    "requireDocstrings": true,
+    "docstringStyle": "google"
+  },
+  "suggestions": {
+    "preferTypeHints": true,
+    "preferFStrings": true,
+    "preferListComprehensions": true,
+    "preferLogging": true,
+    "preferModularDesign": true,
+    "preferPluginArchitecture": true,
+    "preferCentralizedConfig": true,
+    "preferBackendAPI": true,
+    "preferRESTfulEndpoints": true,
+    "preferOpenAPIDocs": true,
+    "preferFastAPI": true,
+    "preferFlask": true,
+    "preferDashboardIntegration": true,
+    "preferFastAPITesting": true,
+    "preferOpenAPISchemaValidation": true,
+    "preferDashboardAPIIntegration": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "completion": {
+    "enable": true,
+    "prioritizeModularCode": true,
+    "preferReusableFunctions": true,
+    "preferPluginEntryPoints": true
+  },
+  "testing": {
+    "suggestTests": true,
+    "preferParameterizedTests": true,
+    "preferFixtureBasedTests": true,
+    "targetCoverage": 90,
+    "preferFastAPITesting": true,
+    "preferOpenAPISchemaValidation": true,
+    "preferDashboardAPIIntegration": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "reporting": {
+    "testRunner": "pytest",
+    "coverageTool": "coverage.py",
+    "logTestResults": true,
+    "logFile": "logs/test_output.log",
+    "suggestBestPractices": true,
+    "preferCICDIntegration": true,
+    "preferArtifactRetention": true,
+    "preferTestOutputLogging": true,
+    "preferMetricsEndpoint": true,
+    "preferLiveMetricsDashboard": true,
+    "preferRealTimeDataIntegration": true
+  },
+  "ignore": [
+    "venv/",
+    "dashboard/node_modules/",
+    "logs/",
+    "__pycache__/"
+  ]
+}
+
