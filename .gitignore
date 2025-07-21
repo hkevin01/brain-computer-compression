@@ -205,3 +205,28 @@ benchmarks/results/*.csv
 config/local.yaml
 config/secrets.yaml
 .env.local
+
+# Logs and test outputs
+logs/
+*.log
+
+# VS Code settings
+.vscode/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Dashboard build artifacts
+/dashboard/build/
+
+# Node modules
+node_modules/
+
+# Coverage and profiling
+.coverage
+coverage.xml
+.profiler/
+
+# Additional Python cache
+*.pyo
+*.pyd
