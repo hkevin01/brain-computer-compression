@@ -19,6 +19,8 @@
 [![Test Suite](https://img.shields.io/github/workflow/status/hkevin01/brain-computer-compression/Python%20Tests?label=tests)](https://github.com/hkevin01/brain-computer-compression/actions?query=workflow%3A"Python+Tests")
 [![Lint](https://img.shields.io/github/workflow/status/hkevin01/brain-computer-compression/Lint?label=lint)](https://github.com/hkevin01/brain-computer-compression/actions?query=workflow%3ALint)
 [![Last Test Output](https://img.shields.io/badge/test%20output-logs%2Ffull_test_output_2025--07--21.log-blue)](logs/full_test_output_2025-07-21.log)
+[![Dynamic Plugins](https://img.shields.io/badge/plugin%20system-dynamic%20loading%20%26%20unloading-blueviolet)](docs/project_plan.md)
+[![Test Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](logs/full_test_output_2025-07-21.log)
 
 > **A state-of-the-art toolkit for neural data compression in brain-computer interfaces**
 

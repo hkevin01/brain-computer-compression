@@ -652,79 +652,47 @@ This document outlines the comprehensive test plan for the Brain-Computer Compre
 - **Resource Constraints**: Memory and CPU limitation handling
 - **Network Failures**: Real-time streaming error recovery
 
-## Test Coverage Analysis
+# Plugin System Unit Test Plan
 
-### Current Coverage (2025-07-19)
-- **Core Algorithms**: 98% coverage (Phase 7 improvements)
-- **Mobile Module**: 95% coverage (6/6 tests passing)
-- **Data Processing**: 92% coverage (Phase 7 enhancements)
-- **Benchmarking**: 94% coverage (comprehensive testing)
-- **Integration**: 90% coverage (factory pattern integration)
-- **Enhanced Algorithms**: 93% coverage (improved LZ, quantization, prediction)
-- **Adaptive Quality**: 95% coverage (real-time quality control)
-- **Power Optimization**: 96% coverage (mobile power management)
-- **Algorithm Factory**: 97% coverage (new factory pattern implementation)
-- **Performance Optimization**: 94% coverage (caching, lazy loading, memory pooling)
-- **Comprehensive Analysis**: 100% coverage (GitHub research and recommendations)
-- **Phase 8 Planning**: 100% coverage (roadmap and implementation strategy)
-- **Implementation Strategy**: 100% coverage (week-by-week development plan)
-- **Risk Assessment**: 100% coverage (technical and project risk analysis)
-- **Success Metrics**: 100% coverage (performance targets and quality metrics)
+## Objectives
+- Validate dynamic loading/unloading of compression plugins
+- Ensure plugin interface compliance
+- Test error handling for incompatible plugins
+- Confirm correct registration and usage of third-party plugins
 
-### Coverage Targets
-- **Minimum Coverage**: 85% for all modules (increased from 80%)
-- **Target Coverage**: 95% for critical paths (increased from 90%)
-- **Mobile Module**: 98% coverage (critical for embedded devices)
-- **Core Algorithms**: 98% coverage (essential functionality)
-- **Algorithm Factory**: 98% coverage (new critical component)
+## Checklist
+- [x] Test dynamic plugin loading
+- [x] Test dynamic plugin unloading
+- [ ] Test plugin interface compliance (compress, decompress, get_name, get_config)
+- [ ] Test error handling for missing/invalid methods
+- [ ] Test registration and usage of third-party plugins
+- [ ] Test thread safety and real-time compatibility
+- [ ] Log all test results in logs folder
 
-### Areas Needing Improvement
-- **src/bci_compression/algorithms/context_aware.py**: 45% coverage (complex features - Phase 8 priority)
-- **src/bci_compression/algorithms/lossy_neural.py**: 52% coverage (advanced algorithms - Phase 8 priority)
-- **src/bci_compression/algorithms/predictive.py**: 48% coverage (predictive algorithms - Phase 8 priority)
-- **Transformer-based Compression**: 0% coverage (new Phase 8 feature)
-- **Attention Mechanisms**: 0% coverage (new Phase 8 feature)
-- **Variational Autoencoders**: 0% coverage (new Phase 8 feature)
+## Code Formatting & Linting Test Plan
+- [ ] Test black and flake8 formatting on all source files
+- [ ] Validate pre-commit hook operation
+- [ ] Log formatting/linting results
 
-## Test Execution
+## CI/CD Test Plan
+- [ ] Test GitHub Actions workflow for tests and benchmarks
+- [ ] Validate CI job results and notifications
+- [ ] Log CI/CD results
 
-### Automated Testing
-```bash
-# Run all tests
-python -m pytest tests/ -v
+## Benchmarking & Artifact Detection Test Plan
+- [ ] Test benchmarking with real neural datasets
+- [ ] Validate artifact detection accuracy
+- [ ] Log benchmarking and artifact detection results
 
-# Run specific test categories
-python -m pytest tests/test_mobile_module.py -v
-python -m pytest tests/test_benchmarking.py -v
-python -m pytest tests/test_integrity_checks.py -v
+## Visualization & Monitoring Test Plan
+- [ ] Test web dashboard metrics and alerts
+- [ ] Validate health monitoring features
+- [ ] Log visualization test results
 
-# Run with coverage
-coverage run -m pytest tests/
-coverage report
-coverage html  # Generate HTML report
-```
-
-### Performance Benchmarking
-```bash
-# Run performance benchmarks
-python scripts/benchmark_runner.py --synthetic --channels 64 --samples 30000
-
-# Run mobile-specific benchmarks
-python -c "
-from bci_compression.mobile import MobileBCICompressor
-import numpy as np
-data = np.random.randn(32, 10000)
-compressor = MobileBCICompressor()
-compressed = compressor.compress(data)
-print(f'Mobile compression ratio: {compressor.get_compression_ratio():.2f}x')
-"
-```
-
-### Continuous Integration
-- **GitHub Actions**: Automated test runs on push/PR
-- **Test Matrix**: Multiple Python versions and platforms
-- **Coverage Reporting**: Automated coverage analysis
-- **Performance Monitoring**: Regression detection
+## Security & Privacy Test Plan
+- [ ] Test AES-256 encryption implementation
+- [ ] Validate audit logging and access control
+- [ ] Log security/privacy test results
 
 ## Test Data Management
 
@@ -846,3 +814,36 @@ _Last updated: 2025-07-19_
 - All required directories and key files created/verified.
 - Notebooks and documentation files available for analysis, signal processing, benchmarking, and API reference.
 - Project structure supports comprehensive testing and future improvements.
+
+---
+
+## Phase 18: Edge AI and Federated Learning - IN PROGRESS
+- [x] Adaptive compression based on network conditions
+  - [x] Dynamic compression offloading
+  - [x] Edge-cloud compression optimization
+  - [x] Real-time compression adaptation
+
+#### Next Steps (2025-07-21)
+- Implement adaptive compression pipeline for network-aware scenarios
+- Add unit and integration tests for edge-cloud adaptation
+- Log all implementation and test changes in logs folder
+- Benchmark adaptive pipeline and log results
+- Update test_plan.md with new tests and coverage
+
+## Dashboard Backend & Security Tests (2025-07-21)
+- [x] Test /metrics/live endpoint returns valid metrics
+- [x] Test /alerts endpoint returns valid alerts
+- [x] Test /health endpoint returns valid health metrics
+- [x] Test /logs endpoint enforces authentication and access control
+- [x] Test audit logging for access and error events
+- [x] Test UserManager authentication and role assignment
+- [x] Test PermissionChecker permission validation
+- [ ] Test integration with real compression pipeline metrics
+- [ ] Test frontend API integration
+
+## Backend & Frontend Tests (2025-07-21)
+- [x] Test AlertManager add/get/clear alerts
+- [x] Test HealthMonitor get_health_metrics
+- [x] Test /alerts and /health endpoints return correct data
+- [x] Test frontend API integration for all panels
+- [ ] Test expanded alert logic and real system health integration

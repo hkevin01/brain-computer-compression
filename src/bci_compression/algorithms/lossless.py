@@ -15,14 +15,14 @@ from bci_compression.core_ext import (
     lz77_compress_core,
     lz77_decompress_core,
 )
+from bci_compression.plugins import CompressorPlugin
 
 from ..plugins import register_plugin
 
 logger = logging.getLogger(__name__)
 
 
-@register_plugin("adaptive_lz")
-class AdaptiveLZ(AdaptiveLZCompressor):
+class BaseCompressor:
     pass
 
 
@@ -48,18 +48,3 @@ class NeuralArithmeticCoder(BaseCompressor, CompressorPlugin):
 
     def decompress(self, compressed: bytes) -> np.ndarray:
         return np.frombuffer(compressed, dtype=np.float32)
-
-
-@register_plugin("dictionary")
-class DictionaryCompressor(BaseCompressor, CompressorPlugin):
-    pass
-
-
-@register_plugin("huffman")
-class Huffman(HuffmanCompressor):
-    pass
-
-
-@register_plugin("lz77")
-class LZ77(LZ77Compressor):
-    pass

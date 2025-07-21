@@ -1,0 +1,22 @@
+# Dashboard Access Control Configuration
+# Defines roles and permissions for API endpoints
+
+roles:
+  - name: admin
+    permissions:
+      - view_metrics
+      - view_alerts
+      - view_health
+      - view_logs
+      - manage_users
+      - view_audit
+  - name: user
+    permissions:
+      - view_metrics
+      - view_alerts
+      - view_health
+      - view_logs
+  - name: guest
+    permissions:
+      - view_metrics
+      - view_alerts

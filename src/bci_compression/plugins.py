@@ -45,6 +45,22 @@ def get_plugin(name: str) -> Type[CompressorPlugin]:
     return PLUGIN_REGISTRY[name]
 
 
+# Dynamic plugin management
+
+def load_plugin(name: str, cls: Type[CompressorPlugin]) -> None:
+    """Dynamically load a compressor plugin at runtime."""
+    if name in PLUGIN_REGISTRY:
+        raise ValueError(f"Plugin '{name}' already registered.")
+    PLUGIN_REGISTRY[name] = cls
+
+
+def unload_plugin(name: str) -> None:
+    """Dynamically unload a compressor plugin at runtime."""
+    if name not in PLUGIN_REGISTRY:
+        raise KeyError(f"Plugin '{name}' not found.")
+    del PLUGIN_REGISTRY[name]
+
+
 # Example: Register a dummy plugin (replace with real algorithm)
 @register_plugin("dummy_lz")
 class DummyLZCompressor(CompressorPlugin):
@@ -57,3 +73,7 @@ class DummyLZCompressor(CompressorPlugin):
         return data
 
 # TODO: Refactor real algorithms to register via this system
+
+# Example usage for dynamic plugin management:
+# load_plugin("custom_lz", CustomLZCompressor)
+# unload_plugin("custom_lz")
