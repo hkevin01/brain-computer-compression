@@ -21,6 +21,8 @@ from src.visualization.web_dashboard.compression_metrics_aggregator import Compr
 from src.visualization.web_dashboard.alert_manager import AlertManager
 from src.visualization.web_dashboard.health_monitor import HealthMonitor
 from src.visualization.web_dashboard.auth_manager import AuthManager
+from src.visualization.web_dashboard.performance_monitor import PerformanceMonitor
+import time
 
 app = FastAPI(title="BCI Compression Dashboard API")
 
@@ -31,6 +33,14 @@ metrics_aggregator = CompressionMetricsAggregator()
 alert_manager = AlertManager()
 health_monitor = HealthMonitor()
 auth_manager = AuthManager()
+performance_monitor = PerformanceMonitor()
+
+@app.get("/performance", response_model=Dict[str, float])
+def get_performance_metrics() -> Dict[str, float]:
+    """
+    Returns real-time backend performance metrics (latency, throughput).
+    """
+    return performance_monitor.get_performance_metrics()
 
 @app.get("/metrics/live", response_model=Dict[str, float])
 def get_live_metrics() -> Dict[str, float]:
@@ -38,7 +48,9 @@ def get_live_metrics() -> Dict[str, float]:
     Returns current live metrics for compression pipeline.
     Uses MetricsStreamer and CompressionMetricsAggregator.
     Triggers automated alerts if metrics exceed thresholds.
+    Logs request performance.
     """
+    start = time.time()
     try:
         metrics = metrics_streamer.get_metrics()
         metrics_aggregator.add_metrics(metrics)
@@ -48,6 +60,9 @@ def get_live_metrics() -> Dict[str, float]:
     except Exception as e:
         log_error("Failed to get live metrics", str(e))
         raise HTTPException(status_code=500, detail="Error retrieving live metrics")
+    finally:
+        end = time.time()
+        performance_monitor.log_request(start, end)
 
 @app.get("/metrics/average", response_model=Dict[str, float])
 def get_average_metrics() -> Dict[str, float]:

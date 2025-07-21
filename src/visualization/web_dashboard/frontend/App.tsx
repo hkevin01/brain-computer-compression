@@ -4,6 +4,7 @@ import MetricsPanel from './MetricsPanel';
 import AlertsPanel from './AlertsPanel';
 import HealthPanel from './HealthPanel';
 import LogsPanel from './LogsPanel';
+import PerformancePanel from './PerformancePanel';
 
 // Main application file integrating dashboard components
 const App: React.FC = () => {
@@ -15,6 +16,7 @@ const App: React.FC = () => {
       <AlertsPanel />
       <HealthPanel />
       <LogsPanel />
+      <PerformancePanel />
     </div>
   );
 };

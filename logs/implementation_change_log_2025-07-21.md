@@ -174,3 +174,5 @@
 - Expand alert logic and connect health monitoring to real system stats
 - Add authentication and style dashboard
 
+# 2025-07-21: Expanded PipelineConnector to support multi-channel neural data, configurable sample size, temporal correlation simulation, error handling, and detailed docstrings. Updated alert_manager.py and other backend modules for full implementations.
+

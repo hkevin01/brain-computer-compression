@@ -1,3 +1,4 @@
+
 """
 AlertManager for managing and generating system alerts.
 Provides methods to add, retrieve, and clear alerts.
@@ -13,7 +14,7 @@ from src.visualization.web_dashboard.alert_config import AlertConfig
 class AlertManager:
     """
     Manages system alerts for dashboard visualization.
-    Now supports automated alert generation based on metric thresholds and severity levels.
+    Now supports automated alert generation and severity levels.
     """
     def __init__(self):
         self.alerts: List[Dict[str, str]] = []
@@ -29,6 +30,16 @@ class AlertManager:
             "timestamp": time.strftime('%Y-%m-%dT%H:%M:%S')
         })
 
+    def check_metrics_and_generate_alerts(self, metrics: Dict[str, float]) -> None:
+        """
+        Checks metrics against thresholds and generates alerts if exceeded.
+        """
+        for key, value in metrics.items():
+            threshold = AlertConfig.thresholds.get(key)
+            severity = AlertConfig.severity.get(key, "info")
+            if threshold is not None and value > threshold:
+                self.add_alert(key, f"{key} exceeded threshold: {value} > {threshold}", severity)
+
     def get_alerts(self) -> List[Dict[str, str]]:
         """
         Returns all current alerts.
@@ -40,13 +51,3 @@ class AlertManager:
         Clears all alerts.
         """
         self.alerts.clear()
-
-    def check_metrics_and_generate_alerts(self, metrics: Dict[str, float]) -> None:
-        """
-        Checks metrics against thresholds and generates alerts if exceeded.
-        """
-        for key, value in metrics.items():
-            threshold = AlertConfig.thresholds.get(key)
-            severity = AlertConfig.severity.get(key, "info")
-            if threshold is not None and value > threshold:
-                self.add_alert(key, f"{key} exceeded threshold: {value} > {threshold}", severity)
