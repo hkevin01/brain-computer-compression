@@ -1,30 +1,31 @@
 """
-HealthMonitor for real-time system health metrics.
-Provides methods to retrieve memory usage, GPU utilization, and error rates.
+Dashboard health monitor for real system stats.
+Provides memory, CPU, and GPU usage for dashboard display.
 
 References:
-- System health monitoring requirements (see project_plan.md)
-- PEP 8, type hints, and docstring standards
+- Real system health monitoring
 """
 from typing import Dict
 import psutil
-from src.visualization.web_dashboard.system_stats import SystemStats
+try:
+    import GPUtil
+    GPU_AVAILABLE = True
+except ImportError:
+    GPU_AVAILABLE = False
 
-class HealthMonitor:
+def get_health_metrics() -> Dict[str, float]:
     """
-    Provides real-time system health metrics for dashboard.
-    Now uses SystemStats and psutil for real system statistics.
+    Returns real system health metrics.
     """
-    def get_health_metrics(self) -> Dict[str, float]:
-        """
-        Returns real system health metrics.
-        """
-        mem = psutil.virtual_memory()
-        memory_usage_mb = mem.used / (1024 * 1024)
-        gpu_utilization_pct = SystemStats.get_gpu_utilization_pct()
-        error_rate_pct = SystemStats.get_error_rate_pct()  # Replace with real error rate logic
-        return {
-            "memory_usage_mb": round(memory_usage_mb, 2),
-            "gpu_utilization_pct": round(gpu_utilization_pct, 2),
-            "error_rate_pct": round(error_rate_pct, 2)
-        }
+    mem = psutil.virtual_memory()
+    cpu = psutil.cpu_percent(interval=0.1)
+    gpu = None
+    if GPU_AVAILABLE:
+        gpus = GPUtil.getGPUs()
+        if gpus:
+            gpu = gpus[0].memoryUtil * 100
+    return {
+        "memory_percent": mem.percent,
+        "cpu_percent": cpu,
+        "gpu_percent": gpu if gpu is not None else "N/A"
+    }

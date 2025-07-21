@@ -1,0 +1,9 @@
+{
+  "refresh_interval_ms": 1000,
+  "alert_thresholds": {
+    "latency_ms": 1.5,
+    "compression_ratio": 2.0,
+    "snr_db": 10.0
+  },
+  "display_panels": ["metrics", "alerts", "health"]
+}

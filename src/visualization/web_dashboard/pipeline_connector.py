@@ -1,17 +1,18 @@
 """
 PipelineConnector for interfacing with the real compression pipeline.
-Provides methods to fetch live metrics from neural data processing modules and simulate compression and artifacts.
+Provides methods to fetch live metrics from neural data processing modules and simulate compression, artifacts, and multi-modal fusion.
 
 References:
 - Compression pipeline integration (see project_plan.md)
 - PEP 8, type hints, and docstring standards
-- Neural data characteristics: multi-channel, temporal correlation, artifacts
+- Neural data characteristics: multi-channel, temporal correlation, artifacts, multi-modal fusion
 
 Usage Example:
     connector = PipelineConnector()
     metrics = connector.get_live_metrics(num_channels=64, sample_size=1000)
     ratio = connector.simulate_compression(100000, 25000)
     noisy_signal = connector.inject_artifacts(signal, artifact_type="spike", severity=0.5)
+    fused = connector.simulate_multimodal_fusion(eeg, fmri)
 
 Formulas:
     SNR = 10 * log10(signal_power / noise_power)
@@ -20,10 +21,11 @@ Formulas:
 from typing import Dict, Any, Optional
 import numpy as np
 
+
 class PipelineConnector:
     """
     Connects to the compression pipeline and retrieves live metrics.
-    Supports multi-channel neural data, temporal correlation simulation, and artifact injection.
+    Supports multi-channel neural data, temporal correlation simulation, artifact injection, and multi-modal fusion.
     """
     def get_live_metrics(self, num_channels: int = 64, sample_size: int = 1000) -> Dict[str, Any]:
         """
@@ -98,3 +100,21 @@ class PipelineConnector:
             drift = np.linspace(0, severity, signal.shape[1])
             signal += drift
         return signal
+
+    def simulate_multimodal_fusion(self, eeg: np.ndarray, fmri: np.ndarray) -> np.ndarray:
+        """
+        Simulates multi-modal fusion of EEG and fMRI data.
+        Args:
+            eeg: EEG signal array (channels x samples)
+            fmri: fMRI signal array (channels x samples)
+        Returns:
+            Fused signal array (channels x samples)
+        """
+        # Simple fusion: weighted sum (for demonstration)
+        eeg_weight = 0.7
+        fmri_weight = 0.3
+        min_shape = (min(eeg.shape[0], fmri.shape[0]), min(eeg.shape[1], fmri.shape[1]))
+        eeg = eeg[:min_shape[0], :min_shape[1]]
+        fmri = fmri[:min_shape[0], :min_shape[1]]
+        fused = eeg_weight * eeg + fmri_weight * fmri
+        return fused
