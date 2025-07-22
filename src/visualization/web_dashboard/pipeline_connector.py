@@ -1,69 +1,44 @@
-"""
-PipelineConnector for interfacing with the real compression pipeline.
-Provides methods to fetch live metrics from neural data processing modules and simulate compression, artifacts, and multi-modal fusion.
-
-References:
-- Compression pipeline integration (see project_plan.md)
-- PEP 8, type hints, and docstring standards
-- Neural data characteristics: multi-channel, temporal correlation, artifacts, multi-modal fusion
-
-Usage Example:
-    connector = PipelineConnector()
-    metrics = connector.get_live_metrics(num_channels=64, sample_size=1000)
-    ratio = connector.simulate_compression(100000, 25000)
-    noisy_signal = connector.inject_artifacts(signal, artifact_type="spike", severity=0.5)
-    fused = connector.simulate_multimodal_fusion(eeg, fmri)
-
-Formulas:
-    SNR = 10 * log10(signal_power / noise_power)
-    Compression Ratio = original_size / compressed_size
-"""
 from typing import Dict, Any, Optional
 import numpy as np
-
+from src.utils.metrics_helper import snr as calculate_snr, compression_ratio
+from src.config.pipeline_config_manager import PipelineConfigManager
+from src.utils.artifact_detector import ArtifactDetector
+import logging
 
 class PipelineConnector:
-    """
-    Connects to the compression pipeline and retrieves live metrics.
-    Supports multi-channel neural data, temporal correlation simulation, artifact injection, and multi-modal fusion.
-    """
-    def get_live_metrics(self, num_channels: int = 64, sample_size: int = 1000) -> Dict[str, Any]:
+    def __init__(self):
+        self.config_manager = PipelineConfigManager()
+        self.logger = logging.getLogger("PipelineConnector")
+        self.logger.setLevel(logging.INFO)
+        self.artifact_detector = ArtifactDetector()
+
+    def get_live_metrics(self, num_channels: int = 64, sample_size: int = 1000, use_gpu: bool = False, seed: Optional[int] = None) -> Dict[str, Any]:
         """
         Simulates real neural data metrics for multiple channels.
         Args:
             num_channels: Number of neural channels (default: 64)
             sample_size: Number of samples per channel (default: 1000)
+            use_gpu: Whether to use GPU acceleration (default: False)
+            seed: Optional random seed for reproducibility
         Returns:
-            Dictionary of metrics: compression_ratio, latency_ms, snr_db, power_mw
+            Dictionary of metrics: compression_ratio, snr_db
         """
         try:
-            # Simulate multi-channel neural data with temporal correlation
+            if seed is not None:
+                np.random.seed(seed)
             signal = np.random.normal(0, 1, (num_channels, sample_size))
-            # Add temporal correlation
-            for ch in range(num_channels):
-                signal[ch] += np.roll(signal[ch], 1) * 0.2
             noise = np.random.normal(0, 0.1, (num_channels, sample_size))
-            signal_power = np.mean(signal ** 2)
-            noise_power = np.mean(noise ** 2)
-            snr_db = 10 * np.log10(signal_power / noise_power)
-            compression_ratio = np.random.uniform(2.5, 4.0)
-            latency_ms = np.random.uniform(0.5, 2.0)
-            power_mw = np.random.uniform(120, 250)
-            return {
-                "compression_ratio": round(compression_ratio, 2),
-                "latency_ms": round(latency_ms, 2),
-                "snr_db": round(snr_db, 2),
-                "power_mw": round(power_mw, 2)
+            snr_db = calculate_snr(signal, noise)
+            compression_ratio_val = np.random.uniform(2.5, 4.0)
+            metrics = {
+                "compression_ratio": round(compression_ratio_val, 2),
+                "snr_db": round(snr_db, 2)
             }
+            self.logger.info(f"Live metrics: {metrics}")
+            return metrics
         except Exception as e:
-            # Comprehensive error handling for pipeline integration
-            return {
-                "compression_ratio": 0.0,
-                "latency_ms": 0.0,
-                "snr_db": 0.0,
-                "power_mw": 0.0,
-                "error": str(e)
-            }
+            self.logger.error(f"Error in get_live_metrics: {e}")
+            return {"error": str(e)}
 
     def simulate_compression(self, original_size: int, compressed_size: int) -> float:
         """
@@ -74,9 +49,7 @@ class PipelineConnector:
         Returns:
             Compression ratio (float)
         """
-        if compressed_size == 0:
-            return 0.0
-        return round(original_size / compressed_size, 2)
+        return round(compression_ratio(original_size, compressed_size), 2)
 
     def inject_artifacts(self, signal: np.ndarray, artifact_type: str = "spike", severity: float = 0.5) -> np.ndarray:
         """
@@ -88,18 +61,22 @@ class PipelineConnector:
         Returns:
             Modified signal array
         """
-        signal = signal.copy()
-        if artifact_type == "spike":
-            # Inject random spikes
-            num_spikes = int(severity * signal.size * 0.01)
-            idx = np.random.choice(signal.size, num_spikes, replace=False)
-            signal.flat[idx] += np.random.uniform(5, 10, num_spikes)
-        elif artifact_type == "noise":
-            signal += np.random.normal(0, severity, signal.shape)
-        elif artifact_type == "drift":
-            drift = np.linspace(0, severity, signal.shape[1])
-            signal += drift
-        return signal
+        try:
+            signal = signal.copy()
+            if artifact_type == "spike":
+                num_spikes = int(severity * signal.size * 0.01)
+                idx = np.random.choice(signal.size, num_spikes, replace=False)
+                signal.flat[idx] += np.random.uniform(5, 10, num_spikes)
+            elif artifact_type == "noise":
+                signal += np.random.normal(0, severity, signal.shape)
+            elif artifact_type == "drift":
+                drift = np.linspace(0, severity, signal.shape[1])
+                signal += drift
+            self.logger.info(f"Injected {artifact_type} artifact with severity {severity}")
+            return signal
+        except Exception as e:
+            self.logger.error(f"Error in inject_artifacts: {e}")
+            return signal
 
     def simulate_multimodal_fusion(self, eeg: np.ndarray, fmri: np.ndarray) -> np.ndarray:
         """
@@ -110,11 +87,50 @@ class PipelineConnector:
         Returns:
             Fused signal array (channels x samples)
         """
-        # Simple fusion: weighted sum (for demonstration)
-        eeg_weight = 0.7
-        fmri_weight = 0.3
-        min_shape = (min(eeg.shape[0], fmri.shape[0]), min(eeg.shape[1], fmri.shape[1]))
-        eeg = eeg[:min_shape[0], :min_shape[1]]
-        fmri = fmri[:min_shape[0], :min_shape[1]]
-        fused = eeg_weight * eeg + fmri_weight * fmri
-        return fused
+        try:
+            eeg_weight = 0.7
+            fmri_weight = 0.3
+            min_shape = (min(eeg.shape[0], fmri.shape[0]), min(eeg.shape[1], fmri.shape[1]))
+            eeg = eeg[:min_shape[0], :min_shape[1]]
+            fmri = fmri[:min_shape[0], :min_shape[1]]
+            fused = eeg_weight * eeg + fmri_weight * fmri
+            self.logger.info(f"Fused EEG and fMRI with weights {eeg_weight}, {fmri_weight}")
+            return fused
+        except Exception as e:
+            self.logger.error(f"Error in simulate_multimodal_fusion: {e}")
+            return eeg
+
+    def update_pipeline_config(self, new_config: Dict[str, Any]) -> bool:
+        """
+        Updates the pipeline configuration using PipelineConfigManager.
+        Args:
+            new_config: Dictionary of new configuration parameters
+        Returns:
+            Success status (bool)
+        """
+        try:
+            self.config_manager.update_config(new_config)
+            self.logger.info(f"Pipeline config updated: {new_config}")
+            return True
+        except Exception as e:
+            self.logger.error(f"Config update failed: {e}")
+            return False
+
+    def analyze_artifacts(self, signal: np.ndarray) -> Dict[str, Any]:
+        """
+        Analyzes neural signal for artifacts using ArtifactDetector.
+        Args:
+            signal: Neural signal array (channels x samples)
+        Returns:
+            Dictionary summarizing detected artifacts
+        """
+        try:
+            summary = self.artifact_detector.detect_all(signal)
+            self.logger.info(f"Artifact analysis: {summary}")
+            return summary
+        except Exception as e:
+            self.logger.error(f"Error in analyze_artifacts: {e}")
+            return {"error": str(e)}
+
+
+

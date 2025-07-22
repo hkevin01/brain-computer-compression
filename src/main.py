@@ -15,12 +15,18 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 from src.visualization.web_dashboard.pipeline_connector import PipelineConnector
 from src.utils import signal_processing, gpu_helper, stream_processor
 from src.utils import artifact_simulator, data_format_handler, performance_monitor
+from src.utils import metrics_helper, seed_manager
+from src.utils import pipeline_logger, config_validator
 
 
 def main():
+    seed_manager.set_seed(42)
     connector = PipelineConnector()
     # Simulate neural data
     data = np.random.normal(0, 1, (64, 1000))
+    noise = np.random.normal(0, 0.1, data.shape)
+    print("SNR:", metrics_helper.snr(data, noise))
+    print("Compression Ratio:", metrics_helper.compression_ratio(100000, 25000))
     # Artifact simulation examples
     spike_signal = artifact_simulator.inject_spike(data, severity=0.5)
     noise_signal = artifact_simulator.inject_noise(data, severity=0.5)
@@ -59,6 +65,19 @@ def main():
     fmri = np.random.normal(0, 1, (64, 1000))
     fused = connector.simulate_multimodal_fusion(data, fmri)
     print("Fused shape:", fused.shape)
+    config = {
+        "num_channels": 64,
+        "sample_size": 1000,
+        "compression_type": "lossless",
+        "quality_level": 1.0,
+        "artifact_severity": 0.5,
+        "random_seed": 42,
+    }
+    if not config_validator.validate_config(config):
+        pipeline_logger.log_error("Invalid pipeline configuration.")
+        return
+    pipeline_logger.log_config_change(config)
+    pipeline_logger.log_event("Pipeline started.")
 
 
 if __name__ == "__main__":
