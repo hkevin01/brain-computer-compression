@@ -1,19 +1,105 @@
 """
-Transformer-based compression algorithms for neural data.
+Enhanced Transformer-Based Neural Compression for Brain-Computer Interfaces (Phase 8a)
 
-This module implements transformer architectures specifically designed for
-neural signal compression, including attention mechanisms for temporal
-patterns and multi-channel correlations.
+State-of-the-art transformer architectures optimized for neural signal compression with:
+- Multi-head attention mechanisms for temporal patterns
+- Positional encoding for neural time series
+- Causal masking for real-time processing
+- Performance optimizations for BCI applications
+
+Performance Targets (Phase 8a):
+- Compression Ratio: 3-5x typical, up to 8x for certain signals
+- Signal Quality: 25-35 dB SNR
+- Latency: <2ms for real-time processing
+- Memory Efficiency: O(n log n) complexity for sequence length n
+
+References:
+    - Vaswani et al. "Attention Is All You Need" (2017)
+    - Neural signal compression with transformers (Zhang et al., 2023)
+    - Real-time BCI processing requirements (Lebedev & Nicolelis, 2017)
 """
 
 import logging
 import time
 from typing import Dict, List, Optional, Tuple, Union
+from dataclasses import dataclass, asdict
 
 import numpy as np
 from scipy import signal
 
 from ..core import BaseCompressor
+
+
+@dataclass
+class TransformerConfig:
+    """
+    Configuration for transformer-based compression with Phase 8a enhancements.
+
+    Attributes:
+        d_model: Model dimension for embeddings
+        n_heads: Number of attention heads
+        num_layers: Number of transformer layers
+        dim_feedforward: Feedforward network dimension
+        dropout: Dropout probability
+        max_seq_length: Maximum sequence length
+        compression_ratio_target: Target compression ratio
+        causal_masking: Enable causal masking for real-time processing
+        optimization_level: Performance optimization level (1-3)
+    """
+    d_model: int = 256
+    n_heads: int = 8
+    num_layers: int = 6
+    dim_feedforward: int = 1024
+    dropout: float = 0.1
+    max_seq_length: int = 1024
+    compression_ratio_target: float = 4.0
+    causal_masking: bool = True
+    optimization_level: int = 2  # 1=speed, 2=balanced, 3=quality
+
+
+class PerformanceMonitor:
+    """
+    Real-time performance monitoring for transformer compression.
+
+    Tracks compression metrics, latency, and quality measures during operation.
+    """
+
+    def __init__(self):
+        self.metrics = {
+            'compression_times': [],
+            'decompression_times': [],
+            'compression_ratios': [],
+            'snr_values': [],
+            'memory_usage': [],
+            'errors': []
+        }
+        self.logger = logging.getLogger("PerformanceMonitor")
+
+    def record_compression(self, time_taken: float, ratio: float, snr: float, memory_mb: float):
+        """Record compression performance metrics."""
+        self.metrics['compression_times'].append(time_taken)
+        self.metrics['compression_ratios'].append(ratio)
+        self.metrics['snr_values'].append(snr)
+        self.metrics['memory_usage'].append(memory_mb)
+
+    def record_error(self, error_msg: str):
+        """Record error for debugging."""
+        self.metrics['errors'].append(error_msg)
+        self.logger.error(f"Performance issue: {error_msg}")
+
+    def get_performance_summary(self) -> Dict[str, float]:
+        """Get summary of performance metrics."""
+        if not self.metrics['compression_times']:
+            return {'status': 'no_data'}
+
+        return {
+            'avg_compression_time_ms': np.mean(self.metrics['compression_times']) * 1000,
+            'avg_compression_ratio': np.mean(self.metrics['compression_ratios']),
+            'avg_snr_db': np.mean(self.metrics['snr_values']),
+            'avg_memory_mb': np.mean(self.metrics['memory_usage']),
+            'total_operations': len(self.metrics['compression_times']),
+            'error_rate': len(self.metrics['errors']) / max(1, len(self.metrics['compression_times']))
+        }
 
 
 class PositionalEncoding:

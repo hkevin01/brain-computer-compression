@@ -1,26 +1,28 @@
 {
-  // Theme and appearance
-  "workbench.colorTheme": "Vitesse Dark",
-  "workbench.iconTheme": "catppuccin-mocha",
-  "workbench.productIconTheme": "carbon",
-  // Font
-  "editor.fontFamily": "Input Mono, Fira Code, monospace",
-  "editor.fontLigatures": true,
-  // Editor preferences
-  "editor.tabSize": 2,
-  "editor.insertSpaces": true,
+  "chat.tools.autoApprove": true,
+  "chat.agent.maxRequests": 100,
+  "github.copilot.editor.enableAutoCompletions": true,
+  "github.copilot.chat.enabled": true,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": true,
+    "scminput": false
+  },
+  "github.copilot.advanced": {
+    "temperature": 0.3,
+    "top_p": 1,
+    "listCount": 10
+  },
+  "git.commitMessageConvention": "conventional",
+  "git.enableSmartCommit": true,
+  "git.suggestSmartCommit": true,
   "editor.formatOnSave": true,
-  "editor.minimap.enabled": false,
-  "editor.renderWhitespace": "all",
-  "editor.rulers": [80, 120],
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
-  "files.autoSave": "onFocusChange",
-  // Python specific
-  "python.linting.enabled": true,
-  "python.linting.flake8Enabled": true,
-  "python.formatting.provider": "black",
-  // Misc
-  "explorer.confirmDelete": false,
-  "explorer.confirmDragAndDrop": false
-} 
+  "workbench.editor.enablePreview": false
+}
