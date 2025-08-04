@@ -2,10 +2,11 @@
 GPU-accelerated data loading and preprocessing using cuDF.
 """
 
-import numpy as np
 import warnings
-from typing import Tuple, Dict, Union, Optional
 from pathlib import Path
+from typing import Dict, Optional, Tuple, Union
+
+import numpy as np
 
 try:
     import cudf
@@ -32,14 +33,14 @@ class GPUDataLoader:
     ) -> Union[cudf.DataFrame, np.ndarray]:
         """
         Load neural data with GPU acceleration where possible.
-        
+
         Parameters
         ----------
         filepath : str or Path
             Path to the data file
         format : str, default="auto"
             File format specification ('auto', 'nev', 'nsx', 'hdf5', 'mat', 'csv')
-            
+
         Returns
         -------
         Union[cudf.DataFrame, np.ndarray]
@@ -76,7 +77,7 @@ class GPUDataLoader:
     ) -> None:
         """
         Save neural data with GPU acceleration where possible.
-        
+
         Parameters
         ----------
         data : Union[cudf.DataFrame, np.ndarray]
@@ -119,14 +120,14 @@ class GPUDataLoader:
     ) -> cudf.DataFrame:
         """
         Apply GPU-accelerated preprocessing operations to a cuDF DataFrame.
-        
+
         Parameters
         ----------
         df : cudf.DataFrame
             Input DataFrame
         operations : dict
             Dictionary of preprocessing operations to apply
-            
+
         Returns
         -------
         cudf.DataFrame
@@ -141,7 +142,7 @@ class GPUDataLoader:
             if op_name == 'normalize':
                 cols = op_config.get('columns', df.columns)
                 method = op_config.get('method', 'zscore')
-                
+
                 for col in cols:
                     if method == 'zscore':
                         mean = processed_df[col].mean()
@@ -151,11 +152,11 @@ class GPUDataLoader:
                         min_val = processed_df[col].min()
                         max_val = processed_df[col].max()
                         processed_df[col] = (processed_df[col] - min_val) / (max_val - min_val + 1e-8)
-            
+
             elif op_name == 'fillna':
                 method = op_config.get('method', 'mean')
                 cols = op_config.get('columns', df.columns)
-                
+
                 for col in cols:
                     if method == 'mean':
                         fill_value = processed_df[col].mean()
@@ -168,7 +169,7 @@ class GPUDataLoader:
             elif op_name == 'drop_outliers':
                 cols = op_config.get('columns', df.columns)
                 n_std = op_config.get('n_std', 3)
-                
+
                 for col in cols:
                     mean = processed_df[col].mean()
                     std = processed_df[col].std()
@@ -181,7 +182,7 @@ class GPUDataLoader:
         """CPU fallback for data loading."""
         import h5py
         import scipy.io as sio
-        
+
         if format == 'nev' or format == 'nsx':
             # Placeholder: implement actual NEV/NSx loading
             return np.random.randn(64, 30000)
@@ -205,9 +206,9 @@ class GPUDataLoader:
         """CPU fallback for data saving."""
         import h5py
         import scipy.io as sio
-        
+
         filepath.parent.mkdir(parents=True, exist_ok=True)
-        
+
         if format == 'hdf5' or format == 'h5':
             with h5py.File(filepath, 'w') as f:
                 f.create_dataset('neural_data', data=data)

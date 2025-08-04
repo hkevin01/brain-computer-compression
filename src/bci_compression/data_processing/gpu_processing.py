@@ -2,13 +2,14 @@
 GPU-accelerated signal processing for neural data using CUDA.
 """
 
-import numpy as np
 import warnings
-from typing import Optional, Tuple, Dict
+from typing import Dict, Optional, Tuple
+
+import numpy as np
 
 try:
-    import cupy as cp
     import cudf
+    import cupy as cp
     import cusignal
     CUDA_AVAILABLE = True
 except ImportError:
@@ -26,7 +27,7 @@ class GPUNeuralProcessor:
         self.sampling_rate = sampling_rate
         self.nyquist_freq = sampling_rate / 2
         self.cuda_available = CUDA_AVAILABLE
-        
+
         if self.cuda_available:
             # Initialize CUDA memory pool
             self.mempool = cp.get_default_memory_pool()
@@ -61,7 +62,7 @@ class GPUNeuralProcessor:
 
         # Transfer to GPU
         d_data = self.to_gpu(data)
-        
+
         # Normalize frequencies
         low_norm = low_freq / self.nyquist_freq
         high_norm = high_freq / self.nyquist_freq
@@ -203,23 +204,23 @@ class GPUNeuralProcessor:
     def _cpu_bandpass_filter(self, data, low_freq, high_freq, order, filter_type):
         """CPU fallback for bandpass filter."""
         from scipy import signal
-        
+
         if low_freq >= high_freq:
             raise ValueError("Low frequency must be less than high frequency")
-            
+
         low_norm = low_freq / self.nyquist_freq
         high_norm = high_freq / self.nyquist_freq
-        
+
         if filter_type == 'butterworth':
             b, a = signal.butter(order, [low_norm, high_norm], btype='band')
         elif filter_type == 'elliptic':
             b, a = signal.ellip(order, 1, 40, [low_norm, high_norm], btype='band')
         else:
             raise ValueError(f"Unknown filter type: {filter_type}")
-            
+
         if data.ndim == 1:
             return signal.filtfilt(b, a, data)
-        
+
         filtered_data = np.zeros_like(data)
         for ch in range(data.shape[0]):
             filtered_data[ch] = signal.filtfilt(b, a, data[ch])
@@ -228,14 +229,14 @@ class GPUNeuralProcessor:
     def _cpu_notch_filter(self, data, notch_freq, quality_factor):
         """CPU fallback for notch filter."""
         from scipy import signal
-        
+
         nyq = self.sampling_rate / 2.0
         freq = notch_freq / nyq
         b, a = signal.iirnotch(freq, quality_factor)
-        
+
         if data.ndim == 1:
             return signal.filtfilt(b, a, data)
-            
+
         filtered_data = np.zeros_like(data)
         for ch in range(data.shape[0]):
             filtered_data[ch] = signal.filtfilt(b, a, data[ch])
@@ -261,17 +262,17 @@ class GPUNeuralProcessor:
     def _cpu_preprocess_pipeline(self, data, config, bandpass_range, notch_freq, normalize, remove_artifacts):
         """CPU fallback for preprocessing pipeline."""
         processed_data = data.copy()
-        
+
         if bandpass_range is not None:
             processed_data = self._cpu_bandpass_filter(
                 processed_data, bandpass_range[0], bandpass_range[1], 4, 'butterworth')
-            
+
         if notch_freq is not None:
             processed_data = self._cpu_notch_filter(
                 processed_data, notch_freq, 30.0)
-            
+
         if normalize:
             processed_data = self._cpu_normalize_signals(
                 processed_data, 'zscore', None)
-            
+
         return processed_data
