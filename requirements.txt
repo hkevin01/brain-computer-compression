@@ -12,6 +12,9 @@ scikit-learn>=1.1.0,<1.4.0
 
 # GPU acceleration
 cupy-cuda11x>=12.0.0; platform_machine=="x86_64"  # CUDA 11.x support
+cudf-cu11>=22.12.0; platform_machine=="x86_64"    # GPU DataFrame acceleration
+cusignal>=22.12.0; platform_machine=="x86_64"     # GPU signal processing acceleration
+rmm>=22.12.0; platform_machine=="x86_64"          # RAPIDS Memory Manager
 
 # Deep learning
 torch>=1.13.0,<2.1.0
