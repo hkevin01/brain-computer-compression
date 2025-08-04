@@ -1,40 +1,36 @@
-version: '3.8'
+name: bci-compression
 
 services:
   api:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.api
+    build: .
     ports:
       - "8000:8000"
+    volumes:
+      - ./data:/app/data:ro
+      - ./logs:/app/logs
     environment:
-      - ENVIRONMENT=production
-      - LOG_LEVEL=INFO
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - PYTHONPATH=/app/src
+      - BCI_COMPRESSION_ENV=${ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
       - REDIS_URL=redis://redis:6379
     depends_on:
       - redis
-      - otel-collector
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
 
   worker:
     build:
       context: .
       dockerfile: docker/Dockerfile.worker
+    volumes:
+      - ./data:/app/data:ro
+      - ./logs:/app/logs
     environment:
-      - ENVIRONMENT=production
-      - LOG_LEVEL=INFO
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - PYTHONPATH=/app/src
+      - BCI_COMPRESSION_ENV=${ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - CUDA_VISIBLE_DEVICES=0
       - REDIS_URL=redis://redis:6379
     depends_on:
       - redis
-      - otel-collector
     deploy:
       resources:
         reservations:
@@ -44,10 +40,15 @@ services:
               capabilities: [gpu]
 
   redis:
-    image: redis:6.2-alpine
+    image: redis:7.0-alpine
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis-data:/data
     ports:
       - "6379:6379"
-    command: redis-server --save 60 1 --loglevel warning
+
+volumes:
+  redis-data:
     volumes:
       - redis-data:/data
 

@@ -1,53 +1,58 @@
-# TEST: This comment was added to verify auto-accept of changes via .cursor/settings.json
-"""
-Core compression functionality for neural data.
-"""
-
-import hashlib
-import logging
-import logging.config
-import os
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+"""Core compression functionality with robust error handling."""
 
 import numpy as np
+from typing import Union, Tuple, Dict, Any, Optional
+import logging
 
-from .plugins import get_plugin
+logger = logging.getLogger(__name__)
 
 
-class BaseCompressor(ABC):
-    """Abstract base class for neural data compressors."""
+class CompressionError(Exception):
+    """Base exception for compression errors"""
+    pass
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        self.config = config or {}
-        self.compression_ratio: float = 0.0
-        self._is_fitted = False
 
-    @abstractmethod
-    def compress(self, data: np.ndarray) -> bytes:
-        """Compress neural data."""
+class BaseCompressor:
+    """Base class for all compressors with error handling"""
 
-    @abstractmethod
-    def decompress(self, compressed_data: bytes) -> np.ndarray:
-        """Decompress neural data."""
+    def __init__(self, name: str = "base"):
+        self.name = name
+        self._is_initialized = False
 
-    def fit(self, data: np.ndarray) -> None:
-        """Fit compressor parameters to training data."""
-        self._is_fitted = True
+    def compress(self, data: np.ndarray) -> Tuple[bytes, Dict[str, Any]]:
+        """Compress data with error handling"""
+        try:
+            if not isinstance(data, np.ndarray):
+                raise CompressionError(f"Expected numpy array, got {type(data)}")
 
-    def get_compression_ratio(self) -> float:
-        """Get the compression ratio of the last compression operation."""
-        return self.compression_ratio
+            if data.size == 0:
+                raise CompressionError("Cannot compress empty array")
 
-    def _check_integrity(
-            self,
-            original: np.ndarray,
-            decompressed: np.ndarray,
-            check_shape: bool = True,
-            check_dtype: bool = True,
-            check_hash: bool = False) -> None:
-        """Check integrity between original and decompressed data. Optionally check shape, dtype, and hash."""
-        if check_shape and original.shape != decompressed.shape:
+            return self._compress_impl(data)
+
+        except Exception as e:
+            logger.error(f"Compression failed: {e}")
+            raise CompressionError(f"Compression failed: {e}") from e
+
+    def decompress(self, compressed: bytes, metadata: Dict[str, Any]) -> np.ndarray:
+        """Decompress data with error handling"""
+        try:
+            if not compressed:
+                raise CompressionError("Cannot decompress empty data")
+
+            return self._decompress_impl(compressed, metadata)
+
+        except Exception as e:
+            logger.error(f"Decompression failed: {e}")
+            raise CompressionError(f"Decompression failed: {e}") from e
+
+    def _compress_impl(self, data: np.ndarray) -> Tuple[bytes, Dict[str, Any]]:
+        """Override in subclasses"""
+        raise NotImplementedError
+
+    def _decompress_impl(self, compressed: bytes, metadata: Dict[str, Any]) -> np.ndarray:
+        """Override in subclasses"""
+        raise NotImplementedError
             raise ValueError(f"Decompressed data shape {decompressed.shape} does not match original {original.shape}")
         if check_dtype and original.dtype != decompressed.dtype:
             raise ValueError(f"Decompressed data dtype {decompressed.dtype} does not match original {original.dtype}")

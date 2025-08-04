@@ -1,0 +1,31 @@
+# Docker-specific files
+.pytest_cache/
+__pycache__/
+*.pyc
+.coverage
+.tox/
+.eggs/
+*.egg-info/
+
+# Development files
+.git/
+.github/
+.gitignore
+.vscode/
+.idea/
+*.md
+docs/
+tests/
+notebooks/
+examples/
+
+# Build files
+build/
+dist/
+*.log
+
+# Environment files
+.env
+.venv/
+venv/
+ENV/

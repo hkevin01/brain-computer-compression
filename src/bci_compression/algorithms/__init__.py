@@ -1,52 +1,45 @@
 """
-Compression algorithms for neural data.
-
-This package contains various compression algorithms optimized for
-brain-computer interface applications, including both lossless and
-lossy compression methods.
+Compression algorithms module with error handling and fallbacks
 """
 
 import warnings
+from typing import Any, Dict, Optional
 
-# Core compression algorithms
-from .lossless import AdaptiveLZCompressor, DictionaryCompressor
-
-# Try to import lossy algorithms with graceful fallback
+# Import with error handling
 try:
-    from .lossy import QuantizationCompressor, WaveletCompressor
-    _has_base_lossy = True
-except ImportError:
-    _has_base_lossy = False
-    warnings.warn(
-        "Lossy compression algorithms (QuantizationCompressor, WaveletCompressor) not available. "
-        "Some features will be disabled."
-    )
+    from .neural_lz import create_neural_lz_compressor
+except ImportError as e:
+    warnings.warn(f"Neural LZ module not available: {e}")
+
+    def create_neural_lz_compressor(*args, **kwargs):
+        raise NotImplementedError("Neural LZ compressor not available")
+
 
 try:
-    from .deep_learning import AutoencoderCompressor
-    _has_autoencoder = True
-except ImportError:
-    _has_autoencoder = False
-    warnings.warn("Deep learning compression (AutoencoderCompressor) not available. Some features will be disabled.")
+    from .neural_arithmetic import create_neural_arithmetic_coder
+except ImportError as e:
+    warnings.warn(f"Neural arithmetic module not available: {e}")
 
-# Phase 2: Advanced neural-optimized algorithms
-try:
-    _has_neural_lz = True
-except ImportError:
-    _has_neural_lz = False
-    warnings.warn("Neural LZ compression algorithms not available. Some features will be disabled.")
+    def create_neural_arithmetic_coder(*args, **kwargs):
+        raise NotImplementedError("Neural arithmetic coder not available")
+
 
 try:
-    _has_neural_arithmetic = True
-except ImportError:
-    _has_neural_arithmetic = False
-    warnings.warn("Neural arithmetic coding algorithms not available. Some features will be disabled.")
+    from .lossy_neural import PerceptualQuantizer
+except ImportError as e:
+    warnings.warn(f"Lossy neural module not available: {e}")
 
-try:
-    _has_lossy_neural = True
-except ImportError:
-    _has_lossy_neural = False
-    warnings.warn("Advanced lossy neural compression algorithms not available. Some features will be disabled.")
+    class PerceptualQuantizer:
+        def __init__(self, *args, **kwargs):
+            raise NotImplementedError("Perceptual quantizer not available")
+
+
+# Export all available functions
+__all__ = [
+    'create_neural_lz_compressor',
+    'create_neural_arithmetic_coder',
+    'PerceptualQuantizer',
+]
 
 try:
     _has_gpu_acceleration = True
