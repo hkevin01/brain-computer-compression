@@ -12,7 +12,7 @@ def load_dataset(dataset: BenchmarkDataset, channels: int, duration_sec: float) 
     # Implementation of real dataset loading will be added in future updates
     # Currently using synthetic data with dataset-specific characteristics
     n_samples = int(19500 * duration_sec)  # Using max sample rate
-    
+
     if dataset == BenchmarkDataset.OPENBCI_MOTOR:
         # Simulate motor-related neural activity
         data = np.random.normal(0, 0.5, (channels, n_samples))
@@ -21,7 +21,7 @@ def load_dataset(dataset: BenchmarkDataset, channels: int, duration_sec: float) 
         for ch in range(channels):
             freq = np.random.uniform(13, 30)
             data[ch] += 0.3 * np.sin(2 * np.pi * freq * t)
-    
+
     elif dataset == BenchmarkDataset.NEURALINK_MONKEY:
         # Simulate high-frequency spike data
         data = np.random.normal(0, 0.3, (channels, n_samples))
@@ -29,7 +29,7 @@ def load_dataset(dataset: BenchmarkDataset, channels: int, duration_sec: float) 
         spike_prob = 0.001
         spikes = np.random.binomial(1, spike_prob, (channels, n_samples))
         data += spikes * np.random.uniform(1, 2, (channels, n_samples))
-    
+
     elif dataset == BenchmarkDataset.KERNEL_VISUAL:
         # Simulate visual evoked potentials
         data = np.random.normal(0, 0.4, (channels, n_samples))
@@ -38,10 +38,10 @@ def load_dataset(dataset: BenchmarkDataset, channels: int, duration_sec: float) 
         for ch in range(channels):
             freq = np.random.uniform(8, 12)  # Alpha band
             data[ch] += 0.25 * np.sin(2 * np.pi * freq * t)
-            
+
     else:  # SYNTHETIC
         data = np.random.normal(0, 1, (channels, n_samples))
-    
+
     return data
 
 
@@ -97,7 +97,7 @@ def get_hardware_metrics(config: HardwareBenchmark) -> Dict:
         'device': config.device,
         'timestamp': time.time()
     }
-    
+
     if config.device == "cuda":
         try:
             import torch.cuda
@@ -105,7 +105,7 @@ def get_hardware_metrics(config: HardwareBenchmark) -> Dict:
                 'memory_used_mb': torch.cuda.memory_allocated() / 1024 / 1024,
                 'memory_cached_mb': torch.cuda.memory_reserved() / 1024 / 1024,
             })
-            
+
             if hasattr(torch.cuda, 'get_device_properties'):
                 device = torch.cuda.get_device_properties(0)
                 metrics['gpu_utilization'] = device.utilization_rate
@@ -120,5 +120,5 @@ def get_hardware_metrics(config: HardwareBenchmark) -> Dict:
             'status': 'Not implemented',
             'message': 'FPGA metrics collection planned for future release'
         })
-    
+
     return metrics

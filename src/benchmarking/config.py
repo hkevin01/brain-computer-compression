@@ -102,25 +102,25 @@ def generate_synthetic_data(config: CompressionBenchmark) -> np.ndarray:
     """Generate synthetic neural data for benchmarking."""
     # Calculate total samples
     n_samples = int(config.sample_rate * config.duration_sec)
-    
+
     # Generate base signal
     signal = np.random.normal(0, 1, (config.channels, n_samples))
-    
+
     # Add structured temporal patterns
     t = np.linspace(0, config.duration_sec, n_samples)
     for i in range(config.channels):
         # Add oscillations
         freq = np.random.uniform(5, 50)  # 5-50 Hz
         signal[i] += 0.5 * np.sin(2 * np.pi * freq * t)
-        
+
         # Add sparse spikes
         if np.random.random() < config.artifact_prob:
             spike_times = np.random.choice(n_samples, size=int(0.001 * n_samples))
             signal[i, spike_times] += np.random.uniform(5, 10, len(spike_times))
-    
+
     # Add noise
     signal += np.random.normal(0, config.noise_level, signal.shape)
-    
+
     return signal
 
 
@@ -136,43 +136,43 @@ def run_benchmark(
     else:
         # Load real dataset
         data = load_dataset(config.dataset, config.channels, config.duration_sec)
-    
+
     # Set up hardware if specified
     if hardware:
         setup_hardware(hardware)
-    
+
     # Warm up
     warmup_data = data[:, :1000]
     _ = compressor.compress(warmup_data)
-    
+
     # Run benchmark
     metrics = []
     start_time = time.time()
-    
+
     try:
         while time.time() - start_time < 60:  # 1 minute test
             # Get data chunk
             chunk = get_next_chunk(data)
-            
+
             # Compress
             compressed = compressor.compress(chunk)
             decompressed = compressor.decompress(compressed)
-            
+
             # Calculate metrics
             compression_ratio = len(chunk.tobytes()) / len(compressed)
             snr = calculate_snr(chunk, decompressed)
             latency = get_processing_time()
-            
+
             metrics.append({
                 'compression_ratio': compression_ratio,
                 'snr_db': snr,
                 'latency_ms': latency
             })
-    
+
     finally:
         if hardware:
             cleanup_hardware(hardware)
-    
+
     # Aggregate results
     results = {
         'compression_ratio': np.mean([m['compression_ratio'] for m in metrics]),
@@ -188,8 +188,8 @@ def run_benchmark(
             np.percentile([m['latency_ms'] for m in metrics], 95) <= config.max_latency_ms
         ])
     }
-    
+
     if hardware:
         results['hardware_metrics'] = get_hardware_metrics(hardware)
-    
+
     return results
