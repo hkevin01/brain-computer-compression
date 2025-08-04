@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bci-compression-api
+  namespace: bci-platform
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: bci-compression-api
+  template:
+    metadata:
+      labels:
+        app: bci-compression-api
+    spec:
+      containers:
+      - name: api
+        image: ghcr.io/hkevin01/bci-compression/api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector.monitoring:4317"
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+      volumes:
+      - name: config
+        configMap:
+          name: bci-compression-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bci-compression-api
+  namespace: bci-platform
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: bci-compression-api
+
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bci-compression-api
+  namespace: bci-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bci-compression-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bci-compression-ingress
+  namespace: bci-platform
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - api.bcicompression.io
+    secretName: bci-compression-tls
+  rules:
+  - host: api.bcicompression.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bci-compression-api
+            port:
+              number: 80
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: bci-compression-monitor
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: bci-compression-api
+  endpoints:
+  - port: metrics
+    interval: 15s
+  namespaceSelector:
+    matchNames:
+    - bci-platform
