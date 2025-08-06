@@ -7,13 +7,14 @@ for real-time streaming and data buffering. Extended to support EMG data
 acquisition from common EMG recording formats.
 """
 
-import numpy as np
-from typing import Dict, Optional, Callable, Any, Protocol, Union
-import time
 import threading
-from queue import Queue
+import time
 from abc import ABC, abstractmethod
 from pathlib import Path
+from queue import Queue
+from typing import Any, Callable, Dict, Optional, Protocol
+
+import numpy as np
 
 # EMG data format imports (with optional dependencies)
 try:

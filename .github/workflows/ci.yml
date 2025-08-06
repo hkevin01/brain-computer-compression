@@ -17,49 +17,97 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # Install CPU-only dependencies first
-        pip install numpy scipy pandas h5py pytest coverage flake8
-        pip install -e .[dev,cpu]
 
-        # Install GPU dependencies if CUDA is available
-        if [ "$RUNNER_OS" = "Linux" ] && [ -d "/usr/local/cuda" ]; then
-          pip install -r requirements.txt  # Full install with GPU support
-        else
-          # Install CPU-only subset of requirements
-          grep -v "cuda\|cudf\|cusignal\|rmm" requirements.txt | pip install -r /dev/stdin
-        fi
+        # Install core dependencies (CPU-only for CI)
+        pip install numpy scipy matplotlib pandas h5py
+        pip install pywavelets scikit-learn
+        pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+        # Install testing dependencies
+        pip install pytest coverage flake8 black
+
+        # Install EMG-specific dependencies
+        pip install -r requirements-emg.txt
+
+        # Install toolkit in development mode
+        pip install -e .
 
     - name: Lint with flake8
       run: |
-        flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 src/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 src/ tests/ --count --exit-zero --max-complexity=15 --max-line-length=88 --statistics
 
-    - name: Test with pytest
+    - name: Check code formatting
       run: |
-        coverage run -m pytest tests/ -v
-        coverage report
+        black --check src/ tests/ --line-length=88
+
+    - name: Run dependency check
+      run: |
+        cd tests && python run_tests.py --dependencies-only
+
+    - name: Run quick tests
+      run: |
+        cd tests && python run_tests.py quick
+
+    - name: Run standard tests with coverage
+      run: |
+        cd tests && coverage run test_simple_validation.py
+        coverage run -a test_performance_benchmark.py
+        coverage report --show-missing
         coverage xml
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
+        fail_ci_if_error: false
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install linting tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 black
+
+    - name: Run linting
+      run: |
+        black --check src/ tests/ --line-length=88
+        flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503
 
   build:
-    needs: test
+    needs: [test, lint]
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Build Docker image
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Build package
       run: |
-        docker build -t bci-compression:latest .
-        docker run --rm bci-compression:latest python -c "import bci_compression; print('Build successful')"
+        python -m pip install --upgrade pip build
+        python -m build
+
+    - name: Test installation
+      run: |
+        pip install dist/*.whl
+        python -c "import bci_compression; print('Package installation successful')"

@@ -21,8 +21,8 @@ References:
 
 import logging
 import time
-from typing import Dict, List, Optional, Tuple, Union
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Optional, Tuple, Any
+from dataclasses import dataclass
 
 import numpy as np
 from scipy import signal
@@ -477,7 +477,7 @@ class TransformerCompressor(BaseCompressor):
         quality_level : float, default=0.95
             Quality level for compression
         """
-        super().__init__()
+        super().__init__(name="transformer")
         self.d_model = d_model
         self.n_heads = n_heads
         self.n_layers = n_layers
@@ -502,6 +502,8 @@ class TransformerCompressor(BaseCompressor):
             'processing_time': 0.0,
             'quality_metrics': {}
         }
+
+        self._is_initialized = True
 
     def _preprocess_data(self, data: np.ndarray) -> np.ndarray:
         """
@@ -574,7 +576,7 @@ class TransformerCompressor(BaseCompressor):
 
         return encoded, attention_weights
 
-    def compress(self, data: np.ndarray) -> bytes:
+    def _compress_impl(self, data: np.ndarray) -> Tuple[bytes, Dict[str, Any]]:
         """
         Compress neural data using transformer.
 
@@ -585,8 +587,8 @@ class TransformerCompressor(BaseCompressor):
 
         Returns
         -------
-        bytes
-            Compressed data
+        tuple
+            (compressed_data, metadata)
         """
         logging.info(f"[Transformer] Compressing data with shape {data.shape}")
         start_time = time.time()
@@ -628,7 +630,128 @@ class TransformerCompressor(BaseCompressor):
 
         self.compression_ratio = self.compression_stats['compression_ratio']
 
+        # Prepare metadata
+        metadata = {
+            'original_shape': self._last_shape,
+            'original_dtype': str(self._last_dtype),
+            'compression_ratio': self.compression_ratio,
+            'processing_time': processing_time,
+            'quantization_params': getattr(self, '_quantization_params', {}),
+            'transformer_config': {
+                'd_model': self.d_model,
+                'n_heads': self.n_heads,
+                'n_layers': self.n_layers,
+                'max_sequence_length': self.max_sequence_length
+            }
+        }
+
+        return compressed_data, metadata
+
+    def _decompress_impl(self, compressed_data: bytes, metadata: Dict[str, Any]) -> np.ndarray:
+        """
+        Decompress data using transformer.
+
+        Parameters
+        ----------
+        compressed_data : bytes
+            Compressed data
+        metadata : dict
+            Compression metadata
+
+        Returns
+        -------
+        np.ndarray
+            Decompressed data
+        """
+        logging.info("[Transformer] Decompressing data")
+
+        # Extract metadata
+        original_shape = metadata['original_shape']
+        original_dtype = metadata['original_dtype']
+        quantization_params = metadata.get('quantization_params', {})
+
+        # Unpack compressed data using metadata
+        n_channels = original_shape[0] if len(original_shape) > 1 else 1
+        
+        # Reconstruct channels (simplified)
+        # In practice, this would use the transformer decoder
+        reconstructed_channels = []
+        bytes_per_channel = len(compressed_data) // n_channels
+
+        for ch in range(n_channels):
+            start_idx = ch * bytes_per_channel
+            end_idx = start_idx + bytes_per_channel
+            channel_bytes = compressed_data[start_idx:end_idx]
+
+            # Convert back to array (simplified reconstruction)
+            channel_array = np.frombuffer(channel_bytes, dtype=np.uint8)
+
+            # Dequantize (simplified)
+            if quantization_params:
+                dequantized = (channel_array.astype(np.float32) *
+                               quantization_params.get('scale', 1.0) +
+                               quantization_params.get('min', 0.0))
+            else:
+                dequantized = channel_array.astype(np.float32)
+
+            reconstructed_channels.append(dequantized)
+
+        # Combine channels
+        reconstructed_data = np.array(reconstructed_channels)
+
+        # Reshape to original shape
+        try:
+            expected_size = np.prod(original_shape)
+            actual_size = reconstructed_data.size
+
+            if actual_size != expected_size:
+                # Pad or truncate to match expected size
+                if actual_size > expected_size:
+                    # Truncate
+                    reconstructed_data = reconstructed_data.flatten()[:expected_size]
+                else:
+                    # Pad with zeros
+                    padded = np.zeros(expected_size, dtype=reconstructed_data.dtype)
+                    padded[:actual_size] = reconstructed_data.flatten()
+                    reconstructed_data = padded
+
+            reconstructed_data = reconstructed_data.reshape(original_shape)
+            reconstructed_data = reconstructed_data.astype(original_dtype)
+        except Exception as e:
+            logging.exception(f"[Transformer] Error reshaping decompressed data: {e}")
+            # Return data in a usable shape if reshape fails
+            if len(original_shape) == 1:
+                reconstructed_data = reconstructed_data.flatten()[:original_shape[0]]
+            else:
+                reconstructed_data = reconstructed_data.reshape(-1, original_shape[0]).T[:, :original_shape[1]]
+            reconstructed_data = reconstructed_data.astype(original_dtype)
+
+        return reconstructed_data
+
+    # Legacy methods for backward compatibility
+    def compress(self, data: np.ndarray) -> bytes:
+        """Legacy compress method for backward compatibility."""
+        compressed_data, metadata = self._compress_impl(data)
         return compressed_data
+
+    def decompress(self, compressed_data: bytes) -> np.ndarray:
+        """Legacy decompress method for backward compatibility."""
+        # Try to extract metadata from packed data
+        try:
+            metadata_size = int.from_bytes(compressed_data[:4], 'big')
+            metadata_str = compressed_data[4:4 + metadata_size].decode('utf-8')
+            metadata = eval(metadata_str)  # In practice, use proper serialization
+            actual_compressed_data = compressed_data[4 + metadata_size:]
+        except Exception:
+            # Fallback to minimal metadata
+            metadata = {
+                'original_shape': getattr(self, '_last_shape', (1, 1000)),
+                'original_dtype': str(getattr(self, '_last_dtype', np.float32)),
+                'quantization_params': getattr(self, '_quantization_params', {})
+            }
+            actual_compressed_data = compressed_data
+
+        return self._decompress_impl(actual_compressed_data, metadata)
 
     def _quantize_encoded_data(self, encoded_data: np.ndarray) -> np.ndarray:
         """
@@ -725,90 +848,6 @@ class TransformerCompressor(BaseCompressor):
             'estimated_psnr': 45.0   # Placeholder
         }
 
-    def decompress(self, compressed_data: bytes) -> np.ndarray:
-        """
-        Decompress data using transformer.
-
-        Parameters
-        ----------
-        compressed_data : bytes
-            Compressed data
-
-        Returns
-        -------
-        np.ndarray
-            Decompressed data
-        """
-        logging.info("[Transformer] Decompressing data")
-
-        # Unpack compressed data
-        metadata_size = int.from_bytes(compressed_data[:4], 'big')
-        metadata_str = compressed_data[4:4+metadata_size].decode('utf-8')
-        metadata = eval(metadata_str)  # In practice, use proper serialization
-
-        # Extract metadata
-        n_channels = metadata['n_channels']
-        original_shape = metadata['original_shape']
-        original_dtype = metadata['original_dtype']
-
-        # Extract compressed channels
-        channel_data_start = 4 + metadata_size
-        channel_data = compressed_data[channel_data_start:]
-
-        # Reconstruct channels (simplified)
-        # In practice, this would use the transformer decoder
-        reconstructed_channels = []
-        bytes_per_channel = len(channel_data) // n_channels
-
-        for ch in range(n_channels):
-            start_idx = ch * bytes_per_channel
-            end_idx = start_idx + bytes_per_channel
-            channel_bytes = channel_data[start_idx:end_idx]
-
-            # Convert back to array (simplified reconstruction)
-            channel_array = np.frombuffer(channel_bytes, dtype=np.uint8)
-
-            # Dequantize (simplified)
-            if 'quantization_params' in metadata:
-                params = metadata['quantization_params']
-                dequantized = channel_array.astype(np.float32) * params.get('scale', 1.0) + params.get('min', 0.0)
-            else:
-                dequantized = channel_array.astype(np.float32)
-
-            reconstructed_channels.append(dequantized)
-
-        # Combine channels
-        reconstructed_data = np.array(reconstructed_channels)
-
-        # Reshape to original shape - handle size mismatch
-        try:
-            expected_size = np.prod(original_shape)
-            actual_size = reconstructed_data.size
-
-            if actual_size != expected_size:
-                # Pad or truncate to match expected size
-                if actual_size > expected_size:
-                    # Truncate
-                    reconstructed_data = reconstructed_data.flatten()[:expected_size]
-                else:
-                    # Pad with zeros
-                    padded = np.zeros(expected_size, dtype=reconstructed_data.dtype)
-                    padded[:actual_size] = reconstructed_data.flatten()
-                    reconstructed_data = padded
-
-            reconstructed_data = reconstructed_data.reshape(original_shape)
-            reconstructed_data = reconstructed_data.astype(original_dtype)
-        except Exception as e:
-            logging.exception(f"[Transformer] Error reshaping decompressed data: {e}")
-            # Return data in a usable shape if reshape fails
-            if len(original_shape) == 1:
-                reconstructed_data = reconstructed_data.flatten()[:original_shape[0]]
-            else:
-                reconstructed_data = reconstructed_data.reshape(-1, original_shape[0]).T[:, :original_shape[1]]
-            reconstructed_data = reconstructed_data.astype(original_dtype)
-
-        return reconstructed_data
-
 
 class AdaptiveTransformerCompressor(TransformerCompressor):
     """
@@ -879,14 +918,14 @@ class AdaptiveTransformerCompressor(TransformerCompressor):
             # Single channel
             fft = np.fft.fft(data)
             power_spectrum = np.abs(fft) ** 2
-            characteristics['dominant_freq'] = np.argmax(power_spectrum[:len(power_spectrum)//2])
+            characteristics['dominant_freq'] = np.argmax(power_spectrum[:len(power_spectrum) // 2])
             characteristics['spectral_entropy'] = -np.sum(power_spectrum * np.log(power_spectrum + 1e-8))
         else:
             # Multi-channel
             characteristics['channel_correlation'] = np.mean([
                 np.corrcoef(data[i], data[j])[0, 1]
                 for i in range(data.shape[0])
-                for j in range(i+1, data.shape[0])
+                for j in range(i + 1, data.shape[0])
             ])
 
         return characteristics

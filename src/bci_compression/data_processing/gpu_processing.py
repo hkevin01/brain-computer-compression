@@ -3,7 +3,7 @@ GPU-accelerated signal processing for neural data using CUDA.
 """
 
 import warnings
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Any
 
 import numpy as np
 
@@ -14,7 +14,11 @@ try:
     CUDA_AVAILABLE = True
 except ImportError:
     CUDA_AVAILABLE = False
+    # Create fallback implementations
+    import numpy as cp  # Use numpy as cp fallback
+    import scipy.signal as cusignal  # Use scipy as cusignal fallback
     warnings.warn("CUDA libraries not available. Using CPU fallback.")
+
 
 class GPUNeuralProcessor:
     """
@@ -33,11 +37,11 @@ class GPUNeuralProcessor:
             self.mempool = cp.get_default_memory_pool()
             self.pinned_mempool = cp.get_default_pinned_memory_pool()
 
-    def to_gpu(self, data: np.ndarray) -> cp.ndarray:
+    def to_gpu(self, data: np.ndarray) -> Any:
         """Transfer data to GPU memory."""
         return cp.asarray(data) if self.cuda_available else data
 
-    def to_cpu(self, data: cp.ndarray) -> np.ndarray:
+    def to_cpu(self, data: Any) -> np.ndarray:
         """Transfer data back to CPU memory."""
         return cp.asnumpy(data) if self.cuda_available else data
 

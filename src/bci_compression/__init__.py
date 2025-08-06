@@ -20,15 +20,7 @@ __copyright__ = "Copyright 2025 Kevin"
 
 # Import core modules with error handling
 try:
-    from .core import Compressor, create_compressor
-    from .algorithms import (
-        create_neural_lz_compressor,
-        create_neural_arithmetic_coder,
-        PerceptualQuantizer,
-        create_predictive_compressor,
-        create_context_aware_compressor,
-        create_gpu_compression_system,
-    )
+    from .core import BaseCompressor, CompressionResult
     from .mobile import (
         MobileBCICompressor,
         MobileStreamingPipeline,
@@ -36,7 +28,15 @@ try:
         MobileMetrics,
     )
     from .plugins import get_plugin, register_plugin
-    from .utils.configuration import load_config, setup_logging
+    try:
+        from .utils.configuration import load_config, setup_logging
+    except ImportError:
+        # Fallback setup_logging function
+        import logging
+        def setup_logging():
+            logging.basicConfig(level=logging.INFO)
+        def load_config():
+            return {}
     from .data_processing import load_neural_data
 except ImportError as e:
     import warnings
@@ -56,6 +56,9 @@ __all__ = [
     "create_predictive_compressor",
     "create_context_aware_compressor",
     "create_gpu_compression_system",
+    "create_transformer_compressor",
+    "TransformerCompressor",
+    "AdaptiveTransformerCompressor",
 
     # Mobile optimization
     "MobileBCICompressor",
@@ -73,7 +76,12 @@ __all__ = [
 ]
 
 # Initialize logging
-setup_logging()
+try:
+    setup_logging()
+except NameError:
+    # Fallback if setup_logging is not available
+    import logging
+    logging.basicConfig(level=logging.INFO)
 
 
 def get_version():

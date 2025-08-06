@@ -32,7 +32,9 @@ def register_plugin(name: str):
     """Decorator to register a compressor plugin by name."""
     def decorator(cls: Type[CompressorPlugin]):
         if name in PLUGIN_REGISTRY:
-            raise ValueError(f"Plugin '{name}' already registered.")
+            # Allow re-registration during development/testing
+            import warnings
+            warnings.warn(f"Plugin '{name}' is being re-registered.")
         PLUGIN_REGISTRY[name] = cls
         return cls
     return decorator

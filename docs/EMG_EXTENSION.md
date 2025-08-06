@@ -456,12 +456,12 @@ class RealTimeEMGProcessor:
         )
         self.quality_monitor = EMGQualityMetrics(sampling_rate)
         self.buffer = []
-        
+
     def process_sample_batch(self, samples):
         """Process a batch of EMG samples."""
         # Compress data
         compressed = self.compressor.compress(samples)
-        
+
         # Monitor quality periodically
         if len(self.buffer) > 5000:  # Every 5 seconds
             quality = self.quality_monitor.calculate_streaming_quality(
@@ -469,7 +469,7 @@ class RealTimeEMGProcessor:
             )
             print(f"Streaming quality: {quality:.3f}")
             self.buffer = []
-        
+
         self.buffer.extend(samples.flatten())
         return compressed
 
@@ -496,21 +496,21 @@ class ProstheticControlInterface:
             preserve_bands=[(30, 200)]  # Optimal for prosthetics
         )
         self.quality_metrics = EMGQualityMetrics(1000.0)
-        
+
     def extract_control_signals(self, emg_data):
         """Extract control signals from EMG data."""
         # Compress and decompress to simulate transmission
         compressed = self.compressor.compress(emg_data)
         decompressed = self.compressor.decompress(compressed)
-        
+
         # Verify quality for control
         envelope_metrics = self.quality_metrics.emg_envelope_correlation(
             emg_data, decompressed
         )
-        
+
         if envelope_metrics['envelope_correlation'] < 0.95:
             print("Warning: EMG quality insufficient for reliable control")
-        
+
         # Extract control features (simplified)
         control_signals = np.abs(decompressed).mean(axis=1)
         return control_signals
@@ -577,7 +577,7 @@ print(f"Control signals: {control}")
 3. **Monitor system resources**
    ```python
    from bci_compression.mobile.emg_mobile import EMGPowerOptimizer
-   
+
    optimizer = EMGPowerOptimizer()
    status = optimizer.get_system_status()
    print(f"CPU usage: {status['cpu_percent']:.1f}%")

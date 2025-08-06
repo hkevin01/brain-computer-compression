@@ -4,7 +4,7 @@ GPU-accelerated data loading and preprocessing using cuDF.
 
 import warnings
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union, Any
 
 import numpy as np
 
@@ -14,6 +14,8 @@ try:
     CUDA_AVAILABLE = True
 except ImportError:
     CUDA_AVAILABLE = False
+    # Create fallback types
+    cudf = None
     warnings.warn("CUDA libraries not available. Using CPU fallback.")
 
 

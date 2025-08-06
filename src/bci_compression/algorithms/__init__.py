@@ -14,6 +14,7 @@ _has_autoencoder = True
 _has_gpu_acceleration = True
 _has_predictive = True
 _has_context_aware = True
+_has_transformer = True
 
 # Import with error handling
 try:
@@ -62,6 +63,20 @@ def create_gpu_compression_system(*args, **kwargs):
     if not _has_gpu_acceleration:
         raise NotImplementedError("GPU compression not available")
     # Implementation would go here
+
+# Transformer compression
+try:
+    from .transformer_compression import (
+        TransformerCompressor,
+        AdaptiveTransformerCompressor,
+        create_transformer_compressor
+    )
+except ImportError as e:
+    _has_transformer = False
+    warnings.warn(f"Transformer compression module not available: {e}")
+
+    def create_transformer_compressor(*args, **kwargs):
+        raise NotImplementedError("Transformer compressor not available")
 
 
 # Export all available functions
@@ -130,17 +145,25 @@ if _has_gpu_acceleration:
         "create_gpu_compression_system"
     ])
 
+# Add transformer compression exports
+if _has_transformer:
+    __all__.extend([
+        "TransformerCompressor",
+        "AdaptiveTransformerCompressor",
+        "create_transformer_compressor"
+    ])
+
 # EMG Compression Algorithms
 try:
     from .emg_compression import (
-        EMGLZCompressor, EMGPerceptualQuantizer, EMGPredictiveCompressor
+        EMGLZCompressor,
+        EMGPerceptualQuantizer,
+        EMGPredictiveCompressor,
     )
-    from .emg_plugins import (
-        get_emg_compressors, create_emg_compressor
-    )
+    from .emg_plugins import create_emg_compressor, get_emg_compressors
     __all__.extend([
         'EMGLZCompressor',
-        'EMGPerceptualQuantizer', 
+        'EMGPerceptualQuantizer',
         'EMGPredictiveCompressor',
         'get_emg_compressors',
         'create_emg_compressor'
@@ -159,7 +182,8 @@ FEATURES = {
     'neural_lz': _has_neural_lz,
     'neural_arithmetic': _has_neural_arithmetic,
     'lossy_neural': _has_lossy_neural,
-    'gpu_acceleration': _has_gpu_acceleration
+    'gpu_acceleration': _has_gpu_acceleration,
+    'transformer': _has_transformer
 }
 
 # At the end, aggregate missing features and warn if any are missing
@@ -180,6 +204,8 @@ if not _has_predictive:
     missing_features.append("Predictive compression")
 if not _has_context_aware:
     missing_features.append("Context-aware compression")
+if not _has_transformer:
+    missing_features.append("Transformer compression")
 if missing_features:
     warnings.warn(f"The following features are unavailable due to missing dependencies: {', '.join(missing_features)}.")
 

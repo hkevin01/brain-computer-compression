@@ -7,9 +7,9 @@ biomedical signal types.
 """
 
 from .emg_quality import (
-    EMGQualityMetrics,
-    evaluate_emg_compression_quality,
-    quick_emg_quality_check
+                          EMGQualityMetrics,
+                          evaluate_emg_compression_quality,
+                          quick_emg_quality_check,
 )
 
 __all__ = [
