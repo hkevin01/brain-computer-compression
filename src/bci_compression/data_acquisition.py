@@ -3,15 +3,36 @@ Data acquisition framework for neural recording devices.
 
 This module provides interfaces for acquiring neural data from various
 recording devices commonly used in BCI applications, including support
-for real-time streaming and data buffering.
+for real-time streaming and data buffering. Extended to support EMG data
+acquisition from common EMG recording formats.
 """
 
 import numpy as np
-from typing import Dict, Optional, Callable, Any, Protocol
+from typing import Dict, Optional, Callable, Any, Protocol, Union
 import time
 import threading
 from queue import Queue
 from abc import ABC, abstractmethod
+from pathlib import Path
+
+# EMG data format imports (with optional dependencies)
+try:
+    import pyedflib
+    HAS_PYEDFLIB = True
+except ImportError:
+    HAS_PYEDFLIB = False
+
+try:
+    import mne
+    HAS_MNE = True
+except ImportError:
+    HAS_MNE = False
+
+try:
+    import h5py
+    HAS_H5PY = True
+except ImportError:
+    HAS_H5PY = False
 
 
 class NeuralDataSource(Protocol):
@@ -473,3 +494,128 @@ def create_test_acquisition_system(
         manager.add_source("simulated", sim_source)
 
     return manager
+
+
+def load_edf_emg_data(file_path: str) -> np.ndarray:
+    """
+    Load EMG data from an EDF file.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the EDF file
+
+    Returns
+    -------
+    np.ndarray
+        EMG data with shape (channels, samples)
+    """
+    if not HAS_PYEDFLIB:
+        raise ImportError("pyedflib is not installed")
+
+    # Open EDF file
+    with pyedflib.EdfReader(file_path) as edf_reader:
+        n_channels = edf_reader.signals_in_file
+        fs = edf_reader.getSampleFrequency(0)  # Assuming all channels have the same frequency
+
+        # Read all signals
+        all_signals = np.array([edf_reader.readSignal(i) for i in range(n_channels)])
+
+    # Transpose to (channels, samples)
+    return all_signals
+
+
+def load_bdf_emg_data(file_path: str) -> np.ndarray:
+    """
+    Load EMG data from a BDF file.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the BDF file
+
+    Returns
+    -------
+    np.ndarray
+        EMG data with shape (channels, samples)
+    """
+    if not HAS_MNE:
+        raise ImportError("mne is not installed")
+
+    # Load BDF file
+    raw = mne.io.read_raw_bdf(file_path, preload=True)
+
+    # Get data as numpy array
+    data = raw.get_data()
+
+    return data
+
+
+def load_hdf5_emg_data(file_path: str, dataset_name: str = 'emg_data') -> np.ndarray:
+    """
+    Load EMG data from an HDF5 file.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the HDF5 file
+    dataset_name : str, default='emg_data'
+        Name of the dataset containing EMG data
+
+    Returns
+    -------
+    np.ndarray
+        EMG data with shape (channels, samples)
+    """
+    if not HAS_H5PY:
+        raise ImportError("h5py is not installed")
+
+    # Load HDF5 file
+    with h5py.File(file_path, 'r') as hdf5_file:
+        # Get the dataset
+        dataset = hdf5_file[dataset_name]
+
+        # Read data
+        data = np.array(dataset)
+
+    return data
+
+
+def load_emg_data(file_path: str, file_format: str = 'auto') -> np.ndarray:
+    """
+    Load EMG data from a file (EDF, BDF, or HDF5).
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the data file
+    file_format : str, default='auto'
+        Format of the data file ('edf', 'bdf', 'hdf5', or 'auto' to detect)
+
+    Returns
+    -------
+    np.ndarray
+        EMG data with shape (channels, samples)
+    """
+    file_path = Path(file_path)
+
+    # Auto-detect file format
+    if file_format == 'auto':
+        if file_path.suffix == '.edf':
+            file_format = 'edf'
+        elif file_path.suffix == '.bdf':
+            file_format = 'bdf'
+        elif file_path.suffix == '.h5' or file_path.suffix == '.hdf5':
+            file_format = 'hdf5'
+        else:
+            raise ValueError(f"Unsupported file format for auto-detection: {file_path.suffix}")
+
+    # Load data using the appropriate function
+    if file_format == 'edf':
+        return load_edf_emg_data(str(file_path))
+    elif file_format == 'bdf':
+        return load_bdf_emg_data(str(file_path))
+    elif file_format == 'hdf5':
+        return load_hdf5_emg_data(str(file_path))
+    else:
+        raise ValueError(f"Unsupported file format: {file_format}")

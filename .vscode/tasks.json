@@ -120,6 +120,34 @@
         "panel": "shared"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Run EMG Integration Test",
+      "type": "shell",
+      "command": "python",
+      "args": ["tests/test_emg_integration.py"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run EMG Demo",
+      "type": "shell",
+      "command": "python",
+      "args": ["examples/emg_demo.py"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
     }
   ]
 }

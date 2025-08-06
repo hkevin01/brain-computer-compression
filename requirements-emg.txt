@@ -1,0 +1,35 @@
+# EMG Extension Requirements
+# Additional dependencies for EMG compression functionality
+
+# Core EMG data handling
+pyedflib>=0.1.30          # EDF/BDF file support
+mne>=1.0.0                # Neurophysiological data processing (optional)
+
+# Signal processing for EMG
+scipy>=1.9.0              # Signal processing functions
+numpy>=1.21.0             # Numerical computing
+
+# Mobile/wearable device support
+psutil>=5.9.0             # System monitoring for power optimization
+
+# Visualization and benchmarking
+matplotlib>=3.5.0         # Plotting and visualization
+seaborn>=0.11.0          # Statistical data visualization (optional)
+
+# Data compression libraries
+zlib                      # Built-in compression
+lz4>=4.0.0               # Fast compression (optional)
+
+# Optional: Advanced signal processing
+pywavelets>=1.3.0        # Wavelet transforms (optional)
+scikit-learn>=1.1.0      # Machine learning for predictive compression (optional)
+
+# Development and testing
+pytest>=7.0.0            # Testing framework
+pytest-cov>=4.0.0       # Coverage reporting
+flake8>=5.0.0           # Code linting
+black>=22.0.0           # Code formatting
+
+# Documentation
+sphinx>=5.0.0           # Documentation generation (optional)
+sphinx-rtd-theme>=1.0.0 # Documentation theme (optional)

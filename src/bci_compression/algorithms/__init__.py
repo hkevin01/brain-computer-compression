@@ -5,10 +5,21 @@ Compression algorithms module with error handling and fallbacks
 import warnings
 from typing import Any, Dict, Optional
 
+# Feature availability flags
+_has_neural_lz = True
+_has_neural_arithmetic = True
+_has_lossy_neural = True
+_has_base_lossy = True
+_has_autoencoder = True
+_has_gpu_acceleration = True
+_has_predictive = True
+_has_context_aware = True
+
 # Import with error handling
 try:
     from .neural_lz import create_neural_lz_compressor
 except ImportError as e:
+    _has_neural_lz = False
     warnings.warn(f"Neural LZ module not available: {e}")
 
     def create_neural_lz_compressor(*args, **kwargs):
@@ -18,6 +29,7 @@ except ImportError as e:
 try:
     from .neural_arithmetic import create_neural_arithmetic_coder
 except ImportError as e:
+    _has_neural_arithmetic = False
     warnings.warn(f"Neural arithmetic module not available: {e}")
 
     def create_neural_arithmetic_coder(*args, **kwargs):
@@ -27,11 +39,29 @@ except ImportError as e:
 try:
     from .lossy_neural import PerceptualQuantizer
 except ImportError as e:
+    _has_lossy_neural = False
     warnings.warn(f"Lossy neural module not available: {e}")
 
     class PerceptualQuantizer:
         def __init__(self, *args, **kwargs):
             raise NotImplementedError("Perceptual quantizer not available")
+
+
+# Placeholder functions for missing algorithms
+def create_predictive_compressor(*args, **kwargs):
+    if not _has_predictive:
+        raise NotImplementedError("Predictive compression not available")
+    # Implementation would go here
+
+def create_context_aware_compressor(*args, **kwargs):
+    if not _has_context_aware:
+        raise NotImplementedError("Context-aware compression not available")
+    # Implementation would go here
+
+def create_gpu_compression_system(*args, **kwargs):
+    if not _has_gpu_acceleration:
+        raise NotImplementedError("GPU compression not available")
+    # Implementation would go here
 
 
 # Export all available functions
@@ -99,6 +129,30 @@ if _has_gpu_acceleration:
         "RealTimeGPUPipeline",
         "create_gpu_compression_system"
     ])
+
+# EMG Compression Algorithms
+try:
+    from .emg_compression import (
+        EMGLZCompressor, EMGPerceptualQuantizer, EMGPredictiveCompressor
+    )
+    from .emg_plugins import (
+        get_emg_compressors, create_emg_compressor
+    )
+    __all__.extend([
+        'EMGLZCompressor',
+        'EMGPerceptualQuantizer', 
+        'EMGPredictiveCompressor',
+        'get_emg_compressors',
+        'create_emg_compressor'
+    ])
+except ImportError as e:
+    warnings.warn(f"EMG compression modules could not be imported: {e}")
+
+# Auto-register EMG plugins
+try:
+    from . import emg_plugins  # This will trigger plugin registration
+except ImportError:
+    pass
 
 # Feature availability flags
 FEATURES = {
