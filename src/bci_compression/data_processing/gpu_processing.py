@@ -3,7 +3,7 @@ GPU-accelerated signal processing for neural data using CUDA.
 """
 
 import warnings
-from typing import Dict, Optional, Tuple, Any
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 

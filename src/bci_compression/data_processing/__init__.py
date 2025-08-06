@@ -4,8 +4,8 @@ Includes both CPU and GPU-accelerated implementations.
 """
 
 from .filters import apply_bandpass_filter, apply_notch_filter
-from .synthetic import generate_synthetic_neural_data
 from .signal_processing import NeuralSignalProcessor
+from .synthetic import generate_synthetic_neural_data
 
 # Temporarily disable GPU imports to avoid CUDA dependency issues
 # try:

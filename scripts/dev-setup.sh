@@ -53,11 +53,11 @@ detect_os() {
 # Check Docker installation
 check_docker() {
     log_info "Checking Docker installation..."
-    
+
     if command_exists docker; then
         DOCKER_VERSION=$(docker --version | cut -d' ' -f3 | cut -d',' -f1)
         log_success "Docker found: $DOCKER_VERSION"
-        
+
         # Check if Docker daemon is running
         if docker info >/dev/null 2>&1; then
             log_success "Docker daemon is running"
@@ -76,7 +76,7 @@ check_docker() {
 # Check Docker Compose installation
 check_docker_compose() {
     log_info "Checking Docker Compose installation..."
-    
+
     if command_exists docker-compose; then
         COMPOSE_VERSION=$(docker-compose --version | cut -d' ' -f3 | cut -d',' -f1)
         log_success "Docker Compose found: $COMPOSE_VERSION"
@@ -96,11 +96,11 @@ check_docker_compose() {
 # Setup Python virtual environment (fallback)
 setup_python_env() {
     log_info "Setting up Python virtual environment as fallback..."
-    
+
     if command_exists python3; then
         PYTHON_VERSION=$(python3 --version | cut -d' ' -f2)
         log_info "Python found: $PYTHON_VERSION"
-        
+
         # Check Python version (minimum 3.8)
         if python3 -c "import sys; exit(0 if sys.version_info >= (3, 8) else 1)"; then
             log_success "Python version is compatible"
@@ -108,20 +108,20 @@ setup_python_env() {
             log_error "Python 3.8+ required. Found: $PYTHON_VERSION"
             return 1
         fi
-        
+
         # Create virtual environment
         if [ ! -d "venv" ]; then
             log_info "Creating Python virtual environment..."
             python3 -m venv venv
             log_success "Virtual environment created"
         fi
-        
+
         # Activate virtual environment
         source venv/bin/activate
-        
+
         # Upgrade pip
         pip install --upgrade pip
-        
+
         # Install dependencies
         log_info "Installing Python dependencies..."
         pip install -r requirements.txt
@@ -129,7 +129,7 @@ setup_python_env() {
             pip install -r requirements-emg.txt
         fi
         pip install -e .
-        
+
         log_success "Python environment setup complete"
         return 0
     else
@@ -141,32 +141,32 @@ setup_python_env() {
 # Setup development environment
 setup_dev_environment() {
     local setup_mode="$1"
-    
+
     case $setup_mode in
         "docker")
             log_info "Setting up Docker development environment..."
-            
+
             # Build development containers
             log_info "Building development containers..."
             docker-compose -f docker-compose.dev.yml build
-            
+
             # Start development environment
             log_info "Starting development environment..."
             docker-compose -f docker-compose.dev.yml up -d
-            
+
             # Wait for services to be ready
             log_info "Waiting for services to start..."
             sleep 30
-            
+
             # Install dependencies
             log_info "Installing dependencies..."
             docker-compose -f docker-compose.dev.yml exec backend pip install -e .
             docker-compose -f docker-compose.dev.yml exec backend pip install -r requirements-emg.txt
-            
+
             # Run quick tests
             log_info "Running quick validation tests..."
             docker-compose -f docker-compose.dev.yml exec backend python tests/test_simple_validation.py
-            
+
             log_success "Docker development environment ready!"
             echo ""
             echo "🎉 Development Environment Started!"
@@ -185,11 +185,11 @@ setup_dev_environment() {
             echo "   • make dev-stop      - Stop environment"
             echo "   • make test          - Run tests"
             ;;
-            
+
         "python")
             log_info "Setting up Python virtual environment..."
             setup_python_env
-            
+
             log_success "Python development environment ready!"
             echo ""
             echo "🎉 Python Environment Started!"
@@ -209,10 +209,10 @@ setup_dev_environment() {
 main() {
     echo ""
     log_info "Detecting system configuration..."
-    
+
     OS=$(detect_os)
     log_info "Operating system: $OS"
-    
+
     # Check for Docker first (preferred)
     if check_docker && check_docker_compose; then
         log_success "Docker environment available"
@@ -235,7 +235,7 @@ main() {
         log_warning "Docker not available, falling back to Python virtual environment"
         setup_dev_environment "python"
     fi
-    
+
     echo ""
     log_success "Development environment setup complete!"
     echo ""

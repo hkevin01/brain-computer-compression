@@ -4,13 +4,13 @@
     "service": "backend",
     "workspaceFolder": "/workspace",
     "shutdownAction": "stopCompose",
-    
+
     // Set environment variables
     "remoteEnv": {
         "PYTHONPATH": "/workspace/src",
         "JUPYTER_ENABLE_LAB": "yes"
     },
-    
+
     // Configure VS Code settings
     "customizations": {
         "vscode": {
@@ -34,7 +34,7 @@
                     "**/node_modules": true
                 }
             },
-            
+
             // Install essential extensions
             "extensions": [
                 // Python development
@@ -43,33 +43,33 @@
                 "ms-python.flake8",
                 "ms-python.pylint",
                 "ms-python.mypy-type-checker",
-                
+
                 // Jupyter notebooks
                 "ms-toolsai.jupyter",
                 "ms-toolsai.jupyter-keymap",
                 "ms-toolsai.jupyter-renderers",
-                
+
                 // Code quality
                 "ms-vscode.test-adapter-converter",
                 "hbenl.vscode-test-explorer",
                 "littlefoxteam.vscode-python-test-adapter",
-                
+
                 // Git and version control
                 "eamodio.gitlens",
                 "mhutchie.git-graph",
-                
+
                 // Docker support
                 "ms-azuretools.vscode-docker",
                 "ms-vscode-remote.remote-containers",
-                
+
                 // Documentation
                 "ms-python.docstring-python",
                 "njpwerner.autodocstring",
-                
+
                 // Data science
                 "ms-toolsai.vscode-ai",
                 "mechatroner.rainbow-csv",
-                
+
                 // Utilities
                 "ms-vscode.vscode-json",
                 "redhat.vscode-yaml",
@@ -78,7 +78,7 @@
             ]
         }
     },
-    
+
     // Forward ports for development
     "forwardPorts": [
         8888,  // Jupyter Lab
@@ -91,7 +91,7 @@
         9090,  // Prometheus
         3001   // Grafana
     ],
-    
+
     // Port attributes
     "portsAttributes": {
         "8888": {
@@ -115,10 +115,10 @@
             "onAutoForward": "notify"
         }
     },
-    
+
     // Post-create setup commands
     "postCreateCommand": "pip install -e . && pre-commit install",
-    
+
     // Development features
     "features": {
         "ghcr.io/devcontainers/features/git:1": {},
@@ -126,13 +126,13 @@
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},
         "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {}
     },
-    
+
     // Mount additional volumes
     "mounts": [
         "source=${localEnv:HOME}/.ssh,target=/home/devuser/.ssh,type=bind,consistency=cached",
         "source=${localEnv:HOME}/.gitconfig,target=/home/devuser/.gitconfig,type=bind,consistency=cached"
     ],
-    
+
     // User settings
     "remoteUser": "devuser",
     "containerUser": "devuser"

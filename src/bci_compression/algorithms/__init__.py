@@ -67,9 +67,9 @@ def create_gpu_compression_system(*args, **kwargs):
 # Transformer compression
 try:
     from .transformer_compression import (
-        TransformerCompressor,
         AdaptiveTransformerCompressor,
-        create_transformer_compressor
+        TransformerCompressor,
+        create_transformer_compressor,
     )
 except ImportError as e:
     _has_transformer = False

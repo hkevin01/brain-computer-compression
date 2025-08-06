@@ -21,11 +21,10 @@ References:
 
 import logging
 import time
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-from scipy import signal
 
 from ..core import BaseCompressor
 
@@ -672,7 +671,7 @@ class TransformerCompressor(BaseCompressor):
 
         # Unpack compressed data using metadata
         n_channels = original_shape[0] if len(original_shape) > 1 else 1
-        
+
         # Reconstruct channels (simplified)
         # In practice, this would use the transformer decoder
         reconstructed_channels = []

@@ -78,7 +78,7 @@ class TestNeuralAlgorithms(unittest.TestCase):
 
             # Use smaller data for faster testing
             test_data = self.neural_data[:8, :1000]  # 8 channels, 1000 samples
-            
+
             # Test compression
             compressed = compressor.compress(test_data)
             decompressed = compressor.decompress(compressed)
