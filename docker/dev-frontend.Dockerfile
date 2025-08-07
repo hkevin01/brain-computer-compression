@@ -27,14 +27,8 @@ RUN apt-get update && apt-get install -y \
     # Cleanup
     && rm -rf /var/lib/apt/lists/*
 
-# Create development user
-RUN groupadd -r devuser && useradd -r -g devuser devuser
-RUN mkdir -p /home/devuser && chown devuser:devuser /home/devuser
-USER devuser
-WORKDIR /workspace
-
-# Install global development tools
-RUN npm install -g \
+# Install global development tools as root first
+RUN npm install -g --force \
     # Package managers
     yarn \
     pnpm \
@@ -61,13 +55,21 @@ RUN npm install -g \
     http-server \
     concurrently
 
-# Install Playwright browsers (for testing)
-RUN npx playwright install --with-deps chromium firefox webkit
+# Create development user
+RUN groupadd -r devuser && useradd -r -g devuser devuser
+RUN mkdir -p /home/devuser && chown devuser:devuser /home/devuser
 
 # Set up development environment
 ENV NODE_ENV=development
 ENV NPM_CONFIG_PREFIX=/home/devuser/.npm-global
 ENV PATH="/home/devuser/.npm-global/bin:${PATH}"
+
+# Switch to development user
+USER devuser
+WORKDIR /workspace
+
+# Install Playwright browsers (for testing) as devuser
+RUN npx playwright install --with-deps chromium firefox webkit
 
 # Expose common frontend development ports
 EXPOSE 3000 3001 4000 4173 5173 8080 9000

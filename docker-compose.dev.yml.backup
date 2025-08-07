@@ -1,7 +1,14 @@
 version: '3.8'
 
 services:
-  # Backend development container
+  # Main   # Frontend development environment
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/dev-frontend.Dockerfile
+    container_name: bci-frontend-dev
+    volumes:
+      - ./dashboard:/workspace:cacheddevelopment environment
   backend:
     build:
       context: .
@@ -13,8 +20,8 @@ services:
       - ./examples:/workspace/examples:cached
       - ./docs:/workspace/docs:cached
       - ./requirements*.txt:/workspace/
-      - backend-cache:/home/developer/.cache
-      - jupyter-data:/home/developer/.jupyter
+      - backend-cache:/home/devuser/.cache
+      - jupyter-data:/home/devuser/.jupyter
     ports:
       - "8888:8888"  # Jupyter Lab
       - "8000:8000"  # FastAPI/Django
@@ -22,9 +29,6 @@ services:
     environment:
       - PYTHONPATH=/workspace/src
       - JUPYTER_ENABLE_LAB=yes
-      - DATABASE_URL=postgresql://devuser:devpass@postgres:5432/bci_compression
-      - REDIS_URL=redis://redis:6379/0
-      - MONGODB_URL=mongodb://devuser:devpass@mongodb:27017/bci_compression
     networks:
       - dev-network
     depends_on:
@@ -36,16 +40,16 @@ services:
       timeout: 10s
       retries: 3
 
-  # Frontend development container
+  # Frontend development environment
   frontend:
     build:
-      context: .
+      context: ..
       dockerfile: docker/dev-frontend.Dockerfile
     container_name: bci-frontend-dev
     volumes:
-      - ./dashboard:/workspace:cached
+      - ../dashboard:/workspace:cached
       - frontend-node-modules:/workspace/node_modules
-      - frontend-cache:/home/developer/.cache
+      - frontend-cache:/home/devuser/.cache
     ports:
       - "3000:3000"  # React/Vite dev server
       - "4173:4173"  # Vite preview
@@ -54,10 +58,23 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - FAST_REFRESH=true
-      - VITE_API_URL=http://localhost:8000
     networks:
       - dev-network
     command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+  # Development tools and utilities
+  tools:
+    build:
+      context: ..
+      dockerfile: docker/dev-tools.Dockerfile
+    container_name: bci-tools-dev
+    volumes:
+      - ..:/workspace:cached
+      - tools-cache:/home/devuser/.cache
+      - tools-go:/home/devuser/go
+    networks:
+      - dev-network
+    command: ["tail", "-f", "/dev/null"]
 
   # PostgreSQL database
   postgres:
@@ -70,6 +87,7 @@ services:
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
     ports:
       - "5432:5432"
     networks:
@@ -107,6 +125,7 @@ services:
       - MONGO_INITDB_DATABASE=bci_compression
     volumes:
       - mongodb-data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d:ro
     ports:
       - "27017:27017"
     networks:
@@ -138,9 +157,80 @@ services:
       timeout: 20s
       retries: 3
 
-networks:
-  dev-network:
-    driver: bridge
+  # NGINX reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: bci-nginx-dev
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - dev-network
+    depends_on:
+      - backend
+      - frontend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Elasticsearch for search capabilities
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: bci-elasticsearch-dev
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Prometheus monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: bci-prometheus-dev
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - dev-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+  # Grafana dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: bci-grafana-dev
+    environment:
+      - GF_SECURITY_ADMIN_USER=devuser
+      - GF_SECURITY_ADMIN_PASSWORD=devpass
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-dashboards:/etc/grafana/provisioning/dashboards:ro
+    ports:
+      - "3001:3000"
+    networks:
+      - dev-network
+    depends_on:
+      - prometheus
 
 volumes:
   # Application data
@@ -148,9 +238,23 @@ volumes:
   frontend-node-modules:
   frontend-cache:
   jupyter-data:
+  tools-cache:
+  tools-go:
 
   # Database volumes
   postgres-data:
   redis-data:
   mongodb-data:
   minio-data:
+  elasticsearch-data:
+
+  # Monitoring volumes
+  prometheus-data:
+  grafana-data:
+
+networks:
+  dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
