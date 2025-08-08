@@ -228,11 +228,11 @@ The Docker setup creates/uses these files:
 ```
 brain-computer-compression/
 ├── run.sh                    # Main orchestration script
-├── Dockerfile               # Backend build definition
-├── docker-compose.yml       # Service orchestration
+├── docker/Dockerfile               # Backend build definition
+├── docker/compose/docker-compose.yml # Service orchestration
 ├── requirements-backend.txt # Minimal dependencies
 ├── dashboard/
-│   ├── Dockerfile          # GUI build definition
+│   ├── docker/Dockerfile          # GUI build definition
 │   └── ...                 # React/Vite source
 └── gui/                    # Auto-generated (if created)
     ├── index.html

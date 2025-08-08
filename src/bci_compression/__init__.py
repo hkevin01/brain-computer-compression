@@ -14,19 +14,15 @@ Features:
 
 __version__ = "0.8.0"
 __author__ = "Kevin"
-__email__ = "contact@bci-compression.org"
+__email__ = ""  # No email provided
 __license__ = "MIT"
 __copyright__ = "Copyright 2025 Kevin"
 
 # Import core modules with error handling
 try:
     from .core import BaseCompressor, CompressionResult
-    from .mobile import (
-        MobileBCICompressor,
-        MobileStreamingPipeline,
-        PowerOptimizer,
-        MobileMetrics,
-    )
+    from .mobile import (MobileBCICompressor, MobileMetrics,
+                         MobileStreamingPipeline, PowerOptimizer)
     from .plugins import get_plugin, register_plugin
     try:
         from .utils.configuration import load_config, setup_logging

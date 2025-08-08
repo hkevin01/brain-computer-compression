@@ -65,7 +65,7 @@ setup(
     name="bci-compression",
     version=version,
     author="Kevin",
-    author_email="contact@bci-compression.org",
+    author_email="",  # No email provided
     description="Neural data compression toolkit for brain-computer interfaces",
     long_description=long_description,
     long_description_content_type="text/markdown",

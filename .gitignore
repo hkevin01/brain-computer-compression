@@ -207,8 +207,32 @@ config/secrets.yaml
 .env.local
 
 # Logs and test outputs
-logs/
-*.log
+# Reorganization: Files moved to organized subdirectories
+/CHANGELOG.md
+/CONTRIBUTING.md
+/DOCKER_BUILD_FIX.md
+/DOCKER_QUICK_START.md
+/BCI_Validation_Framework_Summary.md
+/EMG_UPDATE.md
+/STATUS_REPORT.md
+/README_NEW.md
+/Dockerfile
+/Dockerfile.frontend
+/Dockerfile.minimal
+/.dockerignore
+/docker-compose*.yml
+/setup.sh
+/setup_and_test.*
+/*_fix.sh
+/*_test*.sh
+/*cleanup*.sh
+/reorganize_root.sh
+/execute_reorganization.sh
+/benchmark_results.json
+/test_output.log
+
+# Root directory cleanup
+/package.json
 
 # VS Code settings
 .vscode/
@@ -230,3 +254,15 @@ coverage.xml
 # Additional Python cache
 *.pyo
 *.pyd
+
+# Reorganization: Files in new locations
+/docs/project/benchmark_results.json
+/logs/test_output.log
+/docker/Dockerfile.minimal
+/docker/Dockerfile.frontend
+
+# Reorganization: Files in new locations
+/docs/project/benchmark_results.json
+/logs/test_output.log
+/docker/Dockerfile.minimal
+/docker/Dockerfile.frontend

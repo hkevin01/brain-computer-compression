@@ -57,7 +57,7 @@ NO_CACHE=1 ./run.sh build
 
 2. **Check Dockerfile for problematic lines:**
    ```bash
-   grep -n "pip install.*\.$" Dockerfile
+   grep -n "pip install.*\.$" docker/Dockerfile
    ```
    Should return no results (empty output)
 
@@ -76,7 +76,7 @@ NO_CACHE=1 ./run.sh build
 ### Option A: Use Minimal Dockerfile
 If issues persist, use the minimal Dockerfile that avoids package installation:
 ```bash
-cp Dockerfile.minimal Dockerfile
+cp docker/Dockerfile.minimal docker/Dockerfile
 ./run.sh build
 ```
 
