@@ -19,28 +19,47 @@ def read_version():
 
 
 def read_description():
-    """Read long description from README.md (fallback for Docker builds)."""
+    """Read long description from README.md with robust fallback handling."""
+
+    # If running in Docker build context, skip reading files to avoid errors
+    if os.environ.get('DOCKER_BUILD_CONTEXT') == '1':
+        return "Neural data compression toolkit for brain-computer interfaces"
+
     readme_paths = [
         os.path.join(here, "README.md"),
         os.path.join(here, "README_NEW.md"),
         os.path.join(here, "..", "README.md"),  # In case we're in src/
+        # Additional fallback paths
+        os.path.join(os.getcwd(), "README.md"),
+        os.path.join(os.getcwd(), "README_NEW.md"),
     ]
 
     for readme_path in readme_paths:
-        if os.path.exists(readme_path):
-            try:
+        try:
+            if os.path.exists(readme_path) and os.path.isfile(readme_path):
                 with codecs.open(readme_path, "r", "utf-8") as readme_file:
-                    return readme_file.read()
-            except Exception:
-                continue
+                    content = readme_file.read()
+                    if content and len(content.strip()) > 0:
+                        return content
+        except (IOError, OSError, UnicodeDecodeError, PermissionError):
+            continue
 
-    # Fallback description if no README found
+    # Ultimate fallback description
     return "Neural data compression toolkit for brain-computer interfaces"
 
 
-# Get package version and description
-version = read_version()
-long_description = read_description()
+# Get package version and description with robust error handling
+try:
+    version = read_version()
+except Exception as e:
+    print(f"Warning: Could not read version from __init__.py: {e}")
+    version = "0.1.0"
+
+try:
+    long_description = read_description()
+except Exception as e:
+    print(f"Warning: Could not read README files: {e}")
+    long_description = "Neural data compression toolkit for brain-computer interfaces"
 
 setup(
     name="bci-compression",

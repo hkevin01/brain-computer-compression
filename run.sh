@@ -632,9 +632,41 @@ build_images() {
     [[ -n "${NO_CACHE}" ]] && build_extra+=(--no-cache)
     [[ -n "${QUIET_BUILD}" ]] && build_extra+=(--quiet)
 
+    # Debug information
+    if [[ "${DEBUG_BUILD}" == "1" ]]; then
+        info "🔍 Build Debug Information:"
+        info "  Dockerfile path: $(pwd)/Dockerfile"
+        info "  Docker BuildKit: ${DOCKER_BUILDKIT}"
+        info "  Platform: ${DOCKER_PLATFORM:-default}"
+        info "  Build args: $(build_args_flags)"
+        info "  Extra flags: ${build_extra[*]}"
+
+        # Check for common issues
+        if ! [ -f "requirements-backend.txt" ]; then
+            warn "Missing requirements-backend.txt file"
+        fi
+
+        if grep -q "pip install.*\.$" Dockerfile 2>/dev/null; then
+            warn "⚠️  Found 'pip install .' in Dockerfile - this may cause issues"
+            warn "   Consider using the fix script: ./fix_docker_build.sh"
+        fi
+
+        if grep -q "^\*\.md$" .dockerignore 2>/dev/null && ! grep -q "!README\.md" .dockerignore 2>/dev/null; then
+            warn "⚠️  .dockerignore excludes *.md but doesn't allow README.md"
+            warn "   This may cause setup.py to fail reading README"
+        fi
+    fi
+
     # Build backend
     info "Building backend image: ${IMAGE_NAME}"
-    docker build "${build_extra[@]}" $(build_args_flags) -t "${IMAGE_NAME}" .
+    if ! docker build "${build_extra[@]}" $(build_args_flags) -t "${IMAGE_NAME}" . ; then
+        error "Backend build failed!"
+        info "💡 Troubleshooting options:"
+        info "   1. Run with debug: DEBUG_BUILD=1 ./run.sh build"
+        info "   2. Clear cache: NO_CACHE=1 ./run.sh build"
+        info "   3. Use fix script: ./fix_docker_build.sh"
+        return 1
+    fi
 
     # Build GUI if exists
     if gui_exists; then

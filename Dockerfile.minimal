@@ -1,0 +1,73 @@
+# Minimal Dockerfile that avoids setup.py issues completely
+FROM python:3.11-slim AS builder
+
+ARG USE_FULL_REQ=0
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy requirements files
+COPY requirements-backend.txt requirements-backend.txt
+COPY requirements.txt requirements.txt
+
+# Upgrade pip first
+RUN python -m pip install --upgrade pip setuptools wheel
+
+# Install dependencies only (not the package itself)
+RUN if [ "${USE_FULL_REQ}" = "1" ]; then \
+    echo "Installing FULL requirements.txt" && \
+    python -m pip install --no-cache-dir -r requirements.txt ; \
+    else \
+    echo "Installing MINIMAL requirements-backend.txt" && \
+    python -m pip install --no-cache-dir -r requirements-backend.txt ; \
+    fi
+
+# Copy source code (but don't install as package)
+COPY . .
+
+# Validate dependencies are installed correctly
+RUN python -c "import fastapi, uvicorn, numpy, scipy; print('Dependencies OK')"
+
+# Final runtime stage
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000 \
+    LOG_LEVEL=info
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy installed packages and source code
+COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
+COPY --from=builder /build/scripts/ /app/scripts/
+COPY --from=builder /build/src/ /app/src/
+
+# Create non-root user
+RUN useradd -m -r bciuser && chown -R bciuser:bciuser /app
+USER bciuser
+
+# Set Python path to find modules
+ENV PYTHONPATH=/app/src:/app
+
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -fsS http://localhost:${PORT}/health || exit 1
+
+# Run the server directly
+ENTRYPOINT ["uvicorn"]
+CMD ["scripts.telemetry_server:app", "--host", "0.0.0.0", "--port", "8000"]

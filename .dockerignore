@@ -7,8 +7,10 @@
 .gitattributes
 .gitmodules
 
-# Documentation
+# Documentation (exclude most but keep essential READMEs for setup.py)
 *.md
+!README.md
+!README_NEW.md
 docs/
 .readthedocs.yml
 
