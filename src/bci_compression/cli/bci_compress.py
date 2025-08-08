@@ -29,9 +29,12 @@ from bci_compression import __version__
 from bci_compression.algorithms import FEATURES
 from bci_compression.core import create_compressor
 from bci_compression.data_acquisition import iter_mmap_chunks
+from bci_compression.plugins import list_plugins
+
+SIDE_EXT = ".json"  # metadata sidecar extension
 
 
-def list_compressors() -> Dict[str, Any]:
+def list_feature_flags() -> Dict[str, Any]:
     return dict(FEATURES)
 
 
@@ -49,11 +52,17 @@ def load_array(path: str) -> np.ndarray:
         raise ValueError(f'Unsupported input format: {p.suffix}')
 
 
-def cmd_list(_args: argparse.Namespace) -> int:
-    feats = list_compressors()
-    print('Available feature flags:')
-    for k, v in feats.items():
-        print(f'  {k}: {"yes" if v else "no"}')
+def cmd_list(args: argparse.Namespace) -> int:
+    plugins = list_plugins()
+    if args.json:
+        print(json.dumps({'plugins': plugins, 'feature_flags': list_feature_flags()}, indent=2))
+    else:
+        print('Available plugins:')
+        for name in plugins:
+            print(f'  - {name}')
+        print('\nFeature flags:')
+        for k, v in list_feature_flags().items():
+            print(f'  {k}: {"yes" if v else "no"}')
     return 0
 
 
@@ -65,30 +74,61 @@ def cmd_compress(args: argparse.Namespace) -> int:
     dt = time.perf_counter() - t0
     out_path = Path(args.output)
     out_path.write_bytes(data)
+    # augment metadata
+    meta.update({
+        'plugin': args.plugin,
+        'input_shape': list(arr.shape),
+        'input_dtype': str(arr.dtype),
+        'wall_time_s': dt,
+        'bytes_compressed': len(data),
+        'bytes_original': int(arr.nbytes),
+    })
+    # compression ratio fallback
+    if 'compression_ratio' not in meta and arr.nbytes:
+        meta['compression_ratio'] = arr.nbytes / max(len(data), 1)
+    # write sidecar
+    sidecar = out_path.with_suffix(out_path.suffix + SIDE_EXT)
+    sidecar.write_text(json.dumps(meta, indent=2))
     if args.metrics:
-        meta['wall_time_s'] = dt
-        meta['input_shape'] = list(arr.shape)
-        meta['input_dtype'] = str(arr.dtype)
         print(json.dumps(meta, indent=2 if not args.json else None))
     else:
-        print(f'Compressed {arr.shape} -> {len(data)} bytes in {dt * 1000:.2f} ms; ratio {meta.get("compression_ratio", 0):.2f}x')
+        print(f"Compressed {arr.shape} -> {len(data)} bytes in {dt * 1000:.2f} ms; ratio {meta.get('compression_ratio', 0):.2f}x (metadata: {sidecar.name})")
     return 0
 
 
+def _load_sidecar_for(compressed_path: Path) -> Dict[str, Any]:
+    side = compressed_path.with_suffix(compressed_path.suffix + SIDE_EXT)
+    if side.exists():
+        try:
+            return json.loads(side.read_text())
+        except Exception:
+            return {}
+    return {}
+
+
 def cmd_decompress(args: argparse.Namespace) -> int:
-    comp_bytes = Path(args.input).read_bytes()
-    # Need metadata; minimal stub expects none; real implementations require sidecar JSON
-    metadata: Dict[str, Any] = {}
-    compressor = create_compressor(args.plugin, config=None)
+    comp_path = Path(args.input)
+    comp_bytes = comp_path.read_bytes()
+    metadata: Dict[str, Any] = _load_sidecar_for(comp_path)
+    if args.plugin and metadata.get('plugin') and metadata['plugin'] != args.plugin:
+        print(f"Warning: sidecar plugin '{metadata['plugin']}' differs from requested '{args.plugin}'", file=sys.stderr)
+    plugin = metadata.get('plugin', args.plugin)
+    compressor = create_compressor(plugin, config=None)
     t0 = time.perf_counter()
     arr = compressor.decompress(comp_bytes, metadata)
     dt = time.perf_counter() - t0
     if args.output:
         np.save(args.output, arr)
-    if args.metrics:
-        print(json.dumps({'shape': list(arr.shape), 'dtype': str(arr.dtype), 'wall_time_s': dt}, indent=2 if not args.json else None))
+    result = {
+        'shape': list(arr.shape),
+        'dtype': str(arr.dtype),
+        'wall_time_s': dt,
+        'plugin': plugin,
+    }
+    if args.metrics or args.json:
+        print(json.dumps(result, indent=2 if not args.json else None))
     else:
-        print(f'Decompressed to shape {arr.shape} in {dt * 1000:.2f} ms')
+        print(f"Decompressed to shape {arr.shape} in {dt * 1000:.2f} ms")
     return 0
 
 
@@ -113,8 +153,12 @@ def cmd_stream(args: argparse.Namespace) -> int:
         'compression_ratio': overall_ratio,
         'throughput_mb_s': (total_in / 1e6) / elapsed if elapsed > 0 else 0.0,
         'wall_time_s': elapsed,
+        'plugin': args.plugin,
     }
-    print(json.dumps(summary, indent=2 if not args.json else None) if args.metrics else f'Stream ratio {overall_ratio:.2f}x in {elapsed:.2f}s')
+    if args.metrics or args.json:
+        print(json.dumps(summary, indent=2 if not args.json else None))
+    else:
+        print(f'Stream ratio {overall_ratio:.2f}x in {elapsed:.2f}s')
     return 0
 
 
@@ -124,6 +168,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest='command', required=True)
 
     sp_list = sub.add_parser('list', help='List available compressors')
+    sp_list.add_argument('--json', action='store_true')
     sp_list.set_defaults(func=cmd_list)
 
     sp_comp = sub.add_parser('compress', help='Compress an input array file (.npy/.npz)')
@@ -163,7 +208,5 @@ def main(argv: Any = None) -> int:
     return int(rc)
 
 
-if __name__ == '__main__':  # pragma: no cover
-    sys.exit(main())
 if __name__ == '__main__':  # pragma: no cover
     sys.exit(main())
