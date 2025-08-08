@@ -1,111 +1,47 @@
-name: bci-compression
+version: "3.9"
 
 services:
   api:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./data:/app/data:ro
-      - ./logs:/app/logs
-    environment:
-      - PYTHONPATH=/app/src
-      - BCI_COMPRESSION_ENV=${ENV:-development}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - redis
-
-  worker:
     build:
       context: .
-      dockerfile: docker/Dockerfile.worker
-    volumes:
-      - ./data:/app/data:ro
-      - ./logs:/app/logs
+      dockerfile: Dockerfile
+    image: ${IMAGE_NAME:-bci-compression-backend:local}
+    container_name: ${SERVICE_NAME:-api}
     environment:
-      - PYTHONPATH=/app/src
-      - BCI_COMPRESSION_ENV=${ENV:-development}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - CUDA_VISIBLE_DEVICES=0
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - redis
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-
-  redis:
-    image: redis:7.0-alpine
-    command: redis-server --save 60 1 --loglevel warning
-    volumes:
-      - redis-data:/data
+      - PYTHONUNBUFFERED=1
+      - PORT=8000
+    env_file:
+      - ${ENV_FILE:-.env}
     ports:
-      - "6379:6379"
-
-volumes:
-  redis-data:
+      - "${PORTS:-8000:8000}"
     volumes:
-      - redis-data:/data
+      - ./:/app:rw
+    working_dir: /app
+    command: ["uvicorn", "scripts.telemetry_server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
-  prometheus:
-    image: prom/prometheus:v2.30.3
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
-
-  grafana:
-    image: grafana/grafana:8.2.2
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - grafana-data:/var/lib/grafana
-      - ./config/grafana/provisioning:/etc/grafana/provisioning
-    depends_on:
-      - prometheus
-
-  otel-collector:
-    image: otel/opentelemetry-collector:0.33.0
-    command: ["--config=/etc/otel-collector-config.yaml"]
-    volumes:
-      - ./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    ports:
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
-      - "8888:8888"   # metrics
-    depends_on:
-      - prometheus
-
-  marketplace:
+  gui:
     build:
-      context: .
-      dockerfile: docker/Dockerfile.marketplace
-    ports:
-      - "8080:8080"
+      context: dashboard
+      dockerfile: Dockerfile
+      target: dev
+    image: ${GUI_IMAGE_NAME:-bci-compression-gui:local}
+    container_name: ${GUI_SERVICE_NAME:-gui}
     environment:
-      - MONGODB_URL=mongodb://mongodb:27017
-      - JWT_SECRET=your-secret-key
-    depends_on:
-      - mongodb
-
-  mongodb:
-    image: mongo:5.0
+      - VITE_BACKEND_URL=${API_URL_INTERNAL:-http://api:8000}
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
     ports:
-      - "27017:27017"
+      - "${GUI_PORT:-3000}:5173"
     volumes:
-      - mongodb-data:/data/db
+      - dashboard:/app:rw
+    depends_on:
+      - api
 
-volumes:
-  redis-data:
-  prometheus-data:
-  grafana-data:
-  mongodb-data:
+networks:
+  default:
+    name: bci-compression-net

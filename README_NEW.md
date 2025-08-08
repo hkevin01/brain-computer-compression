@@ -100,28 +100,45 @@ Brain-computer interfaces and biomedical devices generate massive amounts of neu
 ### Quick Setup and Testing
 
 ```bash
-# Quick setup with automatic validation (Linux/Mac)
-chmod +x setup_and_test.sh
-./setup_and_test.sh
+# 🐳 Docker (Recommended - One Command Setup)
+./run.sh up           # Build and start backend + GUI
+./run.sh gui:open     # Open GUI in browser
+./run.sh status       # Check everything is running
 
-# Windows
-setup_and_test.bat
+# 🔧 Advanced Docker commands
+./run.sh gui:create   # Generate minimal GUI if missing
+./run.sh build        # Build images only
+./run.sh logs         # View backend logs
+./run.sh shell        # Access backend container
+./run.sh down         # Stop everything
 
-# Manual installation
+# 📦 Manual installation (alternative)
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 pip install -r requirements-emg.txt
 pip install -e .
 
-# Quick functionality test (2 minutes)
-make test-quick
+# 🧪 Testing
+./run.sh exec api "pytest tests/ -v"  # Test in container
+# OR manually:
+make test-quick       # 2 minutes
+make test             # 10 minutes
+make test-comprehensive  # 30 minutes
+```
 
-# Standard testing (10 minutes)
-make test
+#### Docker Environment Variables
 
-# Comprehensive validation (30 minutes)
-make test-comprehensive
+```bash
+# Customize ports and settings
+GUI_PORT=3001 ./run.sh up                    # GUI on different port
+DEV_MODE=false ./run.sh up                   # Production mode
+BUILD_ARGS="USE_FULL_REQ=1" ./run.sh build  # Full dependencies
+
+# Available services after ./run.sh up:
+# Backend API: http://localhost:8000
+# GUI Dashboard: http://localhost:3000 (or GUI_PORT)
+# Health Check: http://localhost:8000/health
 ```
 
 ### Quick Examples

@@ -104,7 +104,7 @@
         "focus": false,
         "panel": "shared"
       },
-      "problemMatcher": ["$flake8"]
+      "problemMatcher": ["$python"]
     },
     {
       "label": "Start Jupyter Lab",
@@ -140,6 +140,118 @@
       "type": "shell",
       "command": "python",
       "args": ["examples/emg_demo.py"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Build",
+      "type": "shell",
+      "command": "./run.sh",
+      "args": ["build"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Start Services",
+      "type": "shell",
+      "command": "./run.sh",
+      "args": ["up"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Stop Services",
+      "type": "shell",
+      "command": "./run.sh",
+      "args": ["down"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: View Logs",
+      "type": "shell",
+      "command": "./run.sh",
+      "args": ["logs"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Shell Access",
+      "type": "shell",
+      "command": "./run.sh",
+      "args": ["shell"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Status Check",
+      "type": "shell",
+      "command": "./run.sh",
+      "args": ["status"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Open GUI",
+      "type": "shell",
+      "command": "./run.sh",
+      "args": ["gui:open"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Docker Workflow",
+      "type": "shell",
+      "command": "bash",
+      "args": ["test_docker_workflow.sh"],
       "group": "test",
       "presentation": {
         "echo": true,

@@ -1,8 +1,8 @@
 """Setup configuration for BCI Compression Toolkit."""
 import codecs
 import os
-from setuptools import setup, find_packages
 
+from setuptools import find_packages, setup
 
 # Get the absolute path to the directory containing this file
 here = os.path.abspath(os.path.dirname(__file__))
@@ -19,9 +19,23 @@ def read_version():
 
 
 def read_description():
-    """Read long description from README.md."""
-    with codecs.open(os.path.join(here, "README.md"), "r", "utf-8") as readme_file:
-        return readme_file.read()
+    """Read long description from README.md (fallback for Docker builds)."""
+    readme_paths = [
+        os.path.join(here, "README.md"),
+        os.path.join(here, "README_NEW.md"),
+        os.path.join(here, "..", "README.md"),  # In case we're in src/
+    ]
+
+    for readme_path in readme_paths:
+        if os.path.exists(readme_path):
+            try:
+                with codecs.open(readme_path, "r", "utf-8") as readme_file:
+                    return readme_file.read()
+            except Exception:
+                continue
+
+    # Fallback description if no README found
+    return "Neural data compression toolkit for brain-computer interfaces"
 
 
 # Get package version and description
