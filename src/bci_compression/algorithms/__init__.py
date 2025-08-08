@@ -209,4 +209,22 @@ if not _has_transformer:
 if missing_features:
     warnings.warn(f"The following features are unavailable due to missing dependencies: {', '.join(missing_features)}.")
 
+try:
+    from .spike_codec import SpikeCodec, create_spike_codec  # noqa: F401
+    __all__.extend([
+        'SpikeCodec',
+        'create_spike_codec'
+    ])
+except Exception:
+    pass
+
+try:
+    from .spatial_model import OnlineDecorrelator, PredictiveCrossChannel  # noqa: F401
+    __all__.extend([
+        'OnlineDecorrelator',
+        'PredictiveCrossChannel'
+    ])
+except Exception:
+    pass
+
 # algorithms package init
