@@ -620,3 +620,188 @@ def load_emg_data(file_path: str, file_format: str = 'auto') -> np.ndarray:
         return load_hdf5_emg_data(str(file_path))
     else:
         raise ValueError(f"Unsupported file format: {file_format}")
+
+
+# ---------------- Phase 4 Additions: NWB / MNE Adapters & Unified Scaling ----------------
+
+try:  # Optional imports
+    import pynwb  # type: ignore
+    HAS_PYNWB = True
+except Exception:  # pragma: no cover
+    HAS_PYNWB = False
+
+
+def _scale_to_float32(arr: np.ndarray, scale: Optional[float] = None) -> np.ndarray:
+    """Convert integer / other dtypes to float32 applying scale if provided.
+
+    Heuristics:
+      - int16/int32 assumed to be microvolts if scale not provided; scale inferred so that max abs -> ~500 (arbitrary normalization) else use given scale.
+      - Already float: cast to float32 only.
+    """
+    if arr.dtype in (np.int16, np.int32, np.int8):
+        if scale is None:
+            max_abs = np.max(np.abs(arr)) or 1
+            scale = 500.0 / max_abs
+        arr = arr.astype(np.float32) * float(scale)
+    else:
+        arr = arr.astype(np.float32, copy=False)
+    return arr
+
+
+def iter_mmap_chunks(file_path: str, dataset: str = 'data', chunk_samples: int = 30_000, axis_channels_first: bool = True):
+    """Iterate over large array stored in .npy/.npz/.h5 using memory mapping.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to file (.npy, .npz, .h5/.hdf5)
+    dataset : str
+        Dataset key if HDF5/NPZ
+    chunk_samples : int
+        Number of samples per yielded chunk
+    axis_channels_first : bool
+        If True, data assumed (channels, samples) else (samples, channels)
+    """
+    p = Path(file_path)
+    if p.suffix == '.npy':
+        mm = np.load(p, mmap_mode='r')  # type: ignore
+        data = mm
+    elif p.suffix == '.npz':
+        with np.load(p) as z:
+            data = z[dataset]
+    elif p.suffix in ('.h5', '.hdf5'):
+        if not HAS_H5PY:
+            raise ImportError('h5py required for HDF5 memory mapping')
+        import h5py  # type: ignore
+        h = h5py.File(p, 'r')
+        data = h[dataset]
+    else:
+        raise ValueError(f"Unsupported file extension for mmap iterator: {p.suffix}")
+
+    if not axis_channels_first:
+        # transpose view lazily
+        data_view = np.swapaxes(data, 0, 1)
+    else:
+        data_view = data
+
+    n_channels, n_samples = data_view.shape
+    for start in range(0, n_samples, chunk_samples):
+        end = min(start + chunk_samples, n_samples)
+        chunk = np.array(data_view[:, start:end])  # materialize slice to ndarray
+        yield chunk
+
+    # Close file handle if HDF5
+    if p.suffix in ('.h5', '.hdf5'):
+        try:
+            h.close()  # type: ignore[name-defined]
+        except Exception:  # pragma: no cover
+            pass
+
+
+class NWBAdapter(FileDataAcquisition):
+    """Adapter for NWB (Neurodata Without Borders) files using PyNWB.
+
+    Loads ElectricalSeries data and streams in chunks with unified scaling.
+    """
+
+    def __init__(self, file_path: str, electrical_series: Optional[str] = None, buffer_duration: float = 1.0, loop_data: bool = False, playback_speed: float = 1.0):
+        if not HAS_PYNWB:
+            raise ImportError('pynwb not installed; install with extra [nwb]')
+        self._nwb_file_path = file_path
+        self._electrical_series_name = electrical_series
+        with pynwb.NWBHDF5IO(file_path, 'r') as io:  # type: ignore
+            nwbfile = io.read()
+            es = None
+            if electrical_series and electrical_series in nwbfile.acquisition:
+                es = nwbfile.acquisition[electrical_series]
+            else:
+                # pick first ElectricalSeries
+                for obj in nwbfile.acquisition.values():
+                    if obj.__class__.__name__ == 'ElectricalSeries':
+                        es = obj
+                        break
+            if es is None:
+                raise ValueError('No ElectricalSeries found in NWB file')
+            data_shape = es.data.shape  # (samples, channels) or (channels, samples)
+            # Heuristic orientation: assume (samples, channels)
+            _samples = data_shape[0]
+            channels = data_shape[1] if len(data_shape) > 1 else 1
+            sampling_rate = getattr(es, 'starting_rate', None) or getattr(es, 'rate', None) or 30_000.0
+        super().__init__(file_path=file_path, sampling_rate=sampling_rate, buffer_duration=buffer_duration, loop_data=loop_data, playback_speed=playback_speed)
+        self.n_channels = channels
+        self.chunk_size = int(sampling_rate * 0.01)
+        self._es_name = es.name if es else electrical_series
+
+    def _load_data_file(self) -> np.ndarray:  # Override parent file load with on-demand reading
+        # For NWB we defer full load; return an empty placeholder sized (channels, 0)
+        return np.zeros((self.n_channels, 0), dtype=np.float32)
+
+    def _acquire_data_chunk(self) -> Optional[np.ndarray]:
+        if not HAS_PYNWB:
+            return None
+        with pynwb.NWBHDF5IO(self._nwb_file_path, 'r') as io:  # reopen each chunk (could optimize persistent handle)
+            nwbfile = io.read()
+            es = nwbfile.acquisition[self._es_name]
+            # Determine current position using internal file_index from parent if exists
+            if not hasattr(self, 'file_index'):
+                self.file_index = 0  # type: ignore[attr-defined]
+            start = self.file_index  # type: ignore[attr-defined]
+            end = min(start + self.chunk_size, es.data.shape[0])
+            if start >= es.data.shape[0]:
+                if self.loop_data:
+                    self.file_index = 0  # type: ignore[attr-defined]
+                    return self._acquire_data_chunk()
+                return None
+            data = es.data[start:end, :]  # (samples, channels)
+            self.file_index = end  # type: ignore[attr-defined]
+            data = np.array(data).T  # -> (channels, samples)
+            data = _scale_to_float32(data, scale=None)
+            return data
+
+
+class MNEAdapter(FileDataAcquisition):
+    """Adapter for loading EEG/MEG/iEEG files via MNE Raw interface."""
+
+    SUPPORTED_EXT = {'.fif', '.edf', '.bdf', '.gdf'}
+
+    def __init__(self, file_path: str, preload: bool = False, buffer_duration: float = 1.0, loop_data: bool = False, playback_speed: float = 1.0):
+        if not HAS_MNE:
+            raise ImportError('mne not installed; install with extra [nwb]')
+        self._raw = mne.io.read_raw(file_path, preload=preload)  # type: ignore
+        sr = self._raw.info['sfreq']
+        channels = len(self._raw.ch_names)
+        super().__init__(file_path=file_path, sampling_rate=sr, buffer_duration=buffer_duration, loop_data=loop_data, playback_speed=playback_speed)
+        self.n_channels = channels
+        self.chunk_size = int(sr * 0.01)
+        if preload:
+            data = self._raw.get_data()  # (channels, samples)
+            self.file_data = _scale_to_float32(np.array(data), scale=None)  # type: ignore
+
+    def _load_data_file(self) -> np.ndarray:
+        if hasattr(self, '_raw') and self._raw.preload:  # type: ignore[attr-defined]
+            return self.file_data  # type: ignore
+        # placeholder; data accessed on demand
+        return np.zeros((self.n_channels, 0), dtype=np.float32)
+
+    def _acquire_data_chunk(self) -> Optional[np.ndarray]:
+        if not hasattr(self, 'file_index'):
+            self.file_index = 0  # type: ignore[attr-defined]
+        start = self.file_index  # type: ignore[attr-defined]
+        end = min(start + self.chunk_size, int(self._raw.n_times))  # type: ignore[attr-defined]
+        if start >= self._raw.n_times:  # type: ignore[attr-defined]
+            if self.loop_data:
+                self.file_index = 0  # type: ignore[attr-defined]
+                return self._acquire_data_chunk()
+            return None
+        data, _ = self._raw[:, start:end]  # type: ignore[attr-defined]
+        self.file_index = end  # type: ignore[attr-defined]
+        data = _scale_to_float32(data, scale=None)
+        return data
+
+
+__all__ = [
+    # existing exports implicitly provided above
+    'NWBAdapter',
+    'MNEAdapter',
+    'iter_mmap_chunks',
+]

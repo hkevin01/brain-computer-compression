@@ -47,13 +47,20 @@ dev = [
     "mypy>=0.991,<1.0.0",
     "pre-commit>=2.17.0,<3.0.0",
     "hypothesis>=6.0.0,<7.0.0",
+    "ruff>=0.0.290",
 ]
 gpu = ["cupy-cuda11x>=12.0.0"]
 docs = ["sphinx>=4.5.0,<5.0.0", "sphinx-rtd-theme>=1.0.0,<2.0.0"]
+nwb = ["pynwb>=2.5.0", "mne>=1.5.0"]
 
-[project.scripts]
-bci-compress = "bci_compression.cli:main"
-bci-benchmark = "bci_compression.benchmarking.cli:main"
+[project.entry-points."console_scripts"]
+"bci-compress" = "bci_compression.cli.bci_compress:main"
+"bci-benchmark" = "scripts.benchmark_runner:main"
+
+[project.entry-points."bci_compression.compressors"]
+"transformer" = "bci_compression.algorithms.transformer_compression:TransformerCompressor"
+"vae" = "bci_compression.algorithms.vae_compression:VAECompressor"
+"spike" = "bci_compression.algorithms.spike_codec:SpikeCodec"
 
 [project.urls]
 Homepage = "https://github.com/hkevin01/brain-computer-compression"
@@ -69,6 +76,19 @@ where = ["src"]
 
 [tool.setuptools.dynamic]
 version = { attr = "bci_compression.__version__" }
+
+# Tool configurations
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "I", "B"]
+ignore = ["E203", "W503"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
 
 [tool.black]
 line-length = 88
@@ -102,15 +122,3 @@ exclude_lines = [
     "if 0:",
     "if __name__ == .__main__.:",
 ]
-
-[tool.mypy]
-python_version = "3.8"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-ignore_missing_imports = true
-
-[tool.flake8]
-max-line-length = 88
-extend-ignore = ["E203", "W503"]
-max-complexity = 10
