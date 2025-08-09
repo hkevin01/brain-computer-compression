@@ -72,10 +72,10 @@ _detect_compose() {
 
 _choose_compose_file() {
     if [[ -n "${COMPOSE_FILE_OVERRIDE}" && -f "${COMPOSE_FILE_OVERRIDE}" ]]; then echo "${COMPOSE_FILE_OVERRIDE}"; return; fi
-    if [[ -f docker/compose/docker/compose/docker/compose/docker-compose.yml ]]; then echo docker/compose/docker/compose/docker/compose/docker-compose.yml; return; fi
+    if [[ -f docker/compose/docker-compose.yml ]]; then echo docker/compose/docker-compose.yml; return; fi
     if [[ -f docker/compose/docker-compose.yaml ]]; then echo docker/compose/docker-compose.yaml; return; fi
-    if [[ -f docker/compose/docker/compose/docker/compose/docker-compose.yml ]]; then echo docker/compose/docker/compose/docker/compose/docker-compose.yml; return; fi
-    if [[ -f docker/compose/docker-compose.yaml ]]; then echo docker/compose/docker-compose.yaml; return; fi
+    if [[ -f docker-compose.yml ]]; then echo docker-compose.yml; return; fi
+    if [[ -f docker-compose.yaml ]]; then echo docker-compose.yaml; return; fi
     if [[ -f compose.yml ]]; then echo compose.yml; return; fi
     if [[ -f compose.yaml ]]; then echo compose.yaml; return; fi
     echo ""; return 1
@@ -808,9 +808,9 @@ single_exec() {
 
 ensure_compose_file() {
     if [[ -z "${COMPOSE_FILE}" ]]; then
-        info "Creating docker/compose/docker/compose/docker-compose.yml"
+        info "Creating docker/compose/docker-compose.yml"
         create_compose_file
-        COMPOSE_FILE="docker/compose/docker/compose/docker/compose/docker-compose.yml"
+        COMPOSE_FILE="docker/compose/docker-compose.yml"
     fi
 }
 
@@ -853,7 +853,7 @@ EOF
     fi
 
     mkdir -p docker/compose
-    cat > docker/compose/docker/compose/docker/compose/docker-compose.yml << EOF
+    mkdir -p docker/compose && cat > docker/compose/docker-compose.yml << EOF
 version: "3.9"
 
 services:
@@ -1160,8 +1160,8 @@ case "$cmd" in
         esac
 
         # Recreate compose file to include GUI
-        if [[ -f docker/compose/docker/compose/docker/compose/docker-compose.yml ]]; then
-            info "Updating docker/compose/docker/compose/docker/compose/docker-compose.yml to include GUI"
+        if [[ -f docker/compose/docker-compose.yml ]]; then
+            info "Updating docker/compose/docker-compose.yml to include GUI"
             create_compose_file force-gui
         fi
         ;;

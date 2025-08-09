@@ -3,8 +3,8 @@ version: "3.9"
 services:
   api:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: docker/Dockerfile
     image: ${IMAGE_NAME:-bci-compression-backend:local}
     container_name: ${SERVICE_NAME:-api}
     environment:
@@ -15,9 +15,18 @@ services:
     ports:
       - "${PORTS:-8000:8000}"
     volumes:
-      - ./:/app:rw
+      - ../../:/app:rw
     working_dir: /app
-    command: ["uvicorn", "scripts.telemetry_server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    command:
+      [
+        "uvicorn",
+        "scripts.telemetry_server:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+      ]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -27,7 +36,7 @@ services:
 
   gui:
     build:
-      context: dashboard
+      context: ../../dashboard
       dockerfile: Dockerfile
       target: dev
     image: ${GUI_IMAGE_NAME:-bci-compression-gui:local}
@@ -38,7 +47,7 @@ services:
     ports:
       - "${GUI_PORT:-3000}:5173"
     volumes:
-      - dashboard:/app:rw
+      - ../../dashboard:/app:rw
     depends_on:
       - api
 
