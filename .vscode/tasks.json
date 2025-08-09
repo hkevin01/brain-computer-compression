@@ -274,6 +274,20 @@
         "panel": "shared"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Execute Cleanup",
+      "type": "shell",
+      "command": "bash",
+      "args": ["./execute_cleanup.sh"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
     }
   ]
 }
