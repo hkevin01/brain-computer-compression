@@ -24,5 +24,7 @@
   },
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
-  "workbench.editor.enablePreview": false
+  "workbench.editor.enablePreview": false,
+  "github.copilot.chat.alternateGptPrompt.enabled": true,
+  "chat.todoListTool.enabled": true
 }
