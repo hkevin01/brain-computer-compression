@@ -7,7 +7,7 @@
 [![Compression](https://img.shields.io/badge/compression-neural--optimized-red.svg?style=flat-square)](README.md#compression-technologies)
 [![BCI](https://img.shields.io/badge/BCI-real--time-purple.svg?style=flat-square)](README.md#project-purpose)
 
-> **🧠 A state-of-the-art toolkit for neural data compression in brain-computer interfaces**  
+> **🧠 A state-of-the-art toolkit for neural data compression in brain-computer interfaces**
 > *Enabling real-time, lossless compression of neural signals for next-generation BCIs with GPU acceleration*
 
 ---
@@ -149,7 +149,7 @@ graph TB
     classDef processing fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#ffffff
     classDef compression fill:#744210,stroke:#975a16,stroke-width:2px,color:#ffffff
     classDef output fill:#1a202c,stroke:#2d3748,stroke-width:2px,color:#ffffff
-    
+
     class N1,N2,N3,N4 neuralsource
     class P1,P2,P3 processing
     class C1,C2,C3 compression
@@ -179,21 +179,21 @@ graph LR
 
     CPU --> DETECT
     RAM --> DETECT
-    
+
     DETECT --> CUDA
     DETECT --> ROCm
-    
+
     CUDA --> SCHED
     ROCm --> SCHED
     MEM --> SCHED
-    
+
     SCHED --> OPTIM
     OPTIM --> CPU
 
     classDef host fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#ffffff
     classDef gpu fill:#1a365d,stroke:#2c5282,stroke-width:2px,color:#ffffff
     classDef backend fill:#744210,stroke:#975a16,stroke-width:2px,color:#ffffff
-    
+
     class CPU,RAM host
     class CUDA,ROCm,MEM gpu
     class DETECT,SCHED,OPTIM backend
@@ -204,29 +204,29 @@ graph LR
 ```mermaid
 flowchart TD
     START([Neural Data Input<br/>Multi-channel streams]) --> PREPROCESS{Signal Preprocessing}
-    
+
     PREPROCESS --> ANALYZE[Signal Analysis<br/>• Type Classification<br/>• Quality Assessment<br/>• Resource Requirements]
-    
+
     ANALYZE --> BACKEND{Backend Selection}
-    
+
     BACKEND -->|High Performance| GPU_PATH[GPU Acceleration Path<br/>• CUDA/ROCm Kernels<br/>• Parallel Processing<br/>• Memory Optimization]
-    
+
     BACKEND -->|Compatibility| CPU_PATH[CPU Processing Path<br/>• Multi-threading<br/>• SIMD Instructions<br/>• Cache Optimization]
-    
+
     GPU_PATH --> ALGORITHM{Algorithm Selection}
     CPU_PATH --> ALGORITHM
-    
+
     ALGORITHM -->|Ultra-Fast| LZ4[LZ4 Compression<br/>< 0.1ms latency]
     ALGORITHM -->|Balanced| ZSTD[Zstandard<br/>< 1ms latency]
     ALGORITHM -->|High-Ratio| NEURAL[Neural Algorithms<br/>< 2ms latency]
-    
+
     LZ4 --> VALIDATE{Quality Validation}
     ZSTD --> VALIDATE
     NEURAL --> VALIDATE
-    
+
     VALIDATE -->|Pass| OUTPUT[Compressed Output<br/>• Streaming Ready<br/>• Metadata Attached<br/>• Error Corrected]
     VALIDATE -->|Fail| FALLBACK[Fallback Algorithm<br/>• Conservative Settings<br/>• Guaranteed Quality]
-    
+
     FALLBACK --> OUTPUT
     OUTPUT --> END([Application Layer<br/>Real-time usage])
 
@@ -234,7 +234,7 @@ flowchart TD
     classDef decision fill:#1a365d,stroke:#2c5282,stroke-width:2px,color:#ffffff
     classDef algorithm fill:#744210,stroke:#975a16,stroke-width:2px,color:#ffffff
     classDef endpoint fill:#1a202c,stroke:#2d3748,stroke-width:2px,color:#ffffff
-    
+
     class PREPROCESS,ANALYZE,GPU_PATH,CPU_PATH,VALIDATE,FALLBACK process
     class BACKEND,ALGORITHM decision
     class LZ4,ZSTD,NEURAL algorithm
@@ -387,34 +387,34 @@ The toolkit automatically detects and optimizes for available hardware:
 ```mermaid
 flowchart TD
     START([System Startup]) --> DETECT{Hardware Detection}
-    
+
     DETECT -->|NVIDIA GPU Found| CUDA_CHECK[CUDA Capability Check<br/>• Driver Version<br/>• Compute Capability<br/>• Memory Available]
-    
+
     DETECT -->|AMD GPU Found| ROCM_CHECK[ROCm Capability Check<br/>• ROCm Version<br/>• HIP Support<br/>• Memory Available]
-    
+
     DETECT -->|CPU Only| CPU_OPT[CPU Optimization<br/>• Thread Count<br/>• SIMD Support<br/>• Cache Optimization]
-    
+
     CUDA_CHECK -->|Compatible| CUDA_INIT[CUDA Backend<br/>• CuPy Arrays<br/>• Custom Kernels<br/>• Memory Pools]
-    
+
     ROCM_CHECK -->|Compatible| ROCM_INIT[ROCm Backend<br/>• HIP Kernels<br/>• PyTorch Backend<br/>• Unified Memory]
-    
+
     CPU_OPT --> CPU_INIT[CPU Backend<br/>• NumPy + BLAS<br/>• Multi-threading<br/>• Memory Mapping]
-    
+
     CUDA_CHECK -->|Incompatible| CPU_INIT
     ROCM_CHECK -->|Incompatible| CPU_INIT
-    
+
     CUDA_INIT --> READY[Backend Ready]
     ROCM_INIT --> READY
     CPU_INIT --> READY
-    
+
     READY --> BENCHMARK[Performance Profiling<br/>• Throughput Testing<br/>• Latency Measurement<br/>• Memory Bandwidth]
-    
+
     BENCHMARK --> OPTIMIZE[Runtime Optimization<br/>• Kernel Tuning<br/>• Memory Layout<br/>• Pipeline Depth]
 
     classDef detection fill:#1a365d,stroke:#2c5282,stroke-width:2px,color:#ffffff
     classDef backend fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#ffffff
     classDef optimization fill:#744210,stroke:#975a16,stroke-width:2px,color:#ffffff
-    
+
     class DETECT,CUDA_CHECK,ROCM_CHECK detection
     class CUDA_INIT,ROCM_INIT,CPU_INIT,READY backend
     class BENCHMARK,OPTIMIZE optimization
@@ -447,30 +447,30 @@ flowchart TD
 ```mermaid
 graph TD
     INPUT[Neural Data Input<br/>Multi-channel streams] --> ANALYSIS{Signal Analysis}
-    
+
     ANALYSIS --> TYPE{Signal Type}
     TYPE -->|Continuous EEG/LFP| CONT[Continuous Signals<br/>High temporal resolution]
     TYPE -->|Spike Trains| SPIKE[Event-Based Signals<br/>Sparse temporal data]
     TYPE -->|EMG/Muscular| EMG[Physiological Signals<br/>Variable amplitude]
-    
+
     ANALYSIS --> QUALITY{Quality Requirements}
     QUALITY -->|Research Grade| LOSSLESS[Lossless Algorithms<br/>Perfect reconstruction]
     QUALITY -->|Clinical| NEARLOS[Near-Lossless<br/>Perceptually identical]
     QUALITY -->|Monitoring| LOSSY[Lossy Algorithms<br/>Feature preservation]
-    
+
     ANALYSIS --> LATENCY{Latency Constraints}
     LATENCY -->|Real-time Control| ULTRA[Ultra-Fast<br/>< 0.1ms latency]
     LATENCY -->|Interactive| FAST[Fast<br/>< 1ms latency]
     LATENCY -->|Batch Processing| OPTIMAL[Optimal Ratio<br/>< 2ms latency]
-    
+
     CONT --> LZ4_CONT[LZ4 + Preprocessing]
     SPIKE --> SPIKE_CODEC[Spike Codec]
     EMG --> BLOSC_EMG[Blosc + Filtering]
-    
+
     LOSSLESS --> ZSTD_LOSS[Zstandard]
     NEARLOS --> NEURAL_NEAR[Neural LZ77]
     LOSSY --> TRANSFORM[Transformer Models]
-    
+
     ULTRA --> LZ4_ULTRA[LZ4]
     FAST --> ZSTD_FAST[Zstandard]
     OPTIMAL --> AI_OPT[AI Models]
@@ -478,7 +478,7 @@ graph TD
     classDef input fill:#1a365d,stroke:#2c5282,stroke-width:2px,color:#ffffff
     classDef analysis fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#ffffff
     classDef algorithm fill:#744210,stroke:#975a16,stroke-width:2px,color:#ffffff
-    
+
     class INPUT input
     class ANALYSIS,TYPE,QUALITY,LATENCY analysis
     class LZ4_CONT,SPIKE_CODEC,BLOSC_EMG,ZSTD_LOSS,NEURAL_NEAR,TRANSFORM,LZ4_ULTRA,ZSTD_FAST,AI_OPT algorithm
@@ -1144,7 +1144,7 @@ monitor = PerformanceMonitor()
 # Real-time performance tracking
 with monitor.track_compression() as tracker:
     result = compressor.compress(data)
-    
+
     # Automatic metrics collection
     metrics = tracker.get_metrics()
     # metrics.latency -> 0.8ms
@@ -1166,7 +1166,7 @@ async def stream_neural_data():
         compression='lz4',
         real_time=True
     )
-    
+
     async for compressed_chunk in websocket.stream():
         # Receive compressed neural data
         decompressed = websocket.decompress(compressed_chunk)
@@ -1232,7 +1232,7 @@ configs = {
         quality=1.0,  # lossless
         gpu_enabled=False  # CPU for deterministic timing
     ),
-    
+
     'high_density_arrays': CompressionConfig(
         algorithm='blosc',
         threads=8,
@@ -1240,14 +1240,14 @@ configs = {
         shuffle=True,  # optimize for array patterns
         gpu_enabled=True
     ),
-    
+
     'analysis_storage': CompressionConfig(
         algorithm='zstd',
         compression_level=19,  # maximum ratio
         dictionary_training=True,
         quality=1.0  # lossless for analysis
     ),
-    
+
     'mobile_streaming': CompressionConfig(
         algorithm='perceptual_quantization',
         quality=0.85,  # balanced quality/size
@@ -1302,7 +1302,7 @@ graph LR
         style L4 fill:#1a202c,stroke:#2d3748,stroke-width:2px,color:#ffffff
 
         L1[LZ4<br/>0.08ms]
-        L2[Blosc<br/>0.15ms] 
+        L2[Blosc<br/>0.15ms]
         L3[ZSTD<br/>0.42ms]
         L4[Neural LZ77<br/>0.85ms]
     end
@@ -1320,7 +1320,7 @@ graph LR
     end
 
     L1 --> T1
-    L2 --> T2  
+    L2 --> T2
     L3 --> T3
     L4 --> T4
 ```
@@ -1373,7 +1373,7 @@ python scripts/benchmark/run_benchmarks.py
 
 # Specific performance tests
 python scripts/benchmark/latency_benchmark.py
-python scripts/benchmark/throughput_benchmark.py  
+python scripts/benchmark/throughput_benchmark.py
 python scripts/benchmark/compression_ratio_benchmark.py
 ```
 
@@ -1407,28 +1407,28 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8, 3.9, 3.10, 3.11]
-        
+
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        
+
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
-        
+
     - name: Run unit tests
       run: pytest tests/ --cov=neural_compression
-      
-    - name: Run integration tests  
+
+    - name: Run integration tests
       run: pytest tests/integration/
-      
+
     - name: Performance benchmarks
       run: python scripts/benchmark/ci_benchmarks.py
-      
+
     - name: Upload coverage
       uses: codecov/codecov-action@v3
 ```
@@ -1619,14 +1619,14 @@ realtime_compression:
   max_latency_ms: 1.0
   gpu_enabled: false  # CPU for deterministic timing
   buffer_size: 1024
-  
-# config/algorithms/high_ratio.yaml  
+
+# config/algorithms/high_ratio.yaml
 high_ratio_compression:
   algorithm: "zstd"
   compression_level: 19
   dictionary_training: true
   gpu_enabled: true
-  
+
 # config/algorithms/neural_optimized.yaml
 neural_optimized:
   algorithm: "neural_lz77"
@@ -1644,7 +1644,7 @@ production:
   max_concurrent_streams: 100
   monitoring_enabled: true
   logging_level: "INFO"
-  
+
 # config/deployment/development.yaml
 development:
   gpu_memory_limit: "2GB"
@@ -1654,7 +1654,149 @@ development:
   profiling_enabled: true
 ```
 
-## �📖 Learn More
+## 🤝 Contributing & Development
+
+### Development Workflow
+
+Development follows a structured process with quality gates:
+
+#### Setting Up Development Environment
+
+##### Option 1: Docker Development (Recommended)
+
+```bash
+# Clone and start development environment
+git clone https://github.com/hkevin01/brain-computer-compression.git
+cd brain-computer-compression
+
+# Start development services with hot-reload
+./run.sh dev
+
+# Access development tools
+# - Code: http://localhost:8080 (VS Code in browser)
+# - API: http://localhost:8000/docs
+# - Dashboard: http://localhost:3000
+# - Jupyter: http://localhost:8888
+```
+
+##### Option 2: Local Development
+
+```bash
+# Python environment setup
+python3.10 -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+
+# Install project in development mode
+pip install -e .
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+#### Code Standards & Guidelines
+
+##### Python Code Style
+
+Follow PEP 8 with these specific guidelines:
+
+```python
+# Type hints are required for all public functions
+def compress_neural_data(
+    data: np.ndarray,
+    algorithm: str = "lz4",
+    quality: float = 1.0,
+    gpu_enabled: bool = False
+) -> CompressionResult:
+    """
+    Compress neural data using specified algorithm.
+
+    Args:
+        data: Neural signal array (channels, samples)
+        algorithm: Compression algorithm name
+        quality: Quality level (0.0-1.0)
+        gpu_enabled: Enable GPU acceleration
+
+    Returns:
+        Compression result with metrics
+
+    Raises:
+        ValueError: If algorithm not supported
+        MemoryError: If insufficient GPU memory
+    """
+    pass
+```
+
+##### Performance Requirements
+
+All contributions must meet these performance benchmarks:
+
+- **Latency**: < 1ms for real-time algorithms, < 5ms for advanced algorithms
+- **Throughput**: Minimum 100 MB/s compression speed
+- **Memory**: Bounded memory usage for streaming scenarios
+- **GPU Efficiency**: > 70% GPU utilization when GPU-enabled
+
+##### Testing Requirements
+
+Unit Tests (Required for all PRs):
+
+```bash
+# Run specific test categories
+pytest tests/unit/algorithms/ -v --cov=neural_compression.algorithms
+pytest tests/unit/gpu/ -v --cov=neural_compression.gpu
+pytest tests/unit/streaming/ -v --cov=neural_compression.streaming
+
+# Minimum coverage: 85% for new code
+pytest --cov=neural_compression --cov-report=html --cov-fail-under=85
+```
+
+#### Pull Request Requirements
+
+Checklist for all PRs:
+
+- [ ] All tests pass (`pytest tests/`)
+- [ ] Performance benchmarks meet requirements
+- [ ] Code coverage ≥ 85% for new code
+- [ ] Documentation updated (API docs, README if needed)
+- [ ] Type hints added for all public functions
+- [ ] Docstrings follow Google/NumPy style
+- [ ] No performance regressions detected
+- [ ] GPU compatibility verified (if applicable)
+
+Performance Validation:
+
+```bash
+# Before submitting PR, run full validation
+./scripts/validate_pr.sh
+
+# This script runs:
+# - All unit and integration tests
+# - Performance regression testing
+# - Code quality checks (flake8, mypy, black)
+# - Documentation validation
+# - Security scanning (bandit)
+```
+
+#### Getting Help
+
+##### Development Support
+
+- **GitHub Discussions**: For design questions and general development help
+- **Slack Channel**: `#neural-compression-dev` for real-time collaboration
+- **Weekly Office Hours**: Thursdays 2-3 PM EST for direct developer support
+- **Documentation**: [docs/development/](docs/development/) for detailed guides
+
+##### Issue Reporting
+
+- **Bug Reports**: Use GitHub Issues with the `bug` label
+- **Feature Requests**: Use GitHub Issues with the `enhancement` label
+- **Performance Issues**: Include benchmark results and system specifications
+- **GPU Issues**: Provide CUDA version, driver version, and hardware details
+
+## 📖 Learn More
 
 - **API Documentation**: <http://localhost:8000/docs> (when running)
 - **Project Guides**: [docs/guides/](docs/guides/)
