@@ -1,0 +1,63 @@
+services:
+  # Backend API Service
+  backend:
+    image: brain-compression:${PROFILE:-cpu}
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.${PROFILE:-cpu}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      - BCC_ACCEL=${PROFILE:-cpu}
+      - PYTHONPATH=/app/src
+    volumes:
+      - ../../data:/app/data
+      - ../../logs:/app/logs
+      - ../../models:/app/models
+      - ../../results:/app/results
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    profiles: ["cpu", "cuda", "rocm"]
+
+  # Dashboard Web UI
+  dashboard:
+    image: nginx:alpine
+    ports:
+      - "${DASHBOARD_PORT:-3000}:80"
+    volumes:
+      - ../../web:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+    profiles: ["cpu", "cuda", "rocm"]
+
+  # Metrics and Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "${METRICS_PORT:-9090}:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
+    restart: unless-stopped
+    profiles: ["monitoring"]
+
+volumes:
+  prometheus_data:
+    driver: local
+
+networks:
+  default:
+    name: bci-compression-network

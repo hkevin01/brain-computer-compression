@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCI Compression Toolkit Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; }
+        .status { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .links { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .link-card { background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #3498db; }
+        .link-card:hover { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 BCI Compression Toolkit</h1>
+            <p>Neural data compression dashboard - Real-time monitoring and analysis</p>
+        </div>
+        
+        <div class="status">
+            <h2>🚀 System Status</h2>
+            <p><strong>Backend:</strong> <span id="backend-status">Checking...</span></p>
+            <p><strong>GPU Backend:</strong> <span id="gpu-status">Detecting...</span></p>
+            <p><strong>Services:</strong> <span id="services-status">Loading...</span></p>
+        </div>
+        
+        <div class="links">
+            <div class="link-card">
+                <h3>📊 API Documentation</h3>
+                <p>Interactive API documentation and testing interface</p>
+                <a href="http://localhost:8000/docs" target="_blank">Open API Docs →</a>
+            </div>
+            
+            <div class="link-card">
+                <h3>⚡ Performance Metrics</h3>
+                <p>Real-time compression performance and system metrics</p>
+                <a href="http://localhost:9090" target="_blank">Open Metrics →</a>
+            </div>
+            
+            <div class="link-card">
+                <h3>🧪 Benchmarks</h3>
+                <p>Compression algorithm benchmarks and comparisons</p>
+                <a href="#" onclick="runBenchmarks()">Run Benchmarks</a>
+            </div>
+            
+            <div class="link-card">
+                <h3>📈 Results Viewer</h3>
+                <p>Browse and analyze compression results</p>
+                <a href="#" onclick="openResults()">View Results →</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simple status checking
+        async function checkStatus() {
+            try {
+                const response = await fetch('http://localhost:8000/health');
+                document.getElementById('backend-status').textContent = response.ok ? '✅ Online' : '❌ Offline';
+            } catch (e) {
+                document.getElementById('backend-status').textContent = '❌ Offline';
+            }
+        }
+        
+        function runBenchmarks() {
+            alert('Benchmarks can be run via: ./run.sh bench:all');
+        }
+        
+        function openResults() {
+            window.open('file:///' + window.location.origin + '/results', '_blank');
+        }
+        
+        checkStatus();
+        setInterval(checkStatus, 10000);
+    </script>
+</body>
+</html>

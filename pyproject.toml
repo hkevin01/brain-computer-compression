@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64", "wheel"]
+requires = ["setuptools>=68", "setuptools-scm[toml]>=8", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -21,19 +21,20 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies = [
-    "numpy>=1.21.0,<1.25.0",
-    "scipy>=1.7.0,<1.11.0",
-    "torch>=1.13.0,<2.1.0",
-    "transformers>=4.20.0,<5.0.0",
-    "scikit-learn>=1.1.0,<1.4.0",
-    "matplotlib>=3.5.0,<3.8.0",
-    "h5py>=3.7.0,<3.10.0",
-    "pywavelets>=1.1.1,<1.2.0",
-    "pandas>=1.3.0,<2.1.0",
+    "numpy>=1.21.0",
+    "scipy>=1.7.0",
+    "torch>=1.13.0",
+    "transformers>=4.20.0",
+    "scikit-learn>=1.1.0",
+    "matplotlib>=3.5.0",
+    "h5py>=3.7.0",
+    "pywavelets>=1.1.1",
+    "pandas>=1.3.0",
 ]
 
 [project.optional-dependencies]
@@ -53,14 +54,14 @@ gpu = ["cupy-cuda11x>=12.0.0"]
 docs = ["sphinx>=4.5.0,<5.0.0", "sphinx-rtd-theme>=1.0.0,<2.0.0"]
 nwb = ["pynwb>=2.5.0", "mne>=1.5.0"]
 
-[project.entry-points."console_scripts"]
-"bci-compress" = "bci_compression.cli.bci_compress:main"
-"bci-benchmark" = "scripts.benchmark_runner:main"
+[project.scripts]
+bci-compress = "bci_compression.cli.bci_compress:main"
+bci-benchmark = "scripts.benchmark_runner:main"
 
 [project.entry-points."bci_compression.compressors"]
-"transformer" = "bci_compression.algorithms.transformer_compression:TransformerCompressor"
-"vae" = "bci_compression.algorithms.vae_compression:VAECompressor"
-"spike" = "bci_compression.algorithms.spike_codec:SpikeCodec"
+transformer = "bci_compression.algorithms.transformer_compression:TransformerCompressor"
+vae = "bci_compression.algorithms.vae_compression:VAECompressor"
+spike = "bci_compression.algorithms.spike_codec:SpikeCodec"
 
 [project.urls]
 Homepage = "https://github.com/hkevin01/brain-computer-compression"
@@ -81,7 +82,7 @@ version = { attr = "bci_compression.__version__" }
 [tool.ruff]
 line-length = 88
 select = ["E", "F", "I", "B"]
-ignore = ["E203", "W503"]
+ignore = ["E203"]
 
 [tool.mypy]
 python_version = "3.8"

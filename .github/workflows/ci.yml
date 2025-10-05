@@ -1,113 +1,53 @@
-name: CI/CD Pipeline
+name: CI - CPU Tests and Quality Gates
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6 AM UTC
+
+env:
+  PYTHON_VERSION_DEFAULT: '3.11'
 
 jobs:
-  test:
+  # Pre-commit and code quality
+  quality:
+    name: Code Quality
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.8, 3.9, "3.10"]
-
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+
+    - name: Cache pre-commit
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
+        pip install -e .[dev,quality]
 
-        # Install core dependencies (CPU-only for CI)
-        pip install numpy scipy matplotlib pandas h5py
-        pip install pywavelets scikit-learn
-        pip install torch --index-url https://download.pytorch.org/whl/cpu
-
-        # Install testing dependencies
-        pip install pytest coverage flake8 black
-
-        # Install EMG-specific dependencies
-        pip install -r requirements-emg.txt
-
-        # Install toolkit in development mode
-        pip install -e .
-
-    - name: Lint with flake8
+    - name: Run pre-commit hooks
       run: |
-        flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 src/ tests/ --count --exit-zero --max-complexity=15 --max-line-length=88 --statistics
+        pip install pre-commit
+        pre-commit run --all-files
 
-    - name: Check code formatting
+    - name: Run type checking
       run: |
-        black --check src/ tests/ --line-length=88
+        mypy src/
+        pyright src/
 
-    - name: Run dependency check
+    - name: Run security checks
       run: |
-        cd tests && python run_tests.py --dependencies-only
-
-    - name: Run quick tests
-      run: |
-        cd tests && python run_tests.py quick
-
-    - name: Run standard tests with coverage
-      run: |
-        cd tests && coverage run test_simple_validation.py
-        coverage run -a test_performance_benchmark.py
-        coverage report --show-missing
-        coverage xml
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-
-    - name: Install linting tools
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 black
-
-    - name: Run linting
-      run: |
-        black --check src/ tests/ --line-length=88
-        flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503
-
-  build:
-    needs: [test, lint]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-
-    - name: Build package
-      run: |
-        python -m pip install --upgrade pip build
-        python -m build
-
-    - name: Test installation
-      run: |
-        pip install dist/*.whl
-        python -c "import bci_compression; print('Package installation successful')"
+        bandit -r src/
+        safety check

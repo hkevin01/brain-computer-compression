@@ -1,46 +1,34 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
-IFS=$'\n\t'
+set -euo pipefail
 
-# Docker-first orchestration script for BCI Compression Toolkit
-# Manages backend (Python/FastAPI) + GUI (React/Vite) via Docker/Compose
-# Auto-generates minimal GUI if missing, with responsive design
-#
-# Usage: ./run.sh <command> [args]
-# Commands: help, build, up, down, stop, restart, logs, exec, shell, ps, clean, prune, gui:create, gui:open, status
+# BCI Compression Toolkit - Modern Orchestration Script
+# Supports CPU, CUDA 12.x, and ROCm 6.x backends with Docker profiles
 
 # =============================================================================
-# CONFIGURATION (override via environment variables)
+# CONFIGURATION
 # =============================================================================
 
-# Project context
-PROJECT_TYPE="python-fastapi"
-BACKEND_START_CMD="uvicorn scripts.telemetry_server:app --host 0.0.0.0 --port 8000"
-BACKEND_PORT="8000"
-GUI_TYPE="vite-react"  # vite-react, static-vanilla, nextjs
-GUI_DEV_PORT="5173"
-
-# Docker configuration
-IMAGE_NAME="${IMAGE_NAME:-bci-compression-backend:local}"
-GUI_IMAGE_NAME="${GUI_IMAGE_NAME:-bci-compression-gui:local}"
-SERVICE_NAME="${SERVICE_NAME:-api}"
-GUI_SERVICE_NAME="${GUI_SERVICE_NAME:-gui}"
-ENV_FILE="${ENV_FILE:-.env}"
-PORTS="${PORTS:-8000:8000}"
-GUI_PORT="${GUI_PORT:-3000}"
-API_URL="${API_URL:-http://localhost:8000}"
-API_URL_INTERNAL="${API_URL_INTERNAL:-http://api:8000}"
-DOCKER_PLATFORM="${DOCKER_PLATFORM:-}"
-MOUNTS="${MOUNTS:-}"
-BUILD_ARGS="${BUILD_ARGS:-}"
-DEV_MODE="${DEV_MODE:-true}"
-NO_CACHE="${NO_CACHE:-}"
-QUIET_BUILD="${QUIET_BUILD:-}"
-
-# Paths
+PROJECT_NAME="bci-compression"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GUI_PATH="${GUI_PATH:-${ROOT_DIR}/dashboard}"
-COMPOSE_FILE_OVERRIDE="${COMPOSE_FILE_OVERRIDE:-}"
+
+# Default backend (cpu|cuda|rocm|auto)
+DEFAULT_BACKEND="${BCC_ACCEL:-auto}"
+
+# Ports
+BACKEND_PORT="${BACKEND_PORT:-8000}"
+DASHBOARD_PORT="${DASHBOARD_PORT:-3000}"
+METRICS_PORT="${METRICS_PORT:-9090}"
+
+# Environment
+ENV_FILE="${ENV_FILE:-.env}"
+COMPOSE_FILE="docker/compose/docker-compose.profiles.yml"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
 cd "${ROOT_DIR}"
 
@@ -48,544 +36,55 @@ cd "${ROOT_DIR}"
 # UTILITIES
 # =============================================================================
 
-err() { printf "\e[31m[ERROR]\e[0m %s\n" "$*" >&2; }
-info() { printf "\e[34m[INFO]\e[0m %s\n" "$*"; }
-warn() { printf "\e[33m[WARN]\e[0m %s\n" "$*"; }
-success() { printf "\e[32m[SUCCESS]\e[0m %s\n" "$*"; }
-
-cleanup_on_error() {
-    local exit_code=$?
-    if [[ $exit_code -ne 0 ]]; then
-        err "Command failed with exit code $exit_code"
-        info "Use './run.sh help' for usage information"
-        info "Use './run.sh status' to check current state"
-    fi
-}
-trap cleanup_on_error EXIT
-
-# Docker utilities
-_detect_compose() {
-    if docker compose version >/dev/null 2>&1; then echo "docker compose"; return; fi
-    if command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; return; fi
-    echo ""; return 1
+log() {
+    echo -e "${GREEN}[BCC]${NC} $*" >&2
 }
 
-_choose_compose_file() {
-    if [[ -n "${COMPOSE_FILE_OVERRIDE}" && -f "${COMPOSE_FILE_OVERRIDE}" ]]; then echo "${COMPOSE_FILE_OVERRIDE}"; return; fi
-    if [[ -f docker/compose/docker-compose.yml ]]; then echo docker/compose/docker-compose.yml; return; fi
-    if [[ -f docker/compose/docker-compose.yaml ]]; then echo docker/compose/docker-compose.yaml; return; fi
-    if [[ -f docker-compose.yml ]]; then echo docker-compose.yml; return; fi
-    if [[ -f docker-compose.yaml ]]; then echo docker-compose.yaml; return; fi
-    if [[ -f compose.yml ]]; then echo compose.yml; return; fi
-    if [[ -f compose.yaml ]]; then echo compose.yaml; return; fi
-    echo ""; return 1
+warn() {
+    echo -e "${YELLOW}[BCC WARNING]${NC} $*" >&2
 }
 
-COMPOSE_CMD=$(_detect_compose || true)
-COMPOSE_FILE=$(_choose_compose_file || true)
-
-require_docker() {
-    if ! command -v docker >/dev/null 2>&1; then
-        err "Docker CLI not found. Install Docker Desktop or Docker Engine."
-        info "Visit: https://docs.docker.com/get-docker/"
-        exit 1
-    fi
-    if ! docker info >/dev/null 2>&1; then
-        err "Cannot reach Docker daemon. Is Docker running?"
-        exit 1
-    fi
-    if [[ -n "${COMPOSE_FILE}" && -z "${COMPOSE_CMD}" ]]; then
-        warn "Compose file present (${COMPOSE_FILE}) but no compose command found."
-        warn "Install Docker Compose v2 (docker compose) or v1 (docker-compose)."
-    fi
+error() {
+    echo -e "${RED}[BCC ERROR]${NC} $*" >&2
 }
 
-# =============================================================================
-# GUI DETECTION AND CREATION
-# =============================================================================
-
-gui_exists() {
-    [[ -d "${GUI_PATH}" && -f "${GUI_PATH}/package.json" ]] || [[ -d "${GUI_PATH}" && -f "${GUI_PATH}/index.html" ]]
-}
-
-detect_gui_type() {
-    if [[ -f "${GUI_PATH}/package.json" ]]; then
-        if grep -q "vite" "${GUI_PATH}/package.json" 2>/dev/null; then
-            echo "vite-react"
-        elif grep -q "next" "${GUI_PATH}/package.json" 2>/dev/null; then
-            echo "nextjs"
-        else
-            echo "node-app"
-        fi
-    elif [[ -f "${GUI_PATH}/index.html" ]]; then
-        echo "static-vanilla"
+detect_backend() {
+    if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi >/dev/null 2>&1; then
+        echo "cuda"
+    elif command -v rocm-smi >/dev/null 2>&1; then
+        echo "rocm"
     else
-        echo "none"
+        echo "cpu"
     fi
 }
 
-create_static_gui() {
-    local gui_dir="$1"
-    info "Creating static vanilla GUI at ${gui_dir}"
-
-    mkdir -p "${gui_dir}"
-
-    # index.html
-    cat > "${gui_dir}/index.html" << 'EOF'
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCI Compression Toolkit</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>🧠 BCI Compression Toolkit</h1>
-            <p>Neural data compression monitoring dashboard</p>
-        </header>
-
-        <main>
-            <section class="status-panel">
-                <h2>API Status</h2>
-                <div id="api-status" class="status-indicator">Checking...</div>
-                <button id="ping-btn" onclick="pingAPI()">Ping API</button>
-            </section>
-
-            <section class="controls">
-                <h2>Quick Actions</h2>
-                <div class="button-group">
-                    <button onclick="loadPlugins()">Load Plugins</button>
-                    <button onclick="generateTestData()">Generate Test Data</button>
-                    <button onclick="viewLogs()">View Logs</button>
-                </div>
-            </section>
-
-            <section class="data-display">
-                <h2>Response</h2>
-                <pre id="response-data">Click an action to see results...</pre>
-            </section>
-        </main>
-
-        <footer>
-            <p>Built with ❤️ for neural data compression research</p>
-        </footer>
-    </div>
-
-    <script src="app.js"></script>
-</body>
-</html>
-EOF
-
-    # styles.css
-    cat > "${gui_dir}/styles.css" << 'EOF'
-/* Reset and base styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+ensure_env_file() {
+    if [[ ! -f "${ENV_FILE}" ]]; then
+        log "Creating ${ENV_FILE} from template..."
+        if [[ -f ".env.example" ]]; then
+            cp .env.example "${ENV_FILE}"
+        else
+            cat > "${ENV_FILE}" << 'ENVEOF'
+# BCI Compression Toolkit Environment
+BCC_ACCEL=auto
+BCC_LOG_LEVEL=INFO
+BACKEND_PORT=8000
+DASHBOARD_PORT=3000
+ENVEOF
+        fi
+        log "Created ${ENV_FILE}. Please review and customize as needed."
+    fi
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-}
+check_docker() {
+    if ! command -v docker >/dev/null 2>&1; then
+        error "Docker is required but not installed"
+        exit 1
+    fi
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Header */
-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    color: white;
-}
-
-header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    font-weight: 700;
-}
-
-header p {
-    font-size: 1.1rem;
-    opacity: 0.9;
-}
-
-/* Main content */
-main {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-}
-
-section {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-section h2 {
-    margin-bottom: 1.5rem;
-    color: #2d3748;
-    font-weight: 600;
-}
-
-/* Status indicator */
-.status-indicator {
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.status-indicator.online {
-    background: #48bb78;
-    color: white;
-}
-
-.status-indicator.offline {
-    background: #f56565;
-    color: white;
-}
-
-.status-indicator.checking {
-    background: #ed8936;
-    color: white;
-}
-
-/* Buttons */
-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin: 0.25rem;
-}
-
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-button:active {
-    transform: translateY(0);
-}
-
-.button-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-/* Data display */
-.data-display {
-    grid-column: 1 / -1;
-}
-
-#response-data {
-    background: #f7fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 1rem;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    white-space: pre-wrap;
-    overflow-x: auto;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-/* Footer */
-footer {
-    text-align: center;
-    margin-top: 3rem;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .container {
-        padding: 1rem;
-    }
-
-    header h1 {
-        font-size: 2rem;
-    }
-
-    main {
-        grid-template-columns: 1fr;
-    }
-
-    section {
-        padding: 1.5rem;
-    }
-
-    .button-group {
-        flex-direction: column;
-    }
-
-    button {
-        width: 100%;
-    }
-}
-
-/* Loading animation */
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-.loading {
-    animation: pulse 1.5s ease-in-out infinite;
-}
-EOF
-
-    # app.js
-    cat > "${gui_dir}/app.js" << 'EOF'
-// BCI Compression Toolkit GUI Application
-class BCIApp {
-    constructor() {
-        this.apiUrl = this.getApiUrl();
-        this.init();
-    }
-
-    getApiUrl() {
-        // Try to get API URL from various sources
-        if (window.ENV && window.ENV.API_URL) {
-            return window.ENV.API_URL;
-        }
-
-        // Default to current host with backend port
-        const protocol = window.location.protocol;
-        const hostname = window.location.hostname;
-        return `${protocol}//${hostname}:8000`;
-    }
-
-    init() {
-        console.log('BCI Compression Toolkit GUI initialized');
-        console.log('API URL:', this.apiUrl);
-
-        // Initial API status check
-        this.pingAPI();
-
-        // Set up periodic status check
-        setInterval(() => this.pingAPI(), 30000);
-    }
-
-    async pingAPI() {
-        const statusEl = document.getElementById('api-status');
-        const btn = document.getElementById('ping-btn');
-
-        statusEl.textContent = 'Checking...';
-        statusEl.className = 'status-indicator checking';
-        btn.disabled = true;
-
-        try {
-            const response = await fetch(`${this.apiUrl}/health`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                statusEl.textContent = `✅ Online (${data.status || 'healthy'})`;
-                statusEl.className = 'status-indicator online';
-                this.updateResponse('API Health Check', data);
-            } else {
-                throw new Error(`HTTP ${response.status}`);
-            }
-        } catch (error) {
-            console.error('API ping failed:', error);
-            statusEl.textContent = `❌ Offline (${error.message})`;
-            statusEl.className = 'status-indicator offline';
-            this.updateResponse('API Error', { error: error.message });
-        } finally {
-            btn.disabled = false;
-        }
-    }
-
-    async loadPlugins() {
-        await this.apiCall('/api/plugins', 'Plugin List');
-    }
-
-    async generateTestData() {
-        await this.apiCall('/api/generate-data?samples=1000&channels=4', 'Test Data Generation');
-    }
-
-    async viewLogs() {
-        await this.apiCall('/api/logs?tail=20', 'Recent Logs');
-    }
-
-    async apiCall(endpoint, title) {
-        const responseEl = document.getElementById('response-data');
-        responseEl.textContent = 'Loading...';
-        responseEl.className = 'loading';
-
-        try {
-            const response = await fetch(`${this.apiUrl}${endpoint}`);
-            const data = await response.json();
-
-            if (response.ok) {
-                this.updateResponse(title, data);
-            } else {
-                throw new Error(`HTTP ${response.status}: ${data.detail || 'Unknown error'}`);
-            }
-        } catch (error) {
-            console.error(`${title} failed:`, error);
-            this.updateResponse(`${title} - Error`, { error: error.message });
-        } finally {
-            responseEl.className = '';
-        }
-    }
-
-    updateResponse(title, data) {
-        const responseEl = document.getElementById('response-data');
-        const timestamp = new Date().toLocaleTimeString();
-
-        responseEl.textContent = `[${timestamp}] ${title}\n\n` +
-            JSON.stringify(data, null, 2);
-    }
-}
-
-// Global functions for button handlers
-let app;
-
-function pingAPI() {
-    app.pingAPI();
-}
-
-function loadPlugins() {
-    app.loadPlugins();
-}
-
-function generateTestData() {
-    app.generateTestData();
-}
-
-function viewLogs() {
-    app.viewLogs();
-}
-
-// Initialize app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    app = new BCIApp();
-});
-
-// Optional: Set API URL via window.ENV for container environments
-if (typeof window !== 'undefined') {
-    window.ENV = window.ENV || {};
-}
-EOF
-
-    # config.json for API URL configuration
-    cat > "${gui_dir}/config.json" << EOF
-{
-    "apiUrl": "${API_URL}",
-    "apiUrlInternal": "${API_URL_INTERNAL}",
-    "version": "1.0.0",
-    "features": {
-        "compression": true,
-        "streaming": true,
-        "plugins": true
-    }
-}
-EOF
-
-    # Simple Dockerfile for static serving
-    cat > "${gui_dir}/Dockerfile" << 'EOF'
-FROM nginx:alpine
-
-# Copy static files
-COPY . /usr/share/nginx/html/
-
-# Custom nginx config for SPA
-RUN echo 'server { \
-    listen 80; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-    location /config.json { \
-        add_header Cache-Control "no-cache, no-store, must-revalidate"; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-EOF
-
-    success "Static GUI created at ${gui_dir}"
-}
-
-create_vite_gui() {
-    local gui_dir="$1"
-    info "Detected existing Vite React GUI at ${gui_dir}"
-
-    # Ensure Dockerfile exists for the existing Vite app
-    if [[ ! -f "${gui_dir}/Dockerfile" ]]; then
-        cat > "${gui_dir}/Dockerfile" << 'EOF'
-# Multi-stage build for Vite React app
-FROM node:20-alpine AS deps
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-
-FROM node:20-alpine AS dev
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-EXPOSE 5173
-ENV HOST=0.0.0.0
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine AS production
-COPY --from=builder /app/dist /usr/share/nginx/html
-RUN echo 'server { \
-    listen 80; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-EOF
-        info "Created Dockerfile for existing Vite app"
+    if ! docker compose version >/dev/null 2>&1; then
+        error "Docker Compose is required but not available"
+        exit 1
     fi
 }
 
@@ -593,598 +92,367 @@ EOF
 # DOCKER OPERATIONS
 # =============================================================================
 
-to_ports_args() {
-    local ports="$1"
-    local args=()
-    IFS=', ' read -r -a arr <<<"$ports"
-    for p in "${arr[@]}"; do
-        [[ -z "$p" ]] && continue
-        args+=(-p "$p")
-    done
-    printf '%s ' "${args[@]}"
-}
+docker_build() {
+    local backend="${1:-auto}"
+    local no_cache="${2:-false}"
 
-to_mount_args() {
-    local mounts="$1"
-    local args=()
-    IFS=', ' read -r -a arr <<<"$mounts"
-    for m in "${arr[@]}"; do
-        [[ -z "$m" ]] && continue
-        args+=(-v "$m")
-    done
-    printf '%s ' "${args[@]}"
-}
+    log "Building Docker images for backend: ${backend}"
 
-build_args_flags() {
-    local flags=()
-    [[ -z "${BUILD_ARGS}" ]] && { printf '%s' ""; return; }
-    local tmp=${BUILD_ARGS//,/ }
-    for kv in $tmp; do
-        flags+=(--build-arg "$kv")
-    done
-    printf '%s ' "${flags[@]}"
-}
-
-build_images() {
-    require_docker
-    export DOCKER_BUILDKIT=1
-
-    local build_extra=()
-    [[ -n "${DOCKER_PLATFORM}" ]] && build_extra+=(--platform "${DOCKER_PLATFORM}")
-    [[ -n "${NO_CACHE}" ]] && build_extra+=(--no-cache)
-    [[ -n "${QUIET_BUILD}" ]] && build_extra+=(--quiet)
-
-    # Debug information
-    if [[ "${DEBUG_BUILD}" == "1" ]]; then
-        info "🔍 Build Debug Information:"
-        info "  Dockerfile path: $(pwd)/Dockerfile"
-        info "  Docker BuildKit: ${DOCKER_BUILDKIT}"
-        info "  Platform: ${DOCKER_PLATFORM:-default}"
-        info "  Build args: $(build_args_flags)"
-        info "  Extra flags: ${build_extra[*]}"
-
-        # Check for common issues
-        if ! [ -f "requirements-backend.txt" ]; then
-            warn "Missing requirements-backend.txt file"
-        fi
-
-        if grep -q "pip install.*\.$" Dockerfile 2>/dev/null; then
-            warn "⚠️  Found 'pip install .' in Dockerfile - this may cause issues"
-            warn "   Consider using the fix script: ./fix_docker_build.sh"
-        fi
-
-        if grep -q "^\*\.md$" .dockerignore 2>/dev/null && ! grep -q "!README\.md" .dockerignore 2>/dev/null; then
-            warn "⚠️  .dockerignore excludes *.md but doesn't allow README.md"
-            warn "   This may cause setup.py to fail reading README"
-        fi
+    local build_args=""
+    if [[ "${no_cache}" == "true" ]]; then
+        build_args="--no-cache"
     fi
 
-    # Build backend
-    info "Building backend image: ${IMAGE_NAME}"
-    if ! docker build "${build_extra[@]}" $(build_args_flags) -f docker/Dockerfile -t "${IMAGE_NAME}" . ; then
-        error "Backend build failed!"
-        info "💡 Troubleshooting options:"
-        info "   1. Run with debug: DEBUG_BUILD=1 ./run.sh build"
-        info "   2. Clear cache: NO_CACHE=1 ./run.sh build"
-        info "   3. Use fix script: ./scripts/tools/fix_docker_build.sh"
-        return 1
+    # Build base image first
+    docker build ${build_args} -f docker/Dockerfile.base -t brain-compression:base .
+
+    case "${backend}" in
+        "cpu"|"auto")
+            docker build ${build_args} -f docker/Dockerfile.cpu -t brain-compression:cpu .
+            ;;
+        "cuda")
+            if command -v nvidia-smi >/dev/null 2>&1; then
+                docker build ${build_args} -f docker/Dockerfile.cuda -t brain-compression:cuda .
+            else
+                warn "CUDA not available, falling back to CPU build"
+                docker build ${build_args} -f docker/Dockerfile.cpu -t brain-compression:cpu .
+            fi
+            ;;
+        "rocm")
+            if command -v rocm-smi >/dev/null 2>&1; then
+                docker build ${build_args} -f docker/Dockerfile.rocm -t brain-compression:rocm .
+            else
+                warn "ROCm not available, falling back to CPU build"
+                docker build ${build_args} -f docker/Dockerfile.cpu -t brain-compression:cpu .
+            fi
+            ;;
+        "all")
+            docker build ${build_args} -f docker/Dockerfile.cpu -t brain-compression:cpu .
+            if command -v nvidia-smi >/dev/null 2>&1; then
+                docker build ${build_args} -f docker/Dockerfile.cuda -t brain-compression:cuda .
+            fi
+            if command -v rocm-smi >/dev/null 2>&1; then
+                docker build ${build_args} -f docker/Dockerfile.rocm -t brain-compression:rocm .
+            fi
+            ;;
+    esac
+
+    log "Docker build completed"
+}
+
+docker_up() {
+    local backend="${1:-auto}"
+    local detached="${2:-true}"
+
+    if [[ "${backend}" == "auto" ]]; then
+        backend=$(detect_backend)
+        log "Auto-detected backend: ${backend}"
     fi
 
-    # Build GUI if exists
-    if gui_exists; then
-        local gui_type=$(detect_gui_type)
-        info "Building GUI image: ${GUI_IMAGE_NAME} (type: ${gui_type})"
+    ensure_env_file
 
-        if [[ "${gui_type}" == "vite-react" && "${DEV_MODE}" == "true" ]]; then
-            # For dev mode, build the dev stage
-            docker build "${build_extra[@]}" $(build_args_flags) \
-                --target dev -t "${GUI_IMAGE_NAME}" "${GUI_PATH}"
-        else
-            # For production or static, build full image
-            docker build "${build_extra[@]}" $(build_args_flags) \
-                -t "${GUI_IMAGE_NAME}" "${GUI_PATH}"
-        fi
+    local compose_args="--profile ${backend}"
+    local up_args=""
+    if [[ "${detached}" == "true" ]]; then
+        up_args="-d"
+    fi
+
+    log "Starting services with ${backend} backend..."
+    docker compose -f "${COMPOSE_FILE}" ${compose_args} up ${up_args}
+
+    if [[ "${detached}" == "true" ]]; then
+        log "Services started successfully!"
+        log "Backend API: http://localhost:${BACKEND_PORT}"
+        log "Dashboard: http://localhost:${DASHBOARD_PORT}"
+        log "Use './run.sh logs' to view logs"
     fi
 }
 
-# Compose operations
-compose_up() {
-    require_docker
-    info "Starting services via compose (${COMPOSE_FILE})"
-    ${COMPOSE_CMD} -f "${COMPOSE_FILE}" up -d --build
+docker_down() {
+    log "Stopping all services..."
+    docker compose -f "${COMPOSE_FILE}" down
+    log "All services stopped"
 }
 
-compose_down() {
-    require_docker
-    info "Stopping compose stack"
-    ${COMPOSE_CMD} -f "${COMPOSE_FILE}" down
-}
+docker_logs() {
+    local service="${1:-}"
+    local follow="${2:-true}"
 
-compose_stop() {
-    require_docker
-    ${COMPOSE_CMD} -f "${COMPOSE_FILE}" stop
-}
-
-compose_logs() {
-    require_docker
-    local svc="${1:-${SERVICE_NAME}}"
-    ${COMPOSE_CMD} -f "${COMPOSE_FILE}" logs -f "$svc"
-}
-
-compose_exec() {
-    require_docker
-    local svc="${1:-${SERVICE_NAME}}"
-    shift || true
-    local cmd="${*:-/bin/sh}"
-    ${COMPOSE_CMD} -f "${COMPOSE_FILE}" exec "$svc" sh -lc "$cmd"
-}
-
-compose_ps() {
-    require_docker
-    ${COMPOSE_CMD} -f "${COMPOSE_FILE}" ps
-}
-
-# Single container operations (fallback)
-single_run() {
-    require_docker
-    info "Running containers without compose"
-
-    # Build images first
-    build_images
-
-    # Start backend
-    local backend_ports=($(to_ports_args "${PORTS}"))
-    local mount_args=()
-    [[ -n "${MOUNTS}" ]] && mount_args=($(to_mount_args "${MOUNTS}"))
-    local env_args=()
-    [[ -f "${ENV_FILE}" ]] && env_args=(--env-file "${ENV_FILE}")
-    local platform_args=()
-    [[ -n "${DOCKER_PLATFORM}" ]] && platform_args=(--platform "${DOCKER_PLATFORM}")
-
-    info "Starting backend container: ${SERVICE_NAME}"
-    docker run -d --name "${SERVICE_NAME}" \
-        "${platform_args[@]}" \
-        "${env_args[@]}" \
-        "${backend_ports[@]}" \
-        "${mount_args[@]}" \
-        "${IMAGE_NAME}" >/dev/null
-
-    # Start GUI if exists
-    if gui_exists; then
-        local gui_ports=(-p "${GUI_PORT}:80")
-        if [[ "${DEV_MODE}" == "true" && "$(detect_gui_type)" == "vite-react" ]]; then
-            gui_ports=(-p "${GUI_PORT}:5173")
-        fi
-
-        info "Starting GUI container: ${GUI_SERVICE_NAME}"
-        docker run -d --name "${GUI_SERVICE_NAME}" \
-            "${platform_args[@]}" \
-            "${gui_ports[@]}" \
-            --link "${SERVICE_NAME}:api" \
-            "${GUI_IMAGE_NAME}" >/dev/null
+    local args=""
+    if [[ "${follow}" == "true" ]]; then
+        args="-f"
     fi
 
-    docker ps --filter "name=${SERVICE_NAME}"
-    gui_exists && docker ps --filter "name=${GUI_SERVICE_NAME}"
-}
-
-single_stop() {
-    require_docker
-    for container in "${SERVICE_NAME}" "${GUI_SERVICE_NAME}"; do
-        if docker ps -q -f "name=^/${container}$" >/dev/null 2>&1; then
-            info "Stopping container ${container}"
-            docker stop "${container}" >/dev/null || true
-        fi
-    done
-}
-
-single_down() {
-    single_stop
-    for container in "${SERVICE_NAME}" "${GUI_SERVICE_NAME}"; do
-        if docker ps -a -q -f "name=^/${container}$" >/dev/null 2>&1; then
-            info "Removing container ${container}"
-            docker rm "${container}" >/dev/null || true
-        fi
-    done
-}
-
-single_logs() {
-    require_docker
-    local container="${1:-${SERVICE_NAME}}"
-    docker logs -f "${container}"
-}
-
-single_exec() {
-    require_docker
-    local container="${1:-${SERVICE_NAME}}"
-    shift || true
-    local cmd="${*:-/bin/sh}"
-    docker exec -it "${container}" sh -lc "$cmd"
+    if [[ -n "${service}" ]]; then
+        docker compose -f "${COMPOSE_FILE}" logs ${args} "${service}"
+    else
+        docker compose -f "${COMPOSE_FILE}" logs ${args}
+    fi
 }
 
 # =============================================================================
-# COMPOSE FILE MANAGEMENT
+# BENCHMARKING
 # =============================================================================
 
-ensure_compose_file() {
-    if [[ -z "${COMPOSE_FILE}" ]]; then
-        info "Creating docker/compose/docker-compose.yml"
-        create_compose_file
-        COMPOSE_FILE="docker/compose/docker-compose.yml"
-    fi
-}
+run_benchmark() {
+    local backend="${1:-auto}"
+    local algorithms="${2:-lz4,zstd,blosc}"
+    local output_file="${3:-logs/benchmark-${backend}.json}"
 
-create_compose_file() {
-    local gui_service=""
-    local gui_depends=""
-
-    if gui_exists || [[ "$1" == "force-gui" ]]; then
-        local gui_type=$(detect_gui_type)
-        local gui_port="80"
-        local gui_target=""
-        local gui_command=""
-
-        if [[ "${gui_type}" == "vite-react" && "${DEV_MODE}" == "true" ]]; then
-            gui_port="5173"
-            gui_target="dev"
-            gui_command='["npm", "run", "dev", "--", "--host", "0.0.0.0"]'
-        elif [[ "${gui_type}" == "static-vanilla" ]]; then
-            gui_port="80"
-        fi
-
-        gui_service=$(cat << EOF
-
-  ${GUI_SERVICE_NAME}:
-    build:
-      context: ${GUI_PATH}
-      dockerfile: Dockerfile$([ -n "$gui_target" ] && echo -e "\n      target: $gui_target" || echo "")
-    image: \${GUI_IMAGE_NAME:-${GUI_IMAGE_NAME}}
-    container_name: \${GUI_SERVICE_NAME:-${GUI_SERVICE_NAME}}
-    environment:
-      - VITE_BACKEND_URL=\${API_URL_INTERNAL:-http://api:8000}$([ -n "$gui_command" ] && echo -e "\n    command: $gui_command" || echo "")
-    ports:
-      - "\${GUI_PORT:-${GUI_PORT}}:${gui_port}"$([ "$DEV_MODE" == "true" ] && echo -e "\n    volumes:\n      - ${GUI_PATH}:/app:rw" || echo "")
-    depends_on:
-      - ${SERVICE_NAME}
-EOF
-)
-        gui_depends="
-      - ${GUI_SERVICE_NAME}"
+    if [[ "${backend}" == "auto" ]]; then
+        backend=$(detect_backend)
     fi
 
-    mkdir -p docker/compose
-    mkdir -p docker/compose && cat > docker/compose/docker-compose.yml << EOF
-version: "3.9"
+    log "Running benchmark with ${backend} backend..."
 
-services:
-  ${SERVICE_NAME}:
-    build:
-      context: ../..
-      dockerfile: docker/Dockerfile
-    image: \${IMAGE_NAME:-${IMAGE_NAME}}
-    container_name: \${SERVICE_NAME:-${SERVICE_NAME}}
-    environment:
-      - PYTHONUNBUFFERED=1
-      - PORT=8000
-    env_file:
-      - \${ENV_FILE:-${ENV_FILE}}
-    ports:
-      - "\${PORTS:-${PORTS}}"
-    volumes:
-      - ./:/app:rw
-    working_dir: /app
-    command: ["uvicorn", "scripts.telemetry_server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 5s${gui_service}
+    # Ensure output directory exists
+    mkdir -p "$(dirname "${output_file}")"
 
-networks:
-  default:
-    name: bci-compression-net
-EOF
+    # Run benchmark
+    if docker compose -f "${COMPOSE_FILE}" ps --services | grep -q "backend-${backend}"; then
+        # Use Docker service
+        docker compose -f "${COMPOSE_FILE}" exec "backend-${backend}" \
+            python scripts/benchmark/bench_stream.py \
+            --backend="${backend}" \
+            --algorithms $(echo "${algorithms}" | tr ',' ' ') \
+            --output="${output_file}"
+    else
+        # Use local Python
+        python scripts/benchmark/bench_stream.py \
+            --backend="${backend}" \
+            --algorithms $(echo "${algorithms}" | tr ',' ' ') \
+            --output="${output_file}"
+    fi
+
+    log "Benchmark completed. Results saved to ${output_file}"
 }
 
 # =============================================================================
-# BROWSER INTEGRATION
+# GUI MANAGEMENT
 # =============================================================================
 
-open_gui() {
-    local url="http://localhost:${GUI_PORT}"
-    info "Opening GUI at ${url}"
+gui_open() {
+    local url="http://localhost:${DASHBOARD_PORT}"
 
-    if command -v open >/dev/null 2>&1; then  # macOS
-        open "${url}"
-    elif command -v xdg-open >/dev/null 2>&1; then  # Linux
+    log "Opening dashboard at ${url}..."
+
+    # Try different ways to open URL based on OS
+    if command -v xdg-open >/dev/null 2>&1; then
         xdg-open "${url}"
-    elif command -v start >/dev/null 2>&1; then  # Windows
+    elif command -v open >/dev/null 2>&1; then
+        open "${url}"
+    elif command -v start >/dev/null 2>&1; then
         start "${url}"
     else
-        info "Could not detect browser opener. Manual URL: ${url}"
+        log "Please open ${url} in your browser"
     fi
 }
 
 # =============================================================================
-# STATUS AND MONITORING
+# SYSTEM STATUS
 # =============================================================================
 
 show_status() {
-    require_docker
+    log "BCI Compression Toolkit Status"
+    echo ""
 
-    info "=== BCI Compression Toolkit Status ==="
-    echo
+    # System info
+    echo "🖥️  System Information:"
+    echo "   OS: $(uname -s) $(uname -r)"
+    echo "   Python: $(python3 --version 2>/dev/null || echo 'Not found')"
+    echo "   Docker: $(docker --version 2>/dev/null || echo 'Not found')"
+    echo ""
 
-    info "Docker:"
-    echo "  Engine: $(docker version --format '{{.Server.Version}}' 2>/dev/null || echo 'Not available')"
-    echo "  Compose: ${COMPOSE_CMD:-Not available}"
-    echo
-
-    info "Project:"
-    echo "  Backend Type: ${PROJECT_TYPE}"
-    echo "  GUI Path: ${GUI_PATH}"
-    echo "  GUI Type: $(gui_exists && detect_gui_type || echo 'None')"
-    echo "  Compose File: ${COMPOSE_FILE:-None}"
-    echo
-
-    info "Configuration:"
-    echo "  Backend Image: ${IMAGE_NAME}"
-    echo "  GUI Image: ${GUI_IMAGE_NAME}"
-    echo "  Backend Port: ${PORTS}"
-    echo "  GUI Port: ${GUI_PORT}"
-    echo "  API URL: ${API_URL}"
-    echo "  Dev Mode: ${DEV_MODE}"
-    echo
-
-    if [[ -n "${COMPOSE_FILE}" && -n "${COMPOSE_CMD}" ]]; then
-        info "Services (via compose):"
-        ${COMPOSE_CMD} -f "${COMPOSE_FILE}" ps 2>/dev/null || echo "  No services running"
+    # GPU info
+    echo "🚀 GPU Information:"
+    if command -v nvidia-smi >/dev/null 2>&1; then
+        echo "   NVIDIA: $(nvidia-smi --query-gpu=name --format=csv,noheader,nounits | head -1)"
+        echo "   CUDA: $(nvcc --version 2>/dev/null | grep release | awk '{print $6}' | cut -c9- || echo 'Not found')"
     else
-        info "Containers (standalone):"
-        docker ps --filter "name=${SERVICE_NAME}" --filter "name=${GUI_SERVICE_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || echo "  No containers running"
+        echo "   NVIDIA: Not available"
     fi
 
-    echo
-    if gui_exists; then
-        success "GUI available at: http://localhost:${GUI_PORT}"
+    if command -v rocm-smi >/dev/null 2>&1; then
+        echo "   AMD ROCm: Available"
     else
-        warn "No GUI detected. Use './run.sh gui:create' to generate one."
+        echo "   AMD ROCm: Not available"
     fi
-    success "Backend API at: ${API_URL}"
-    info "Use './run.sh help' for available commands"
+    echo ""
+
+    # Service status
+    echo "🐳 Service Status:"
+    if docker compose -f "${COMPOSE_FILE}" ps >/dev/null 2>&1; then
+        docker compose -f "${COMPOSE_FILE}" ps
+    else
+        echo "   No services running"
+    fi
+    echo ""
+
+    # Capabilities
+    echo "🧠 Backend Capabilities:"
+    if python3 -c "from bcc.api import capabilities; import json; print(json.dumps(capabilities(), indent=2))" 2>/dev/null; then
+        :
+    else
+        echo "   Package not installed. Run 'make setup' to install."
+    fi
 }
 
 # =============================================================================
-# HELP AND USAGE
+# MAIN COMMAND HANDLER
 # =============================================================================
 
-print_usage() {
-    cat << EOF
-🧠 BCI Compression Toolkit - Docker Orchestration Script
+show_help() {
+    cat << 'HELPEOF'
+BCI Compression Toolkit - Neural Data Compression for Brain-Computer Interfaces
 
 USAGE:
-    $0 <command> [args]
+    ./run.sh <command> [options]
 
 COMMANDS:
     help                     Show this help message
-    build                    Build Docker images (backend + GUI if present)
-    up                       Start all services (creates compose file if missing)
-    down                     Stop and remove containers/stack
-    stop                     Stop running containers without removal
-    restart                  Restart all services (down + up)
-    logs [service]           Stream logs (default: ${SERVICE_NAME})
-    exec [service] [cmd]     Run command in container (default: ${SERVICE_NAME})
-    shell [service]          Open interactive shell (default: ${SERVICE_NAME})
-    ps                       Show container status
-    clean                    Remove dangling images
-    prune                    Remove unused Docker data (CAUTION)
-    gui:create [type]        Generate GUI scaffold if missing (type: static-vanilla, vite-react)
-    gui:open                 Open GUI in browser
-    status                   Show comprehensive project status
 
-ENVIRONMENT VARIABLES:
-    IMAGE_NAME=${IMAGE_NAME}
-    GUI_IMAGE_NAME=${GUI_IMAGE_NAME}
-    SERVICE_NAME=${SERVICE_NAME}
-    GUI_SERVICE_NAME=${GUI_SERVICE_NAME}
-    PORTS=${PORTS}
-    GUI_PORT=${GUI_PORT}
-    API_URL=${API_URL}
-    GUI_PATH=${GUI_PATH}
-    DEV_MODE=${DEV_MODE}
-    DOCKER_PLATFORM=${DOCKER_PLATFORM}
-    BUILD_ARGS=${BUILD_ARGS}
-    ENV_FILE=${ENV_FILE}
+    # Docker & Services
+    build [backend] [--no-cache]    Build Docker images (cpu|cuda|rocm|all)
+    up [backend] [--fg]             Start services (auto-detects backend by default)
+    down                            Stop all services
+    restart [backend]               Restart services
+    logs [service] [--no-follow]    Show service logs
+    ps                              Show running services
+
+    # Development
+    shell [service]                 Open shell in service container
+    exec <service> <command>        Execute command in service
+
+    # Benchmarking
+    bench [backend] [algorithms]    Run compression benchmarks
+    bench:cpu                       Run CPU-only benchmarks
+    bench:cuda                      Run CUDA benchmarks
+    bench:rocm                      Run ROCm benchmarks
+    bench:all                       Run all backend benchmarks
+
+    # GUI
+    gui:open                        Open dashboard in browser
+
+    # System
+    status                          Show system and service status
+    health                          Check system health
+    clean                           Clean Docker artifacts
+
+    # Shortcuts
+    dev                             Quick development start (auto backend)
+    prod                            Production start (CPU backend)
 
 EXAMPLES:
-    # Basic usage
-    $0 build && $0 up
-    $0 logs
-    $0 shell
-    $0 gui:create && $0 up
+    ./run.sh up                     # Auto-detect and start services
+    ./run.sh up cuda               # Start with CUDA backend
+    ./run.sh bench cpu lz4,zstd    # Benchmark CPU with specific algorithms
+    ./run.sh logs backend-cuda     # Show CUDA backend logs
+    ./run.sh shell backend-cpu     # Open shell in CPU backend
 
-    # Custom configuration
-    GUI_PORT=3001 DEV_MODE=false $0 up
-    BUILD_ARGS="USE_FULL_REQ=1" $0 build
-    PORTS="8080:8000" $0 restart
+ENVIRONMENT VARIABLES:
+    BCC_ACCEL                      Backend preference (cpu|cuda|rocm|auto)
+    BACKEND_PORT                   Backend port (default: 8000)
+    DASHBOARD_PORT                 Dashboard port (default: 3000)
+    ENV_FILE                       Environment file (default: .env)
 
-    # Development workflow
-    $0 status                           # Check current state
-    $0 gui:create static-vanilla        # Create simple GUI
-    $0 up                               # Start everything
-    $0 gui:open                         # Open in browser
-    $0 logs api                         # Watch backend logs
-    $0 exec api "python -c 'import numpy; print(numpy.__version__)'"
-
-PROJECT CONTEXT:
-    Backend: ${PROJECT_TYPE} (FastAPI) on port ${BACKEND_PORT}
-    GUI: $(gui_exists && echo "$(detect_gui_type) at ${GUI_PATH}" || echo "None (use gui:create)")
-    Compose: ${COMPOSE_FILE:-Will be created}
-
-For more details, visit: https://github.com/hkevin01/brain-computer-compression
-EOF
+For more information, visit: https://github.com/hkevin01/brain-computer-compression
+HELPEOF
 }
 
-# =============================================================================
-# MAIN COMMAND DISPATCH
-# =============================================================================
+main() {
+    check_docker
 
-cmd="${1:-help}"
-shift || true
-
-case "$cmd" in
-    help|-h|--help)
-        print_usage
-        ;;
-
-    build)
-        ensure_compose_file
-        build_images
-        ;;
-
-    up)
-        if ! gui_exists; then
-            warn "No GUI detected at ${GUI_PATH}"
-            info "Use './run.sh gui:create' to generate one, or continue with backend only"
-        fi
-        ensure_compose_file
-        if [[ -n "${COMPOSE_FILE}" && -n "${COMPOSE_CMD}" ]]; then
-            compose_up
-        else
-            single_run
-        fi
-        echo
-        success "Services started!"
-        info "Backend API: ${API_URL}"
-        gui_exists && info "GUI: http://localhost:${GUI_PORT}"
-        info "Use './run.sh status' for details"
-        ;;
-
-    down)
-        if [[ -n "${COMPOSE_FILE}" && -n "${COMPOSE_CMD}" ]]; then
-            compose_down
-        else
-            single_down
-        fi
-        ;;
-
-    stop)
-        if [[ -n "${COMPOSE_FILE}" && -n "${COMPOSE_CMD}" ]]; then
-            compose_stop
-        else
-            single_stop
-        fi
-        ;;
-
-    restart)
-        "$0" down || true
-        "$0" up
-        ;;
-
-    logs)
-        if [[ -n "${COMPOSE_FILE}" && -n "${COMPOSE_CMD}" ]]; then
-            compose_logs "$@"
-        else
-            single_logs "$@"
-        fi
-        ;;
-
-    exec)
-        if [[ -n "${COMPOSE_FILE}" && -n "${COMPOSE_CMD}" ]]; then
-            compose_exec "$@"
-        else
-            single_exec "$@"
-        fi
-        ;;
-
-    shell)
-        service="${1:-${SERVICE_NAME}}"
-        "$0" exec "$service" "/bin/sh"
-        ;;
-
-    ps)
-        if [[ -n "${COMPOSE_FILE}" && -n "${COMPOSE_CMD}" ]]; then
-            compose_ps
-        else
-            docker ps --filter "name=${SERVICE_NAME}" --filter "name=${GUI_SERVICE_NAME}"
-        fi
-        ;;
-
-    clean)
-        require_docker
-        warn "Removing dangling images related to ${IMAGE_NAME} and ${GUI_IMAGE_NAME}"
-        docker images --filter dangling=true --format '{{.ID}} {{.Repository}}:{{.Tag}}' | \
-            awk -v b="${IMAGE_NAME%:*}" -v g="${GUI_IMAGE_NAME%:*}" '$2 ~ b || $2 ~ g {print $1}' | \
-            xargs -r docker rmi || true
-        ;;
-
-    prune)
-        require_docker
-        warn "This will remove unused Docker data. Continue? (y/N)"
-        read -r response
-        if [[ "$response" =~ ^[Yy]$ ]]; then
+    case "${1:-help}" in
+        "help"|"-h"|"--help")
+            show_help
+            ;;
+        "build")
+            docker_build "${2:-auto}" "${3:-false}"
+            ;;
+        "up")
+            local fg_mode="true"
+            if [[ "${3:-}" == "--fg" ]]; then
+                fg_mode="false"
+            fi
+            docker_up "${2:-auto}" "${fg_mode}"
+            ;;
+        "down"|"stop")
+            docker_down
+            ;;
+        "restart")
+            docker_down
+            docker_up "${2:-auto}"
+            ;;
+        "logs")
+            local follow="true"
+            if [[ "${3:-}" == "--no-follow" ]]; then
+                follow="false"
+            fi
+            docker_logs "${2:-}" "${follow}"
+            ;;
+        "ps")
+            docker compose -f "${COMPOSE_FILE}" ps
+            ;;
+        "shell")
+            local service="${2:-backend-cpu}"
+            docker compose -f "${COMPOSE_FILE}" exec "${service}" bash
+            ;;
+        "exec")
+            local service="${2:-backend-cpu}"
+            shift 2
+            docker compose -f "${COMPOSE_FILE}" exec "${service}" "$@"
+            ;;
+        "bench")
+            run_benchmark "${2:-auto}" "${3:-lz4,zstd,blosc}"
+            ;;
+        "bench:cpu")
+            run_benchmark "cpu" "lz4,zstd,blosc,neural_lz77"
+            ;;
+        "bench:cuda")
+            run_benchmark "cuda" "lz4,zstd,blosc,neural_lz77"
+            ;;
+        "bench:rocm")
+            run_benchmark "rocm" "lz4,zstd,blosc,neural_lz77"
+            ;;
+        "bench:all")
+            run_benchmark "cpu" "lz4,zstd,blosc,neural_lz77"
+            run_benchmark "cuda" "lz4,zstd,blosc,neural_lz77" 2>/dev/null || true
+            run_benchmark "rocm" "lz4,zstd,blosc,neural_lz77" 2>/dev/null || true
+            ;;
+        "gui:open")
+            gui_open
+            ;;
+        "status")
+            show_status
+            ;;
+        "health")
+            # Check if API server is running
+            if curl -s http://localhost:8000/health >/dev/null 2>&1; then
+                echo "✅ API server is healthy"
+                curl -s http://localhost:8000/health | python3 -m json.tool 2>/dev/null || echo "API responded successfully"
+            else
+                echo "❌ API server is not running"
+                echo "Start services with: ./run.sh up"
+            fi
+            ;;
+        "clean")
             docker system prune -f
-        else
-            info "Cancelled"
-        fi
-        ;;
-
-    gui:create)
-        gui_type="${1:-static-vanilla}"
-        if gui_exists && [[ "$gui_type" != "--force" ]]; then
-            warn "GUI already exists at ${GUI_PATH}"
-            info "Current type: $(detect_gui_type)"
-            info "Use './run.sh gui:create --force' to overwrite"
+            docker volume prune -f
+            log "Docker cleanup completed"
+            ;;
+        "dev")
+            docker_up "auto" "true"
+            ;;
+        "prod")
+            docker_up "cpu" "true"
+            ;;
+        *)
+            error "Unknown command: ${1:-}"
+            echo ""
+            show_help
             exit 1
-        fi
+            ;;
+    esac
+}
 
-        case "$gui_type" in
-            static-vanilla|--force)
-                create_static_gui "${GUI_PATH}"
-                ;;
-            vite-react)
-                if [[ -d "${GUI_PATH}" ]]; then
-                    create_vite_gui "${GUI_PATH}"
-                else
-                    err "Vite React GUI creation requires existing Vite project"
-                    info "Use 'static-vanilla' for auto-generation"
-                    exit 1
-                fi
-                ;;
-            *)
-                err "Unknown GUI type: $gui_type"
-                info "Supported types: static-vanilla, vite-react"
-                exit 1
-                ;;
-        esac
-
-        # Recreate compose file to include GUI
-        if [[ -f docker/compose/docker-compose.yml ]]; then
-            info "Updating docker/compose/docker-compose.yml to include GUI"
-            create_compose_file force-gui
-        fi
-        ;;
-
-    gui:open)
-        if ! gui_exists; then
-            err "No GUI found. Use './run.sh gui:create' first"
-            exit 1
-        fi
-        open_gui
-        ;;
-
-    status)
-        show_status
-        ;;
-
-    *)
-        err "Unknown command: $cmd"
-        echo
-        print_usage
-        exit 1
-        ;;
-esac
-
-# Reset error trap
-trap - EXIT
+main "$@"
