@@ -166,4 +166,3 @@ __all__ = [
     'CompressorPlugin', 'register_plugin', 'get_plugin', 'list_plugins',
     'load_plugin', 'unload_plugin'
 ]
-]

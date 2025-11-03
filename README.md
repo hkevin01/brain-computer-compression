@@ -19,23 +19,42 @@
 - [🚀 Quick Start](#-quick-start)
 - [🔧 Technology Stack](#-technology-stack)
 - [⚡ GPU Acceleration](#-gpu-acceleration)
-- [🗜️ Compression Algorithms](#️-compression-algorithms)
-- [📊 Benchmarks](#-benchmarks)
-- [🔌 API Documentation](#-api-documentation)
-- [🐳 Docker Deployment](#-docker-deployment)
-- [🧪 Testing](#-testing)
-- [📈 Performance](#-performance)
-- [🤝 Contributing](#-contributing)
+ - [� Multi-BCI Systems & Electrode Mapping](#-multi-bci-systems--electrode-mapping)
+ - [🧪 Testing & Benchmarks Enhancements](#-testing--benchmarks-enhancements)
 
 ---
 
 ## 🎯 Project Purpose
 
-### Why This Toolkit Exists
+### Why This Project Exists
 
-Brain-Computer Interfaces (BCIs) generate massive amounts of high-dimensional neural data that must be processed, transmitted, and stored efficiently. Traditional compression algorithms fail to address the unique characteristics of neural signals, creating bottlenecks that limit BCI performance and accessibility.
+Brain-Computer Interfaces (BCIs) represent one of the most promising frontiers in neuroscience and human-computer interaction. However, a critical bottleneck threatens to limit their potential: **data management**. Modern BCIs generate enormous volumes of high-dimensional neural data that must be processed, transmitted, and stored in real-time with perfect fidelity. This project exists to solve that bottleneck.
 
-**The Challenge:**
+### The Problem We're Solving
+
+**Neural data is fundamentally different from traditional data:**
+- 📊 **Volume**: A single 256-channel neural array at 30kHz generates **30.72 million samples per second** (15 MB/s uncompressed)
+- ⚡ **Latency**: Closed-loop BCIs require **sub-millisecond response times** for natural control
+- 🎯 **Fidelity**: Neural features must be preserved perfectly - even tiny distortions can break decoding algorithms
+- 🔋 **Constraints**: Implantable and mobile BCIs have severe power and bandwidth limitations
+
+**Traditional compression algorithms fail because:**
+1. They treat neural data as generic byte streams, missing temporal and spatial patterns
+2. They're optimized for text/images, not oscillating multi-channel time-series data
+3. They can't guarantee real-time performance with varying signal characteristics
+4. They don't preserve the specific neural features needed for BCI decoding
+
+### Why This Matters
+
+| Without This Toolkit | With This Toolkit |
+|---------------------|-------------------|
+| ❌ Wireless BCIs limited to minutes of recording | ✅ Hours of continuous wireless neural streaming |
+| ❌ Expensive high-bandwidth transmitters required | ✅ 5-10x reduction in transmission costs |
+| ❌ Researchers forced to downsample or select channels | ✅ Full-resolution multi-channel recordings |
+| ❌ Real-time processing limited by data bottlenecks | ✅ Sub-millisecond compression for closed-loop control |
+| ❌ Neural datasets too large to share easily | ✅ Shareable compressed datasets for reproducibility |
+
+### The Challenge We're Addressing
 
 | Challenge | Impact | Current Solutions | Our Approach |
 |-----------|--------|------------------|--------------|
@@ -43,6 +62,15 @@ Brain-Computer Interfaces (BCIs) generate massive amounts of high-dimensional ne
 | **Real-time Requirements** | <1ms latency for closed-loop control | Hardware buffers, simplified algorithms | GPU-accelerated processing |
 | **Signal Fidelity** | Lossless preservation of neural features | Generic compression loses critical features | BCI-specific feature preservation |
 | **Resource Constraints** | Mobile/embedded devices with limited power | CPU-only, high power consumption | Optimized GPU kernels, adaptive selection |
+| **Accessibility** | Expensive infrastructure required | Limited to well-funded labs | Open-source, cloud-deployable solution |
+
+### Who Benefits From This
+
+1. **🔬 Researchers**: Conduct longer experiments, store more data, collaborate easier
+2. **🏥 Medical Professionals**: Enable real-time neural monitoring, telemedicine applications
+3. **🏢 BCI Companies**: Reduce hardware costs, enable mobile/implantable devices
+4. **♿ End Users**: Better BCI performance, more affordable assistive devices
+5. **🌍 Neuroscience Community**: Shared compression standard for reproducible research
 
 ### Target Applications
 
@@ -95,6 +123,60 @@ mindmap
 | **Adaptive Selection** | Real-time algorithm selection based on signal properties | Optimal balance of speed, quality, and compression ratio |
 | **Streaming Architecture** | Designed for continuous data streams with minimal buffering | Enables real-time BCI applications |
 ---
+
+## 🔀 Multi-BCI Systems & Electrode Mapping
+
+Different BCI systems use different electrode layouts, channel naming conventions, and sampling characteristics. This project provides an adapter layer to make algorithms portable across acquisition systems:
+
+- Electrode mapping: declarative JSON/YAML mapping files that translate channel indices and names between systems (e.g., NeuroPort, Blackrock, Intan, OpenBCI).
+- Resampling adapters: light-weight resamplers and anti-aliasing filters to normalize sampling rates between devices.
+- Channel grouping: logical grouping for spatial filters and compression (e.g., cortical areas, sensorimotor strips, EMG electrode clusters).
+- Calibration metadata: store per-session scaling, DC offsets, and bad-channel masks in a standardized header (HDF5 / JSON sidecar).
+
+Example mapping file (YAML):
+
+```yaml
+# device: openbci_32
+mapping:
+    ch_0: FP1
+    ch_1: FP2
+    ch_2: F3
+    ch_3: F4
+    # ...
+channel_groups:
+    motor_strip: [8,9,10,11]
+    emg_pair_1: [30,31]
+```
+
+The adapter layer exposes a simple API:
+
+- map_channels(data, mapping) -> remapped_data
+- resample(data, src_rate, dst_rate, method='fft'|'polyphase') -> resampled_data
+- apply_channel_groups(data, groups, reducer='mean') -> grouped_data
+
+These utilities live in `src/bci_compression/adapters` and include tests under `tests/test_adapters.py`.
+
+If you'd like, I can add an example converter for a specific acquisition format (OpenBCI or Blackrock) and wire it into `examples/emg_demo.py`.
+
+## 🧪 Testing & Benchmarks Enhancements
+
+We want a fast, reliable test and benchmark workflow that developers can run locally and in CI. Planned improvements include:
+
+- Quick mode tests: fast unit-level smoke tests that run in <30s for quick iteration. These use small synthetic datasets and mock GPU backends when necessary.
+- Isolation and timeouts: add per-test timeouts (pytest-timeout) and explicit resource cleanup to prevent hangs. Tests that require longer runtimes live under `tests/long/` and are not part of the `quick` profile.
+- Deterministic synthetic data: use fixed random seeds and small synthetic datasets to keep runtimes stable.
+- Benchmarks: `scripts/benchmark_runner.py` already supports synthetic and real datasets — we'll add `--quick` and `--full` profiles. Quick runs will provide approximate comparisons; full runs will produce CSV/JSON artifacts for analysis.
+- Progress reporting: integrate pytest's -q and pytest-benchmark's progress reporting; optionally add a small CLI progress bar in `scripts/benchmark_runner.py` to stream progress.
+
+Suggested test-related changes (I can implement):
+
+1. Add pytest-timeout to `requirements-dev.txt` and apply a 10s timeout to unit tests and 60s to integration/algorithm tests via `pytest.ini`.
+2. Mark long-running tests with `@pytest.mark.slow` and put them in `tests/long/`.
+3. Add a `tests/quick_run.sh` script that runs the quick profile and exits non-zero on failures.
+4. Update `tests/run_tests.py` to support `--profile quick|full|dependencies-only` and ensure `quick` uses smaller data sizes.
+
+These changes will make local development snappier and prevent CI timeouts caused by blocked processes.
+
 
 ## 🏗️ System Architecture
 
@@ -240,6 +322,132 @@ flowchart TD
     class LZ4,ZSTD,NEURAL algorithm
     class START,OUTPUT,END endpoint
 ```
+
+### Complete Technology Ecosystem
+
+```mermaid
+graph TB
+    subgraph "🎨 Frontend Layer"
+        WEB[Web Dashboard<br/>React + TypeScript<br/>Real-time Visualization]
+        API_DOCS[API Documentation<br/>Swagger/OpenAPI<br/>Interactive Testing]
+    end
+
+    subgraph "🔌 API Layer"
+        FASTAPI[FastAPI Server<br/>Python 3.8+<br/>Async/Await]
+        PYDANTIC[Pydantic Models<br/>Type Validation<br/>Schema Generation]
+        UVICORN[Uvicorn Server<br/>ASGI Protocol<br/>WebSocket Support]
+    end
+
+    subgraph "🧮 Core Processing"
+        COMPRESSION[Compression Engine<br/>Multi-Algorithm Support<br/>Adaptive Selection]
+        SIGNAL[Signal Processing<br/>SciPy/NumPy<br/>Filtering & Analysis]
+        STREAMING[Streaming Pipeline<br/>Chunk Processing<br/>Real-time Flow]
+    end
+
+    subgraph "⚡ Acceleration Layer"
+        GPU_BACKEND[GPU Backend<br/>CUDA/ROCm Detection<br/>Memory Management]
+        CUPY[CuPy Arrays<br/>GPU NumPy<br/>Zero-copy Transfers]
+        PYTORCH[PyTorch<br/>Deep Learning<br/>AI Compression]
+    end
+
+    subgraph "📦 Compression Algorithms"
+        TRADITIONAL[Traditional<br/>LZ4, Zstandard, Blosc<br/>< 1ms latency]
+        NEURAL_ALG[Neural-Optimized<br/>Wavelet, Quantization<br/>5-10x compression]
+        AI_ALG[AI-Powered<br/>Autoencoders, Transformers<br/>15-40x compression]
+    end
+
+    subgraph "💾 Storage & Data"
+        HDF5[HDF5 Archives<br/>Hierarchical Storage<br/>Metadata Support]
+        FORMATS[Neural Formats<br/>NEV, NSx, Intan<br/>Format Converters]
+        CACHE[Result Cache<br/>Redis/Memory<br/>Fast Retrieval]
+    end
+
+    subgraph "📊 Monitoring & Ops"
+        PROMETHEUS[Prometheus Metrics<br/>Performance Tracking<br/>Time-series Data]
+        LOGGING[Structured Logging<br/>JSON Format<br/>Error Tracking]
+        PROFILING[Performance Profiling<br/>Latency Analysis<br/>Resource Usage]
+    end
+
+    subgraph "🐳 Deployment"
+        DOCKER[Docker Containers<br/>Multi-stage Builds<br/>CPU/CUDA/ROCm]
+        COMPOSE[Docker Compose<br/>Service Orchestration<br/>Development Profiles]
+        K8S[Kubernetes<br/>Production Scale<br/>Auto-scaling]
+    end
+
+    subgraph "🧪 Testing & Quality"
+        PYTEST[Pytest Framework<br/>Unit & Integration<br/>Coverage Reports]
+        BENCHMARK[Benchmarking Suite<br/>Performance Testing<br/>Regression Detection]
+        CI_CD[GitHub Actions<br/>CI/CD Pipeline<br/>Automated Testing]
+    end
+
+    WEB --> FASTAPI
+    API_DOCS --> FASTAPI
+    FASTAPI --> PYDANTIC
+    FASTAPI --> UVICORN
+
+    FASTAPI --> COMPRESSION
+    COMPRESSION --> SIGNAL
+    COMPRESSION --> STREAMING
+
+    COMPRESSION --> GPU_BACKEND
+    GPU_BACKEND --> CUPY
+    GPU_BACKEND --> PYTORCH
+
+    COMPRESSION --> TRADITIONAL
+    COMPRESSION --> NEURAL_ALG
+    COMPRESSION --> AI_ALG
+
+    STREAMING --> HDF5
+    STREAMING --> FORMATS
+    COMPRESSION --> CACHE
+
+    FASTAPI --> PROMETHEUS
+    FASTAPI --> LOGGING
+    GPU_BACKEND --> PROFILING
+
+    DOCKER --> FASTAPI
+    COMPOSE --> DOCKER
+    K8S --> DOCKER
+
+    PYTEST --> COMPRESSION
+    BENCHMARK --> COMPRESSION
+    CI_CD --> PYTEST
+    CI_CD --> BENCHMARK
+
+    classDef frontend fill:#1a365d,stroke:#2c5282,stroke-width:2px,color:#ffffff
+    classDef api fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#ffffff
+    classDef core fill:#744210,stroke:#975a16,stroke-width:2px,color:#ffffff
+    classDef gpu fill:#1e3a8a,stroke:#1e40af,stroke-width:2px,color:#ffffff
+    classDef algorithms fill:#065f46,stroke:#047857,stroke-width:2px,color:#ffffff
+    classDef storage fill:#7c2d12,stroke:#9a3412,stroke-width:2px,color:#ffffff
+    classDef monitoring fill:#4c1d95,stroke:#5b21b6,stroke-width:2px,color:#ffffff
+    classDef deployment fill:#831843,stroke:#9f1239,stroke-width:2px,color:#ffffff
+    classDef testing fill:#14532d,stroke:#166534,stroke-width:2px,color:#ffffff
+
+    class WEB,API_DOCS frontend
+    class FASTAPI,PYDANTIC,UVICORN api
+    class COMPRESSION,SIGNAL,STREAMING core
+    class GPU_BACKEND,CUPY,PYTORCH gpu
+    class TRADITIONAL,NEURAL_ALG,AI_ALG algorithms
+    class HDF5,FORMATS,CACHE storage
+    class PROMETHEUS,LOGGING,PROFILING monitoring
+    class DOCKER,COMPOSE,K8S deployment
+    class PYTEST,BENCHMARK,CI_CD testing
+```
+
+**Technology Rationale Summary:**
+
+| Layer | Key Technologies | Why This Combination |
+|-------|-----------------|---------------------|
+| **Frontend** | React + TypeScript | Type safety, component reusability, real-time updates |
+| **API** | FastAPI + Pydantic | Automatic docs, type validation, high performance |
+| **Core** | NumPy + SciPy | Scientific computing standard, optimized algorithms |
+| **GPU** | CUDA + ROCm + CuPy | Broad GPU support, minimal code changes |
+| **Algorithms** | LZ4 + Zstandard + AI | Speed/ratio trade-offs, neural-specific optimization |
+| **Storage** | HDF5 | Scientific data standard, efficient compression |
+| **Monitoring** | Prometheus + JSON logs | Industry standard, powerful querying |
+| **Deployment** | Docker + K8s | Reproducibility, scalability, platform independence |
+| **Testing** | Pytest + Benchmarks | Comprehensive coverage, performance tracking |
 
 ---
 
@@ -715,6 +923,43 @@ Utility scripts are in `scripts/tools/`:
 - **Cleanup**: `scripts/tools/cleanup_now.sh` - Clean temporary files
 
 ## ✨ Key Features
+
+### 🔌 Multi-BCI System Support
+
+**🧠 Support for 9+ BCI Systems**
+
+- **OpenBCI** (8/16 channels, 200-250 Hz) - Affordable research-grade EEG
+- **Emotiv EPOC** (14 channels, 128 Hz) - Consumer EEG headsets
+- **BioSemi ActiveTwo** (64 channels, 2048 Hz) - High-density research EEG
+- **EGI GSN HydroCel** (128 channels, 1000 Hz) - Geodesic Sensor Net
+- **Delsys Trigno** (16 channels, 2000 Hz) - Wireless EMG systems
+- **Blackrock Cerebus** (96 channels, 30 kHz) - Utah array neural recording
+- **Intan RHD2000** (64 channels, 20 kHz) - Electrophysiology recording
+- **Neuropixels** (384 channels, 30 kHz) - High-density neural probes
+
+**📊 Automatic System Adaptation**
+
+- **Data resampling** between different sampling rates (128 Hz to 30 kHz)
+- **Voltage scaling** for different ADC ranges and bit depths
+- **Channel configuration** support (8 to 384+ channels)
+- **Electrode standards** (10-20, 10-10, GSN, BioSemi, custom)
+- **Recommended algorithms** per system type and data characteristics
+
+**🔄 Data Format Conversion**
+
+```python
+# Adapt OpenBCI data to 1kHz standard
+from bci_compression.formats import adapt_data
+
+adapted_data, settings = adapt_data(
+    raw_data,
+    source_system='openbci_8',
+    target_sampling_rate=1000
+)
+# Automatically selects optimal compression algorithm
+```
+
+See [BCI Systems Guide](docs/BCI_SYSTEMS_GUIDE.md) for complete documentation.
 
 ### 🧠 Neural Data Compression Algorithms
 
@@ -1802,6 +2047,17 @@ Performance Validation:
 - **Project Guides**: [docs/guides/](docs/guides/)
 - **Development Setup**: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
 - **Architecture Overview**: [docs/project/](docs/project/)
+
+## 🧠 Memory Bank
+
+This project maintains a comprehensive memory bank for tracking decisions, implementations, and changes:
+
+- **📝 App Description**: [memory-bank/app-description.md](memory-bank/app-description.md) - Comprehensive project overview and mission
+- **📋 Implementation Plans**: [memory-bank/implementation-plans/](memory-bank/implementation-plans/) - ACID-structured feature development plans
+- **🏗️ Architecture Decisions**: [memory-bank/architecture-decisions/](memory-bank/architecture-decisions/) - ADRs documenting key technical decisions
+- **📊 Change Log**: [memory-bank/change-log.md](memory-bank/change-log.md) - Complete history of project modifications
+
+The memory bank follows ACID principles (Atomic, Consistent, Isolated, Durable) to ensure clear, traceable, and maintainable documentation of all project evolution.
 
 ## 📄 License
 

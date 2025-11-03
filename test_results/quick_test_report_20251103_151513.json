@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-11-03 15:15:13",
+  "test_level": "quick",
+  "summary": {
+    "total_tests": 1,
+    "passed_tests": 0,
+    "failed_tests": 1,
+    "success_rate": 0.0,
+    "overall_status": "FAIL"
+  },
+  "test_results": [
+    {
+      "name": "Simple Unit Tests",
+      "success": false,
+      "stdout": "",
+      "stderr": "Timeout expired"
+    }
+  ]
+}

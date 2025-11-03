@@ -6,7 +6,7 @@ Provides lightweight, mobile-appropriate performance and quality metrics.
 
 import numpy as np
 
-from src.bci_compression.benchmarking.metrics import BenchmarkMetrics
+from ..benchmarking.metrics import BenchmarkMetrics
 
 
 class MobileMetrics:

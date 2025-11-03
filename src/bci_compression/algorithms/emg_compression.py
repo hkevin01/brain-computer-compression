@@ -182,7 +182,11 @@ class EMGLZCompressor(BaseCompressor, CompressorPlugin):
 
         # Smooth envelope
         window_size = int(0.02 * self.sampling_rate)  # 20ms window
-        envelope_smooth = signal.savgol_filter(envelope, window_size | 1, 3)
+        # Ensure window size is valid (odd, >= 4, <= data length)
+        window_size = max(5, min(window_size | 1, len(data) - 1))
+        if window_size % 2 == 0:
+            window_size -= 1
+        envelope_smooth = signal.savgol_filter(envelope, window_size, min(3, window_size - 1))
 
         # Normalize envelope
         envelope_norm = envelope_smooth / (np.max(envelope_smooth) + 1e-8)

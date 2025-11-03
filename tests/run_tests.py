@@ -191,8 +191,11 @@ def check_dependencies():
         try:
             __import__(module)
             print(f"✅ {module}")
-        except ImportError:
-            print(f"❌ {module} - MISSING")
+        except ImportError as e:
+            print(f"❌ {module} - MISSING (Error: {str(e)})")
+            missing_modules.append(module)
+        except Exception as e:
+            print(f"❌ {module} - ERROR: {str(e)}")
             missing_modules.append(module)
 
     if missing_packages or missing_modules:
@@ -308,10 +311,11 @@ def main():
         description='Comprehensive Test Runner for BCI Compression Toolkit',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Test Levels:
-  quick        - Basic unit tests (~2 minutes)
+Test Levels/Profiles:
+  quick        - Basic unit tests with small datasets (~2 minutes)
   standard     - Unit tests + performance benchmarks (~10 minutes)
   comprehensive - All tests including stress tests (~30 minutes)
+  full         - Alias for comprehensive
 
 Individual Tests:
   simple       - Run only simple unit tests
@@ -320,6 +324,7 @@ Individual Tests:
 
 Examples:
   python run_tests.py quick
+  python run_tests.py --profile quick
   python run_tests.py standard
   python run_tests.py comprehensive
   python run_tests.py --test simple
@@ -330,9 +335,15 @@ Examples:
     parser.add_argument(
         'level',
         nargs='?',
-        choices=['quick', 'standard', 'comprehensive'],
+        choices=['quick', 'standard', 'comprehensive', 'full'],
         default='standard',
         help='Test level to run (default: standard)'
+    )
+
+    parser.add_argument(
+        '--profile',
+        choices=['quick', 'standard', 'full', 'dependencies-only'],
+        help='Test profile (overrides level argument)'
     )
 
     parser.add_argument(
@@ -354,6 +365,13 @@ Examples:
     )
 
     args = parser.parse_args()
+
+    # Handle profile argument
+    if args.profile:
+        if args.profile == 'dependencies-only':
+            args.dependencies_only = True
+        else:
+            args.level = args.profile if args.profile != 'full' else 'comprehensive'
 
     print("Brain-Computer Compression Toolkit - Test Runner")
     print("=" * 60)
