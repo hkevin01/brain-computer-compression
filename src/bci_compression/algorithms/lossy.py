@@ -135,11 +135,3 @@ class WaveletCompressor(BaseCompressor):
             logger.exception("[Wavelet] Integrity check failed during decompression")
             raise
         return data
-            raise
-        return data
-            raise
-        return data
-            raise
-        return data
-            raise
-        return data

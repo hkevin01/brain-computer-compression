@@ -12,6 +12,7 @@ import time
 import unittest
 
 import numpy as np
+import pytest
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -22,15 +23,19 @@ class TestNeuralAlgorithms(unittest.TestCase):
 
     def setUp(self):
         """Set up test data."""
+        # Use smaller dataset for quick tests
         self.neural_data = np.random.randn(32, 10000).astype(np.float32)
+        self.quick_data = np.random.randn(8, 1000).astype(np.float32)
 
+    @pytest.mark.quick
     def test_neural_lz_compression(self):
         """Test Neural LZ compression."""
         try:
             from bci_compression.algorithms import create_neural_lz_compressor
 
-            compressor = create_neural_lz_compressor('balanced')
-            compressed, metadata = compressor.compress(self.neural_data)
+            compressor = create_neural_lz_compressor('speed')
+            # Use smaller dataset for quick tests
+            compressed, metadata = compressor.compress(self.quick_data)
 
             # Check compression ratio is reasonable
             compression_ratio = metadata.get('overall_compression_ratio', 1.0)
@@ -63,8 +68,9 @@ class TestNeuralAlgorithms(unittest.TestCase):
         except ImportError:
             self.skipTest("Perceptual quantizer not available")
 
+    @pytest.mark.slow
     def test_transformer_compression(self):
-        """Test transformer-based compression."""
+        """Test transformer-based compression (slow test)."""
         try:
             from bci_compression.algorithms import create_transformer_compressor
 
@@ -73,11 +79,11 @@ class TestNeuralAlgorithms(unittest.TestCase):
                 d_model=64,
                 n_heads=4,
                 n_layers=2,
-                max_sequence_length=512
+                max_sequence_length=256
             )
 
             # Use smaller data for faster testing
-            test_data = self.neural_data[:8, :1000]  # 8 channels, 1000 samples
+            test_data = self.quick_data  # 8 channels, 1000 samples
 
             # Test compression
             compressed = compressor.compress(test_data)

@@ -26,13 +26,11 @@ echo ""
 
 # Run with:
 # - Mark selection: not slow
-# - Timeout: 10s per test
 # - Verbose output
 # - Coverage disabled for speed
+# Note: Add --timeout=10 --timeout-method=thread when pytest-timeout is installed
 pytest tests/ \
     -m "not slow" \
-    --timeout=10 \
-    --timeout-method=thread \
     -v \
     --tb=short \
     --maxfail=5 \
