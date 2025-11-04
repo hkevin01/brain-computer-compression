@@ -1,0 +1,75 @@
+Adapter Performance Profiling Report
+================================================================================
+
+Device: OpenBCI
+Operation: mapping
+Time: 0.028 ms
+Throughput: 356,810,208 samples/sec
+Memory: 0.61 MB
+--------------------------------------------------------------------------------
+Device: OpenBCI
+Operation: resample_1000Hz
+Time: 6.566 ms
+Throughput: 1,522,931 samples/sec
+Memory: 0.61 MB
+--------------------------------------------------------------------------------
+Device: OpenBCI
+Operation: channel_groups
+Time: 0.027 ms
+Throughput: 365,103,064 samples/sec
+Memory: 0.61 MB
+--------------------------------------------------------------------------------
+Device: OpenBCI
+Operation: full_pipeline
+Time: 0.059 ms
+Throughput: 169,947,488 samples/sec
+Memory: 0.61 MB
+--------------------------------------------------------------------------------
+Device: Blackrock
+Operation: mapping
+Time: 2.488 ms
+Throughput: 12,058,962 samples/sec
+Memory: 21.97 MB
+--------------------------------------------------------------------------------
+Device: Blackrock
+Operation: resample_1000Hz
+Time: 49.278 ms
+Throughput: 608,790 samples/sec
+Memory: 21.97 MB
+--------------------------------------------------------------------------------
+Device: Blackrock
+Operation: channel_groups
+Time: 4.848 ms
+Throughput: 6,187,752 samples/sec
+Memory: 21.97 MB
+--------------------------------------------------------------------------------
+Device: Blackrock
+Operation: full_pipeline
+Time: 4.216 ms
+Throughput: 7,115,784 samples/sec
+Memory: 21.97 MB
+--------------------------------------------------------------------------------
+Device: Intan
+Operation: mapping
+Time: 0.420 ms
+Throughput: 47,630,341 samples/sec
+Memory: 9.77 MB
+--------------------------------------------------------------------------------
+Device: Intan
+Operation: resample_1000Hz
+Time: 21.775 ms
+Throughput: 918,466 samples/sec
+Memory: 9.77 MB
+--------------------------------------------------------------------------------
+Device: Intan
+Operation: channel_groups
+Time: 1.724 ms
+Throughput: 11,600,383 samples/sec
+Memory: 9.77 MB
+--------------------------------------------------------------------------------
+Device: Intan
+Operation: full_pipeline
+Time: 1.803 ms
+Throughput: 11,090,028 samples/sec
+Memory: 9.77 MB
+--------------------------------------------------------------------------------
