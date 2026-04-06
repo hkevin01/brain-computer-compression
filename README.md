@@ -1422,14 +1422,14 @@ quadrantChart
   title Research Impact vs Implementation Effort
   x-axis Low Effort --> High Effort
   y-axis Low Impact --> High Impact
-  quadrant-1 Priority: Plan carefully
-  quadrant-2 Priority: Ship first
-  quadrant-3 Priority: Skip for now
-  quadrant-4 Priority: Consider later
-  DS-CAE 150x LFP: [0.65, 0.95]
-  Unsupervised Recalibration: [0.45, 0.80]
-  Transfer Learning Backbone: [0.70, 0.75]
-  Predictive Neural Coder: [0.50, 0.70]
+  quadrant-1 Plan Carefully
+  quadrant-2 Ship First
+  quadrant-3 Skip For Now
+  quadrant-4 Consider Later
+  DS-CAE 150x LFP [0.65, 0.95]
+  Unsupervised Recalibration [0.45, 0.80]
+  Transfer Learning Backbone [0.70, 0.75]
+  Predictive Neural Coder [0.50, 0.70]
 ```
 
 | # | Research Finding | Source | What It Enables | Project Gap | Status |
