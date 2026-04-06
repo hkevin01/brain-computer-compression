@@ -17,7 +17,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from scipy.fft import fftfreq
-from scipy.signal import hilbert
+from scipy.signal import hilbert, savgol_filter, welch, butter, filtfilt
 from scipy.stats import pearsonr
 
 logger = logging.getLogger(__name__)
@@ -223,15 +223,14 @@ class EMGQualityMetrics:
 
         spectral_correlations = []
         spectral_distances = []
-        band_powers = {'low': [], 'mid': [], 'high': []}
+        band_powers = {band: [] for band in self.emg_bands}
 
         for ch in range(original.shape[0]):
             # Calculate power spectral densities
-            orig_psd = self._calculate_psd(original[ch])
-            recon_psd = self._calculate_psd(reconstructed[ch])
+            freqs, orig_psd = self._calculate_psd(original[ch])
+            _, recon_psd = self._calculate_psd(reconstructed[ch])
 
             # Limit to EMG frequency range
-            freqs = fftfreq(len(original[ch]), 1/self.sampling_rate)
             freq_mask = (freqs >= frequency_range[0]) & (freqs <= frequency_range[1])
 
             orig_psd_limited = orig_psd[freq_mask]
@@ -257,9 +256,9 @@ class EMGQualityMetrics:
         return {
             'spectral_correlation': np.mean(spectral_correlations),
             'spectral_distance': np.mean(spectral_distances),
-            'low_freq_power_preservation': np.mean(band_powers['low']),
-            'mid_freq_power_preservation': np.mean(band_powers['mid']),
-            'high_freq_power_preservation': np.mean(band_powers['high'])
+            'low_freq_power_preservation': np.mean(band_powers.get('low_frequency', band_powers.get('low', [1.0]))),
+            'mid_freq_power_preservation': np.mean(band_powers.get('mid_frequency', band_powers.get('mid', [1.0]))),
+            'high_freq_power_preservation': np.mean(band_powers.get('high_frequency', band_powers.get('high', [1.0])))
         }
 
     def emg_timing_precision(
@@ -385,7 +384,7 @@ class EMGQualityMetrics:
         window_size = int(0.02 * self.sampling_rate)  # 20ms
         if window_size % 2 == 0:
             window_size += 1
-        envelope_smooth = signal.savgol_filter(envelope, window_size, 3)
+        envelope_smooth = savgol_filter(envelope, window_size, 3)
 
         # Normalize and threshold
         envelope_norm = envelope_smooth / (np.max(envelope_smooth) + 1e-8)
@@ -456,15 +455,15 @@ class EMGQualityMetrics:
             rms[i] = np.sqrt(np.mean(signal[start_idx:end_idx] ** 2))
         return rms
 
-    def _calculate_psd(self, signal: np.ndarray) -> np.ndarray:
-        """Calculate power spectral density."""
+    def _calculate_psd(self, signal: np.ndarray) -> tuple:
+        """Calculate power spectral density, returning (freqs, psd)."""
         # Use Welch's method for better PSD estimation
-        freqs, psd = signal.welch(
+        freqs, psd = welch(
             signal,
             fs=self.sampling_rate,
             nperseg=min(len(signal) // 4, 1024)
         )
-        return psd
+        return freqs, psd
 
     def _jensen_shannon_distance(
         self,
@@ -525,8 +524,8 @@ class EMGQualityMetrics:
         low_norm = low_freq / nyquist
         high_norm = min(high_freq, nyquist * 0.95) / nyquist
 
-        b, a = signal.butter(4, [low_norm, high_norm], btype='band')
-        return signal.filtfilt(b, a, signal)
+        b, a = butter(4, [low_norm, high_norm], btype='band')
+        return filtfilt(b, a, signal)
 
     def _detect_onset_offset(
         self,

@@ -1,13 +1,32 @@
 """
-Neural-optimized LZ compression variants for brain-computer interface data.
-
-This module implements LZ77/LZ78 variants specifically optimized for the
-characteristics of neural data, including temporal correlations and
-multi-channel redundancy.
+# =============================================================================
+# ID: BCI-ALG-NLZ-001
+# Module: Neural-Optimised LZ Compression Variants
+# Purpose: Implement sliding-window LZ77 compression tuned for neural signal
+#          characteristics — large temporal correlations, multi-channel
+#          redundancy, and 16-bit quantised integer representation.
+# Requirement: Achieve ≥ 2× lossless compression ratio on 30 kHz neural data;
+#              compress a 4 096-sample channel window in < 0.5 ms on CPU.
+# Rationale: Standard LZ77 uses a 32 KB dictionary optimised for ASCII text.
+#            Neural data at 30 kHz has a natural correlation horizon of several
+#            hundred ms (≈ 4 000–12 000 samples), motivating a larger window.
+#            Quantisation to uint16 before compression reduces alphabet size
+#            and improves match frequency.
+# Constraints: Pure Python / NumPy; no GPU dependency in this module.
+#              struct module for compact binary packing.
+# Assumptions: Input data is contiguous; single-precision float → uint16
+#              quantisation is sufficient for recorded neural signals.
+# Failure Modes: Window overflow on very short signals (< min_match_length)
+#                → handled by early-exit stubs returning raw bytes.
+# Verification: tests/test_simple_validation.py::test_neural_lz_compression
+# References:   Ziv & Lempel (1977) "A Universal Algorithm for Sequential Data
+#               Compression"; Quiroga et al. (2004) spike detection.
+# =============================================================================
 """
 
 import struct
 import time
+import zlib
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -15,11 +34,27 @@ import numpy as np
 
 class NeuralLZ77Compressor:
     """
-    LZ77 variant optimized for neural signal compression.
+    LZ77 variant optimised for neural signal compression.
 
-    This compressor takes advantage of temporal correlations in neural
-    signals and optimizes the sliding window and lookahead buffer sizes
-    for typical neural data characteristics.
+    # -------------------------------------------------------------------------
+    # ID: BCI-ALG-NLZ-002
+    # Requirement: Compress 1-D or 2-D neural signal arrays; return byte stream
+    #              decompressible back to an array of the same shape and dtype.
+    # Purpose: Provide a fast, dependency-free lossless baseline compressor
+    #          that serves as fallback when GPU/ML algorithms are unavailable.
+    # Inputs:
+    #   data            – np.ndarray (channels, samples) or (samples,).
+    #   window_size     – int, sliding-window size in samples (default 4096).
+    #   lookahead_size  – int, lookahead buffer size (default 256).
+    #   min_match_length – int ≥ 2, shortest match to encode as back-reference.
+    #   quantization_bits – int in [8, 16], bit-depth before LZ encoding.
+    # Outputs:
+    #   bytes – compressed binary blob including shape/scale header.
+    # Preconditions:  data.size > 0.
+    # Postconditions: decompress(compress(data)).shape == data.shape (lossless
+    #                 within quantisation error).
+    # Side Effects:   Updates self.compression_stats.
+    # -------------------------------------------------------------------------
     """
 
     def __init__(
@@ -240,11 +275,11 @@ class NeuralLZ77Compressor:
                 flag_offset_length = (token[1] << 16) | token[2]  # Clear MSB for match
                 binary_data.extend(struct.pack('>I', flag_offset_length))
 
-        return bytes(binary_data)
+        return zlib.compress(bytes(binary_data), level=6)
 
     def decompress_channel(self, compressed_data: bytes, metadata: Dict) -> np.ndarray:
         # Decode tokens
-        tokens = self._decode_tokens(compressed_data)
+        tokens = self._decode_tokens(zlib.decompress(compressed_data))
 
         # Reconstruct quantized data
         reconstructed = []

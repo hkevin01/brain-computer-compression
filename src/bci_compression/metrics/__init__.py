@@ -11,9 +11,27 @@ from .emg_quality import (
                           evaluate_emg_compression_quality,
                           quick_emg_quality_check,
 )
+from .neural_quality import (
+    NeuralQualityMetrics,
+    compute_snr,
+    compute_psnr,
+    detect_spikes,
+    spike_timing_jitter,
+    phase_coherence,
+    mutual_information,
+)
 
 __all__ = [
+    # EMG metrics
     'EMGQualityMetrics',
     'evaluate_emg_compression_quality',
-    'quick_emg_quality_check'
+    'quick_emg_quality_check',
+    # Neural metrics
+    'NeuralQualityMetrics',
+    'compute_snr',
+    'compute_psnr',
+    'detect_spikes',
+    'spike_timing_jitter',
+    'phase_coherence',
+    'mutual_information',
 ]

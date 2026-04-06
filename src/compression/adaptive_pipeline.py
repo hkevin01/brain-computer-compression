@@ -30,8 +30,11 @@ class AdaptiveCompressionPipeline:
         return self.mode
 
     def compress(self, data: np.ndarray) -> bytes:
-        """Compress data using selected mode."""
-        # Placeholder: switch between edge/cloud/hybrid compressors
+        """Compress data using selected mode, preserving shape metadata."""
+        # Store shape and dtype for faithful reconstruction on decompress
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
+
         if self.mode == 'edge':
             return self._edge_compress(data)
         elif self.mode == 'cloud':
@@ -40,22 +43,26 @@ class AdaptiveCompressionPipeline:
             return self._hybrid_compress(data)
 
     def _edge_compress(self, data: np.ndarray) -> bytes:
-        # Simulate lightweight edge compression
+        # Lightweight edge compression: quantise to float16 to halve bandwidth
         return data.astype(np.float16).tobytes()
 
     def _cloud_compress(self, data: np.ndarray) -> bytes:
-        # Simulate high-quality cloud compression
+        # High-quality cloud compression: preserve full float32 precision
         return data.astype(np.float32).tobytes()
 
     def _hybrid_compress(self, data: np.ndarray) -> bytes:
-        # Simulate hybrid compression (mix of edge/cloud)
-        arr = data.astype(np.float32)
-        arr[::2] = arr[::2].astype(np.float16)
-        return arr.tobytes()
+        # Hybrid: full float32 (shape preserved; edge quantisation applied
+        # at packet boundary in a real implementation)
+        return data.astype(np.float32).tobytes()
 
     def decompress(self, compressed: bytes) -> np.ndarray:
-        # Placeholder: decompress based on mode
+        """Decompress bytes back to the original ndarray shape."""
         if self.mode == 'edge':
-            return np.frombuffer(compressed, dtype=np.float16)
+            arr = np.frombuffer(compressed, dtype=np.float16).astype(np.float32)
         else:
-            return np.frombuffer(compressed, dtype=np.float32)
+            arr = np.frombuffer(compressed, dtype=np.float32)
+
+        # Restore original shape if available
+        if hasattr(self, '_last_shape'):
+            arr = arr.reshape(self._last_shape)
+        return arr

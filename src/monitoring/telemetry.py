@@ -2,14 +2,26 @@
 import time
 from typing import Any, Dict, Optional
 
-from opentelemetry import metrics, trace
-from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram
+# Optional heavy telemetry dependencies — degrade gracefully when absent
+try:
+    from opentelemetry import metrics, trace
+    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.sdk.metrics import MeterProvider
+    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    _HAS_OTEL = True
+except ImportError:
+    _HAS_OTEL = False
+    metrics = None  # type: ignore[assignment]
+    trace = None    # type: ignore[assignment]
+
+try:
+    from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram
+    _HAS_PROMETHEUS = True
+except ImportError:
+    _HAS_PROMETHEUS = False
 
 
 class MetricsCollector:
@@ -21,70 +33,79 @@ class MetricsCollector:
         Args:
             service_name: Name of service for metrics
         """
-        # Set up OpenTelemetry
-        self.meter = metrics.get_meter(service_name)
-        self.tracer = trace.get_tracer(service_name)
+        # Set up OpenTelemetry (optional)
+        if _HAS_OTEL:
+            self.meter = metrics.get_meter(service_name)
+            self.tracer = trace.get_tracer(service_name)
+        else:
+            self.meter = None
+            self.tracer = None
 
-        # Set up Prometheus metrics
-        self.registry = CollectorRegistry()
+        # Set up Prometheus metrics (optional)
+        if _HAS_PROMETHEUS:
+            self.registry = CollectorRegistry()
 
-        # Compression metrics
-        self.compression_ratio = Histogram(
-            "compression_ratio",
-            "Compression ratio achieved",
-            buckets=[1.5, 2.0, 3.0, 4.0, 5.0, 7.5, 10.0],
-            registry=self.registry
-        )
+            self.compression_ratio = Histogram(
+                "compression_ratio",
+                "Compression ratio achieved",
+                buckets=[1.5, 2.0, 3.0, 4.0, 5.0, 7.5, 10.0],
+                registry=self.registry
+            )
 
-        self.compression_latency = Histogram(
-            "compression_latency_ms",
-            "Compression latency in milliseconds",
-            buckets=[1, 2, 5, 10, 20, 50, 100, 200],
-            registry=self.registry
-        )
+            self.compression_latency = Histogram(
+                "compression_latency_ms",
+                "Compression latency in milliseconds",
+                buckets=[1, 2, 5, 10, 20, 50, 100, 200],
+                registry=self.registry
+            )
 
-        self.snr = Histogram(
-            "signal_to_noise_ratio_db",
-            "Signal-to-noise ratio in dB",
-            buckets=[10, 15, 20, 25, 30, 35, 40],
-            registry=self.registry
-        )
+            self.snr = Histogram(
+                "signal_to_noise_ratio_db",
+                "Signal-to-noise ratio in dB",
+                buckets=[10, 15, 20, 25, 30, 35, 40],
+                registry=self.registry
+            )
 
-        # Hardware metrics
-        self.gpu_memory_used = Gauge(
-            "gpu_memory_used_bytes",
-            "GPU memory usage in bytes",
-            ["device"],
-            registry=self.registry
-        )
+            self.gpu_memory_used = Gauge(
+                "gpu_memory_used_bytes",
+                "GPU memory usage in bytes",
+                ["device"],
+                registry=self.registry
+            )
 
-        self.fpga_temperature = Gauge(
-            "fpga_temperature_celsius",
-            "FPGA temperature in Celsius",
-            ["device"],
-            registry=self.registry
-        )
+            self.fpga_temperature = Gauge(
+                "fpga_temperature_celsius",
+                "FPGA temperature in Celsius",
+                ["device"],
+                registry=self.registry
+            )
 
-        # Error metrics
-        self.compression_errors = Counter(
-            "compression_errors_total",
-            "Total number of compression errors",
-            ["error_type"],
-            registry=self.registry
-        )
+            self.compression_errors = Counter(
+                "compression_errors_total",
+                "Total number of compression errors",
+                ["error_type"],
+                registry=self.registry
+            )
+        else:
+            self.registry = None
+            self.compression_ratio = None
+            self.compression_latency = None
+            self.snr = None
+            self.gpu_memory_used = None
+            self.fpga_temperature = None
+            self.compression_errors = None
 
-        # Initialize span processors
-        trace.set_tracer_provider(TracerProvider())
-        trace.get_tracer_provider().add_span_processor(
-            BatchSpanProcessor(OTLPSpanExporter())
-        )
-
-        # Initialize metric exporters
-        reader = PeriodicExportingMetricReader(
-            OTLPMetricExporter(),
-            export_interval_millis=10000
-        )
-        metrics.set_meter_provider(MeterProvider(metric_readers=[reader]))
+        # Initialize OpenTelemetry span processors and metric exporters (optional)
+        if _HAS_OTEL:
+            trace.set_tracer_provider(TracerProvider())
+            trace.get_tracer_provider().add_span_processor(
+                BatchSpanProcessor(OTLPSpanExporter())
+            )
+            reader = PeriodicExportingMetricReader(
+                OTLPMetricExporter(),
+                export_interval_millis=10000
+            )
+            metrics.set_meter_provider(MeterProvider(metric_readers=[reader]))
 
     def record_compression(
         self,

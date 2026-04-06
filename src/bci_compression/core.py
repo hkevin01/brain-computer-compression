@@ -1,4 +1,25 @@
-"""Core compression functionality with robust error handling and streaming support."""
+"""
+# =============================================================================
+# ID: BCI-CORE-001
+# Module: Core Compression Functionality
+# Purpose: Provide the abstract base class, configuration schema, device
+#          abstraction, streaming context, and metrics recorder shared by all
+#          BCI compression algorithms in this toolkit.
+# Requirement: All concrete compressors SHALL inherit BaseCompressor and
+#              implement compress() / decompress() with the same numpy array
+#              contract; SHALL log latency and compression ratio per call.
+# Rationale: Centralising shared state (device selection, streaming buffers,
+#            metrics) prevents code duplication across 15+ algorithm modules
+#            and ensures consistent telemetry regardless of algorithm choice.
+# Constraints: Python ≥ 3.8; NumPy required; Pydantic optional (shim provided).
+# Assumptions: Single-precision float32 is the canonical internal dtype.
+# Failure Modes: CompressionError raised on unrecoverable signal corruption;
+#                callers should treat it as a hard fault and flush buffers.
+# Verification: All algorithm tests inherit BaseCompressor; integration tests
+#               in tests/test_phase1_foundation.py.
+# References:   PEP 3119 (ABCs); IEEE 1541-2002 (binary prefixes).
+# =============================================================================
+"""
 
 from __future__ import annotations
 
@@ -33,8 +54,17 @@ logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------------------
 
 class Config(BaseModel):
-    """Base configuration for compressors.
+    """
+    Base configuration for compressors.
 
+    # -------------------------------------------------------------------------
+    # ID: BCI-CORE-002
+    # Requirement: All fields SHALL be serialisable to JSON; quality in [0,1].
+    # Purpose: Single source of truth for algorithm hyperparameters passed at
+    #          construction time; enables reproducible experiment logging.
+    # Inputs:  Keyword arguments matching field names.
+    # Outputs: Config instance with validated defaults.
+    # -------------------------------------------------------------------------
     Provides:
     - Schema validation (via Pydantic if available)
     - Reproducible seeds
@@ -156,7 +186,31 @@ class CompressionError(Exception):
 # --------------------------------------------------------------------------------------
 
 class BaseCompressor:
-    """Base class for all compressors with error handling & standardized metadata."""
+    """
+    Abstract base class for all BCI data compressors.
+
+    # -------------------------------------------------------------------------
+    # ID: BCI-CORE-005
+    # Requirement: Every concrete compressor SHALL implement _compress_impl()
+    #              and _decompress_impl(); compress() and decompress() SHALL
+    #              record latency and compression ratio via MetricsRecorder.
+    # Purpose: Enforce a uniform public API across all algorithm backends
+    #          (transformer, VAE, lossless LZ, wavelet, GPU, mobile) so that
+    #          higher-level pipelines can swap algorithms with zero code change.
+    # Inputs:
+    #   data        – np.ndarray, shape (channels, samples) or (samples,).
+    #   config      – Config instance with quality, device, latency budget.
+    # Outputs:
+    #   compress()  → (bytes, dict) — compressed blob + metadata.
+    #   decompress() → np.ndarray — reconstructed signal.
+    # Preconditions:  data.size > 0; data is a numpy array.
+    # Postconditions: metadata dict contains 'compression_ratio',
+    #                 'latency_ms', 'algorithm', 'original_bytes'.
+    # Side Effects:   Appends record to self.metrics.records.
+    # Failure Modes:  CompressionError raised on empty input or non-ndarray.
+    # Verification:   All algorithm-specific test files; test_phase1_foundation.
+    # -------------------------------------------------------------------------
+    """
 
     def __init__(self, name: str = "base", config: Optional[Config] = None):
         self.name = name

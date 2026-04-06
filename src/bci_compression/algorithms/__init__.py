@@ -227,4 +227,41 @@ try:
 except Exception:
     pass
 
+# ---- 2025-2026 Research Algorithms ----------------------------------------
+# BrainCodec RVQ-VAE (ICLR 2025): 64x EEG/iEEG compression
+_has_rvq = True
+try:
+    from .rvq_compressor import RVQCompressor, line_length_loss  # noqa: F401
+    __all__.extend(['RVQCompressor', 'line_length_loss'])
+except ImportError as e:
+    _has_rvq = False
+    warnings.warn(f"RVQ compressor unavailable: {e}")
+
+# RAMAN DS-CAE (arXiv 2504.06996, Apr 2025): 150x LFP compression
+_has_cae = True
+try:
+    from .cae_compression import DSCAECompressor, DSCAEEncoder, balanced_stochastic_prune  # noqa: F401
+    __all__.extend(['DSCAECompressor', 'DSCAEEncoder', 'balanced_stochastic_prune'])
+except ImportError as e:
+    _has_cae = False
+    warnings.warn(f"DS-CAE compressor unavailable: {e}")
+
+# LLCSpike CLEM (IEEE TIP 2025): lossless spike compression
+_has_llcspike = True
+try:
+    from .llc_spike_compressor import LLCSpikeCompressor, CLEMEntropyModel, SpikeAggregator  # noqa: F401
+    __all__.extend(['LLCSpikeCompressor', 'CLEMEntropyModel', 'SpikeAggregator'])
+except ImportError as e:
+    _has_llcspike = False
+    warnings.warn(f"LLCSpike compressor unavailable: {e}")
+
+# EEGCiD Diffusion-Prior (IEEE EMBC 2025): extreme-ratio EEG compression
+_has_diffusion = True
+try:
+    from .diffusion_compressor import DiffusionCompressor, EEGScoreNetwork  # noqa: F401
+    __all__.extend(['DiffusionCompressor', 'EEGScoreNetwork'])
+except ImportError as e:
+    _has_diffusion = False
+    warnings.warn(f"Diffusion compressor unavailable: {e}")
+
 # algorithms package init

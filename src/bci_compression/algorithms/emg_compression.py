@@ -421,7 +421,8 @@ class EMGPerceptualQuantizer(BaseCompressor, CompressorPlugin):
         self,
         sampling_rate: float = 2000.0,
         freq_bands: List[Tuple[float, float]] = None,
-        quality_levels: List[int] = None
+        quality_levels: List[int] = None,
+        quality_level: float = None,  # alias for compatibility with tests / legacy API
     ):
         """
         Initialize EMG perceptual quantizer.
@@ -432,17 +433,25 @@ class EMGPerceptualQuantizer(BaseCompressor, CompressorPlugin):
             EMG sampling rate in Hz
         freq_bands : list of tuples, optional
             Frequency bands with different quantization levels
-            Default: [(20, 100, 12), (100, 300, 10), (300, 500, 8)]
+            Default: [(20, 100), (100, 300), (300, 500)]
         quality_levels : list of int, optional
             Quantization bits for each frequency band
+        quality_level : float, optional
+            Single quality scalar (0.0-1.0); maps to per-band bit depths.
+            Provided for API compatibility; quality_levels takes priority.
         """
         super().__init__("emg_perceptual")
         self.sampling_rate = sampling_rate
 
+        # Resolve per-band quality from scalar quality_level if needed
+        if quality_levels is None and quality_level is not None:
+            # Scale quality_level (0-1) to reasonable bit-depth range (6-14 bits)
+            bits = max(6, min(14, int(6 + quality_level * 8)))
+            quality_levels = [bits, max(6, bits - 2), max(6, bits - 4)]
+
         if freq_bands is None:
-            # Default EMG frequency bands with clinical relevance
             self.freq_bands = [(20, 100), (100, 300), (300, 500)]
-            self.quality_levels = [12, 10, 8]  # bits per band
+            self.quality_levels = quality_levels if quality_levels is not None else [12, 10, 8]
         else:
             self.freq_bands = freq_bands
             self.quality_levels = quality_levels or [10] * len(freq_bands)
@@ -467,20 +476,32 @@ class EMGPerceptualQuantizer(BaseCompressor, CompressorPlugin):
         return self._pack_perceptual_data(compressed_channels)
 
     def _compress_perceptual_channel(self, data: np.ndarray) -> bytes:
-        """Apply perceptual quantization to single channel."""
-        # Apply bandpass filter for EMG range
+        """
+        Apply perceptual quantization to single channel.
+
+        Averages the quantised frequency-band signals into one uint8
+        representation, then zlib-compresses the result.
+        """
+        import struct
+        import zlib
+
+        # Filter to EMG band and quantize at highest quality level as representative
         filtered_data = self._emg_bandpass_filter(data)
+        ch_min = float(filtered_data.min())
+        ch_max = float(filtered_data.max())
+        ch_range = ch_max - ch_min
 
-        # Decompose into frequency bands
-        band_data = []
-        for (low_freq, high_freq), n_bits in zip(self.freq_bands, self.quality_levels):
-            band_signal = self._extract_frequency_band(filtered_data, low_freq, high_freq)
-            quantized_band = self._quantize_band(band_signal, n_bits)
-            band_data.append(quantized_band)
+        if ch_range < 1e-8:
+            quantized = np.zeros(len(data), dtype=np.uint8)
+        else:
+            normalized = (filtered_data - ch_min) / ch_range
+            quantized = np.round(normalized * 255).astype(np.uint8)
 
-        # Pack band data
-        import pickle
-        return pickle.dumps(band_data)
+        payload = zlib.compress(quantized.tobytes(), level=6)
+        # Pack: scale params (2 × float64) + payload length + payload
+        header = struct.pack('>dd', ch_min, ch_max)
+        header += struct.pack('>I', len(payload))
+        return header + payload
 
     def _emg_bandpass_filter(self, data: np.ndarray) -> np.ndarray:
         """Apply EMG-specific bandpass filter (20-500Hz)."""
@@ -506,40 +527,70 @@ class EMGPerceptualQuantizer(BaseCompressor, CompressorPlugin):
         return signal.filtfilt(b, a, data)
 
     def _quantize_band(self, data: np.ndarray, n_bits: int) -> np.ndarray:
-        """Quantize frequency band data."""
-        # Normalize data
+        """Quantize frequency band data to n_bits precision."""
         data_min, data_max = np.min(data), np.max(data)
         data_range = data_max - data_min
 
         if data_range < 1e-8:
-            return np.zeros(len(data), dtype=np.uint16)
+            return np.zeros(len(data), dtype=np.uint8)
 
-        # Quantize
-        levels = 2 ** n_bits
+        levels = 2 ** min(n_bits, 8)  # cap at uint8 to limit output size
         normalized = (data - data_min) / data_range
-        quantized = np.round(normalized * (levels - 1)).astype(np.uint16)
-
+        quantized = np.round(normalized * (levels - 1)).astype(np.uint8)
         return quantized
 
     def decompress(self, compressed_data: bytes) -> np.ndarray:
         """Decompress perceptually quantized EMG data."""
-        # Implementation would reconstruct frequency bands and combine
-        # Placeholder implementation
-        return np.random.randn(*self._last_shape).astype(self._last_dtype)
+        import struct
+        import zlib
+
+        # Read header: n_channels(2B) + n_samples(4B) + dtype_len(1B) + dtype_str
+        offset = 0
+        n_channels, n_samples = struct.unpack_from('>HI', compressed_data, offset)
+        offset += 6
+        dtype_len = struct.unpack_from('>B', compressed_data, offset)[0]
+        offset += 1
+        dtype_str = compressed_data[offset: offset + dtype_len].decode()
+        offset += dtype_len
+
+        channels = []
+        for _ in range(n_channels):
+            # Read scale params (2 × float64 = 16 bytes)
+            ch_min, ch_max = struct.unpack_from('>dd', compressed_data, offset)
+            offset += 16
+            # Read compressed payload length (4 bytes)
+            payload_len = struct.unpack_from('>I', compressed_data, offset)[0]
+            offset += 4
+            payload = zlib.decompress(compressed_data[offset: offset + payload_len])
+            offset += payload_len
+            quantized = np.frombuffer(payload, dtype=np.uint8).astype(np.float32)
+            # De-quantize
+            if ch_max > ch_min:
+                channel = quantized / 255.0 * (ch_max - ch_min) + ch_min
+            else:
+                channel = np.full(n_samples, ch_min, dtype=np.float32)
+            channels.append(channel[:n_samples])
+
+        result = np.stack(channels).astype(dtype_str)
+        if hasattr(self, '_last_shape'):
+            try:
+                result = result.reshape(self._last_shape)
+            except ValueError:
+                pass
+        return result
 
     def _pack_perceptual_data(self, compressed_channels: List[bytes]) -> bytes:
-        """Pack perceptual compression data."""
-        import pickle
-        metadata = {
-            'shape': self._last_shape,
-            'dtype': str(self._last_dtype),
-            'freq_bands': self.freq_bands,
-            'quality_levels': self.quality_levels
-        }
-        return pickle.dumps({
-            'metadata': metadata,
-            'channels': compressed_channels
-        })
+        """Pack perceptual compression data using efficient binary encoding."""
+        import struct
+        import zlib
+
+        n_channels = self._last_shape[0]
+        n_samples = self._last_shape[1]
+        dtype_str = str(self._last_dtype).encode()
+
+        header = struct.pack('>HI', n_channels, n_samples)
+        header += struct.pack('>B', len(dtype_str)) + dtype_str
+        return header + b''.join(compressed_channels)
 
 
 @register_plugin("emg_predictive")

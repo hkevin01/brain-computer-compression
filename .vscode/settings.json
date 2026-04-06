@@ -26,5 +26,25 @@
   "files.insertFinalNewline": true,
   "workbench.editor.enablePreview": false,
   "github.copilot.chat.alternateGptPrompt.enabled": true,
-  "chat.todoListTool.enabled": true
+  "chat.todoListTool.enabled": true,
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#2e323c",
+    "activityBar.background": "#2e323c",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#a73858",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "commandCenter.border": "#e7e7e799",
+    "sash.hoverBorder": "#2e323c",
+    "statusBar.background": "#181a1f",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#2e323c",
+    "statusBarItem.remoteBackground": "#181a1f",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#181a1f",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#181a1f99",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  },
+  "peacock.color": "#181a1f"
 }

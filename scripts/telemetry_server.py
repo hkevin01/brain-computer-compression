@@ -649,12 +649,3 @@ if __name__ == "__main__":  # pragma: no cover
     import uvicorn
     logger.info("Starting server on 0.0.0.0:8000")
     uvicorn.run("scripts.telemetry_server:app", host="0.0.0.0", port=8000, reload=True)
-    return {"status": "ok", "gpu_available": GPU_AVAILABLE, "artifact_dir": str(GUI_ARTIFACTS_DIR)}
-
-# --------------------------------------------------------------------------------------
-# Entry point
-# --------------------------------------------------------------------------------------
-if __name__ == "__main__":  # pragma: no cover
-    import uvicorn
-    logger.info("Starting server on 0.0.0.0:8000")
-    uvicorn.run("scripts.telemetry_server:app", host="0.0.0.0", port=8000, reload=True)

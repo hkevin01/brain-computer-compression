@@ -42,6 +42,8 @@ class GPUCompressionBackend:
         self.enable_memory_pool = enable_memory_pool
         self.gpu_available = False
         self.cupy_available = False
+        # Bind CuPy module reference so GPU methods can use self.cp uniformly
+        self.cp = cp if _has_cupy else None
 
         # Try to initialize GPU support
         if _has_cupy:
@@ -52,6 +54,7 @@ class GPUCompressionBackend:
                     test_array = cp.array([1, 2, 3])
                     _ = cp.sum(test_array)
                     self.gpu_available = True
+                    self.cupy_available = True
 
                     if enable_memory_pool:
                         # Enable memory pool for efficiency

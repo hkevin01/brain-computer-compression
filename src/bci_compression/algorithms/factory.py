@@ -587,6 +587,35 @@ def register_default_algorithms(registry: AlgorithmRegistry) -> None:
     except ImportError as e:
         logger.warning(f"Failed to register VAE algorithms: {e}")
 
+    # 2025–2026 Research Algorithms
+    try:
+        from .rvq_compressor import RVQCompressor
+        registry.register("rvq", RVQCompressor)
+        logger.info("Registered RVQ (BrainCodec) compressor")
+    except ImportError as e:
+        logger.warning(f"Failed to register RVQ compressor: {e}")
+
+    try:
+        from .cae_compression import DSCAECompressor
+        registry.register("ds_cae", DSCAECompressor)
+        logger.info("Registered DS-CAE (RAMAN) compressor")
+    except ImportError as e:
+        logger.warning(f"Failed to register DS-CAE compressor: {e}")
+
+    try:
+        from .llc_spike_compressor import LLCSpikeCompressor
+        registry.register("llc_spike", LLCSpikeCompressor)
+        logger.info("Registered LLC-Spike (CLEM) compressor")
+    except ImportError as e:
+        logger.warning(f"Failed to register LLC-Spike compressor: {e}")
+
+    try:
+        from .diffusion_compressor import DiffusionCompressor
+        registry.register("diffusion", DiffusionCompressor)
+        logger.info("Registered Diffusion (EEGCiD) compressor")
+    except ImportError as e:
+        logger.warning(f"Failed to register Diffusion compressor: {e}")
+
     # Hardware-optimized algorithms
     registry.register("neon", NeonCompressor)
     registry.register("avx", AVXCompressor)

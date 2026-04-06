@@ -66,7 +66,7 @@ class MobileBCICompressor(BaseCompressor):
 
     def _init_algorithm(self):
         """Initialize algorithm-specific parameters and components."""
-        if self.algorithm == "mobile_lz":
+        if self.algorithm in ("mobile_lz", "emg_mobile_lz"):
             self._init_mobile_lz()
         elif self.algorithm == "lightweight_quant":
             self._init_lightweight_quant()
@@ -121,7 +121,7 @@ class MobileBCICompressor(BaseCompressor):
         self._last_dtype = data.dtype
 
         # Algorithm-specific compression
-        if self.algorithm == "mobile_lz":
+        if self.algorithm in ("mobile_lz", "emg_mobile_lz"):
             compressed = self._compress_mobile_lz(data)
         elif self.algorithm == "lightweight_quant":
             compressed = self._compress_lightweight_quant(data)
@@ -304,7 +304,7 @@ class MobileBCICompressor(BaseCompressor):
         np.ndarray
             Decompressed neural data
         """
-        if self.algorithm == "mobile_lz":
+        if self.algorithm in ("mobile_lz", "emg_mobile_lz"):
             return self._decompress_mobile_lz(compressed_data)
         elif self.algorithm == "lightweight_quant":
             return self._decompress_lightweight_quant(compressed_data)

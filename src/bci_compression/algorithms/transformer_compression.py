@@ -504,6 +504,10 @@ class TransformerCompressor(BaseCompressor):
 
         self._is_initialized = True
 
+    def get_compression_ratio(self) -> float:
+        """Return the actual compression ratio from the last compress() call."""
+        return float(self.compression_ratio)
+
     def _preprocess_data(self, data: np.ndarray) -> np.ndarray:
         """
         Preprocess neural data for transformer input.

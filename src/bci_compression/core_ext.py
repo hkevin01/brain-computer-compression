@@ -7,6 +7,7 @@ import numpy as np
 import zlib
 import lzma
 import pickle
+import struct
 from typing import Any
 from collections import Counter
 import heapq
@@ -19,12 +20,17 @@ class AdaptiveLZCompressor(CompressorPlugin):
     name = "adaptive_lz"
 
     def compress(self, data: np.ndarray, **kwargs) -> bytes:
+        shape = data.shape
+        ndim = len(shape)
+        header = struct.pack(f'>B{ndim}I', ndim, *shape)
         arr_bytes = data.astype(np.float32).tobytes()
-        return zlib.compress(arr_bytes, level=9)
+        return header + zlib.compress(arr_bytes, level=9)
 
     def decompress(self, compressed: bytes, **kwargs) -> np.ndarray:
-        arr_bytes = zlib.decompress(compressed)
-        return np.frombuffer(arr_bytes, dtype=np.float32)
+        ndim = struct.unpack('>B', compressed[:1])[0]
+        shape = struct.unpack(f'>{ndim}I', compressed[1:1 + ndim * 4])
+        arr_bytes = zlib.decompress(compressed[1 + ndim * 4:])
+        return np.frombuffer(arr_bytes, dtype=np.float32).reshape(shape)
 
 
 @register_plugin("dictionary")
@@ -33,12 +39,17 @@ class DictionaryCompressor(CompressorPlugin):
     name = "dictionary"
 
     def compress(self, data: np.ndarray, **kwargs) -> bytes:
+        shape = data.shape
+        ndim = len(shape)
+        header = struct.pack(f'>B{ndim}I', ndim, *shape)
         arr_bytes = data.astype(np.float32).tobytes()
-        return lzma.compress(arr_bytes)
+        return header + lzma.compress(arr_bytes)
 
     def decompress(self, compressed: bytes, **kwargs) -> np.ndarray:
-        arr_bytes = lzma.decompress(compressed)
-        return np.frombuffer(arr_bytes, dtype=np.float32)
+        ndim = struct.unpack('>B', compressed[:1])[0]
+        shape = struct.unpack(f'>{ndim}I', compressed[1:1 + ndim * 4])
+        arr_bytes = lzma.decompress(compressed[1 + ndim * 4:])
+        return np.frombuffer(arr_bytes, dtype=np.float32).reshape(shape)
 
 
 @register_plugin("huffman")

@@ -38,7 +38,9 @@ class MobileEMGCompressor(MobileBCICompressor):
         power_mode: str = "emg_optimized",
         max_memory_mb: int = 25,  # Lower memory for wearables
         emg_sampling_rate: float = 2000.0,
-        activation_threshold: float = 0.1
+        activation_threshold: float = 0.1,
+        target_latency_ms: float = 50.0,
+        battery_level: float = 1.0
     ):
         """
         Initialize mobile EMG compressor.
@@ -59,6 +61,10 @@ class MobileEMGCompressor(MobileBCICompressor):
             EMG sampling rate in Hz
         activation_threshold : float, default=0.1
             Threshold for muscle activation detection
+        target_latency_ms : float, default=50.0
+            Target processing latency in milliseconds
+        battery_level : float, default=1.0
+            Current battery level (0.0-1.0) for power-aware optimization
         """
         # Initialize parent with EMG-optimized parameters
         super().__init__(
@@ -72,6 +78,8 @@ class MobileEMGCompressor(MobileBCICompressor):
         # EMG-specific parameters
         self.emg_sampling_rate = emg_sampling_rate
         self.activation_threshold = activation_threshold
+        self.target_latency_ms = target_latency_ms
+        self.battery_level = battery_level
 
         # EMG power optimization
         self.emg_power_optimizer = EMGPowerOptimizer(
@@ -114,6 +122,9 @@ class MobileEMGCompressor(MobileBCICompressor):
         if data.ndim == 1:
             data = data.reshape(1, -1)
 
+        self._last_shape = data.shape
+        self._last_dtype = data.dtype
+
         # Detect muscle activation state
         activation_state = self._detect_muscle_activation_state(data)
         self._update_muscle_state(activation_state)
@@ -140,6 +151,17 @@ class MobileEMGCompressor(MobileBCICompressor):
         self._update_emg_metrics(data, compressed, processing_time)
 
         return compressed
+
+    def decompress(self, compressed_data: bytes) -> np.ndarray:
+        """Decompress EMG data using the appropriate algorithm."""
+        if self.algorithm == "emg_mobile_lz":
+            if not hasattr(self, '_emg_lz_compressor'):
+                raise ValueError("Must call compress before decompress for emg_mobile_lz")
+            return self._emg_lz_compressor.decompress(compressed_data)
+        elif self.algorithm == "emg_lightweight_quant":
+            return self._decompress_emg_lightweight_quant(compressed_data)
+        else:
+            return super().decompress(compressed_data)
 
     def _detect_muscle_activation_state(self, data: np.ndarray) -> Dict[str, float]:
         """Detect current muscle activation state."""
@@ -213,13 +235,13 @@ class MobileEMGCompressor(MobileBCICompressor):
     def _compress_emg_mobile_lz(self, data: np.ndarray) -> bytes:
         """EMG-optimized mobile LZ compression."""
         # Use EMG-aware LZ compressor with mobile optimizations
-        emg_compressor = EMGLZCompressor(
+        self._emg_lz_compressor = EMGLZCompressor(
             activation_threshold=self.activation_threshold,
             sampling_rate=self.emg_sampling_rate,
             pattern_buffer_size=self.buffer_size
         )
 
-        return emg_compressor.compress(data)
+        return self._emg_lz_compressor.compress(data)
 
     def _compress_emg_lightweight_quant(self, data: np.ndarray) -> bytes:
         """EMG-optimized lightweight quantization."""
@@ -429,3 +451,45 @@ class EMGPowerOptimizer(PowerOptimizer):
             )
 
         return optimized_params
+
+    def optimize_for_power_consumption(
+        self,
+        battery_level: float,
+        quality_target: float,
+        processing_load: float
+    ) -> Dict[str, float]:
+        """
+        Optimize parameters based on battery level, quality target, and processing load.
+
+        Parameters
+        ----------
+        battery_level : float
+            Battery level as fraction 0-1 (1.0 = full)
+        quality_target : float
+            Desired quality level 0-1
+        processing_load : float
+            Current processing load (≥ 1.0 = high load)
+
+        Returns
+        -------
+        dict
+            Optimized compression parameters
+        """
+        # High battery + low quality target = aggressive compression to save further
+        # Low battery = aggressive compression to conserve power
+        if battery_level > 0.5:
+            compression_aggressiveness = 0.4 + (1.0 - quality_target) * 0.3
+        else:
+            compression_aggressiveness = 0.7 + (1.0 - battery_level) * 0.3
+
+        # Adjust for processing load
+        if processing_load > 1.5:
+            compression_aggressiveness = min(0.95, compression_aggressiveness * 1.2)
+
+        return {
+            'compression_aggressiveness': float(np.clip(compression_aggressiveness, 0.1, 0.95)),
+            'quality_threshold': float(np.clip(quality_target, 0.5, 1.0)),
+            'processing_frequency': float(np.clip(1.0 / max(processing_load, 1.0), 0.3, 1.0)),
+            'battery_level': battery_level,
+            'recommended_bits': int(6 + quality_target * 8)
+        }

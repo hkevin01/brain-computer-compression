@@ -9,7 +9,7 @@ class PowerOptimizer:
     """
     Adjusts MobileBCICompressor parameters for power, memory, and performance trade-offs.
     """
-    def __init__(self, compressor):
+    def __init__(self, compressor=None):
         self.compressor = compressor
 
     def set_mode(self, mode: str):

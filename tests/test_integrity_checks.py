@@ -91,10 +91,10 @@ def test_adaptive_lz_shape_mismatch():
     compressor = AdaptiveLZCompressor()
     data = np.random.randn(8, 100).astype(np.float32)
     compressed = compressor.compress(data)
-    # Simulate decompressing with a new instance (no _last_shape)
+    # Shape is now encoded in the compressed data header, so a new instance can decompress
     new_compressor = AdaptiveLZCompressor()
-    with pytest.raises(Exception):
-        _ = new_compressor.decompress(compressed)
+    result = new_compressor.decompress(compressed)
+    assert result.shape == data.shape
 
 
 def test_quantization_dtype_mismatch():
