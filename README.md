@@ -1426,10 +1426,10 @@ quadrantChart
   quadrant-2 Ship First
   quadrant-3 Skip For Now
   quadrant-4 Consider Later
-  "DS-CAE 150x LFP" [0.65, 0.95]
-  "Unsupervised Recalibration" [0.45, 0.80]
-  "Transfer Learning Backbone" [0.70, 0.75]
-  "Predictive Neural Coder" [0.50, 0.70]
+  DS CAE LFP: [0.65, 0.95]
+  BrainCodec RVQ: [0.55, 0.90]
+  LLC Spike CLEM: [0.40, 0.85]
+  Diffusion EEG: [0.70, 0.80]
 ```
 
 | # | Research Finding | Source | What It Enables | Project Gap | Status |
