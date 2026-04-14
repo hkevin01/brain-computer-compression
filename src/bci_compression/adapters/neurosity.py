@@ -195,7 +195,7 @@ class NeurosityAdapter:
                 )
                 mask = (freqs >= low) & (freqs <= high)
                 if mask.any():
-                    band_power[i] = float(np.trapz(psd[mask], freqs[mask]))
+                    band_power[i] = float(np.trapezoid(psd[mask], freqs[mask]))
             result[band_name] = band_power
 
         return result

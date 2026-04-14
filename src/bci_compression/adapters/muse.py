@@ -191,7 +191,7 @@ class MuseAdapter:
             mask = (freqs >= band[0]) & (freqs <= band[1])
             if mask.any():
                 # Integrate PSD over the band (trapezoidal rule)
-                powers[i] = np.trapz(psd[mask], freqs[mask])
+                powers[i] = np.trapezoid(psd[mask], freqs[mask])
         return powers
 
     # ── CSV file reader (Mind Monitor / BlueMUSE) ─────────────────────────────
