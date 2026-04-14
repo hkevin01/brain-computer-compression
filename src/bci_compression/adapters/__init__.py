@@ -2,13 +2,25 @@
 BCI Device Adapters - Multi-System Electrode Mapping & Signal Processing
 
 This module provides utilities to make compression algorithms portable across
-different BCI acquisition systems (NeuroPort, Blackrock, Intan, OpenBCI, etc.).
+different BCI acquisition systems.  Supported hardware families:
+
+  - Blackrock Microsystems  : Neuroport 96ch, Cerebus 128ch   (blackrock.py)
+  - Intan Technologies      : RHD2132 32ch, RHD2164 64ch, RHS 128ch (intan.py)
+  - OpenBCI                 : Cyton 8ch, Daisy 16ch           (openbci.py)
+  - Emotiv                  : EPOC 14ch, EPOC+ 14ch, INSIGHT 5ch, FLEX 32ch (emotiv.py)
+  - InteraXon Muse          : Muse 1/2/S/2016 4ch             (muse.py)
+  - Neurosity               : Crown 8ch, Shift 4ch            (neurosity.py)
+  - Imec Neuropixels         : 1.0 / 2.0 / Ultra 384ch        (neuropixels.py)
+  - Brain Products           : BrainAmp 32/64/128ch, actiCHamp (brainproducts.py)
+  - g.tec Medical Engineering: g.USBamp 16/32ch, g.HIamp 32-256ch, g.Nautilus (gtec.py)
+  - Generic HDF5             : Any h5-stored dataset           (hdf5.py)
 
 Key Features:
 - Electrode/channel mapping between different naming conventions
-- Resampling with anti-aliasing for rate normalization
+- Resampling with anti-aliasing for rate normalisation
 - Channel grouping for spatial filtering and compression
 - Calibration metadata management
+- Native binary file parsers (NEV, RHD, SpikeGLX .bin, BrainVision .vhdr, GDF)
 """
 
 from typing import Dict, List, Optional, Union, Literal
@@ -297,3 +309,38 @@ __all__ = [
     'save_mapping_file',
     'apply_calibration',
 ]
+
+# ── Sub-module lazy imports (available as bci_compression.adapters.<Module>) ──
+# Full imports are deferred so that missing optional dependencies (h5py, etc.)
+# do not break the base adapter functionality.
+
+def _load_submodule(name: str):
+    """Import and return a named adapter sub-module."""
+    import importlib
+    return importlib.import_module(f'.{name}', package=__name__)
+
+# Convenience re-exports for auto-discovery
+try:
+    from .blackrock import BlackrockAdapter, convert_blackrock_to_standard
+    from .intan import IntanAdapter, convert_intan_to_standard
+    from .openbci import OpenBCIAdapter, convert_openbci_to_standard
+    from .emotiv import EmotivAdapter, convert_emotiv_to_standard
+    from .muse import MuseAdapter, convert_muse_to_standard
+    from .neurosity import NeurosityAdapter, convert_neurosity_to_standard
+    from .neuropixels import NeuropixelsAdapter, convert_neuropixels_to_standard
+    from .brainproducts import BrainProductsAdapter, load_brainvision_data
+    from .gtec import GTecAdapter, convert_gtec_to_standard
+
+    __all__ += [
+        'BlackrockAdapter', 'convert_blackrock_to_standard',
+        'IntanAdapter', 'convert_intan_to_standard',
+        'OpenBCIAdapter', 'convert_openbci_to_standard',
+        'EmotivAdapter', 'convert_emotiv_to_standard',
+        'MuseAdapter', 'convert_muse_to_standard',
+        'NeurosityAdapter', 'convert_neurosity_to_standard',
+        'NeuropixelsAdapter', 'convert_neuropixels_to_standard',
+        'BrainProductsAdapter', 'load_brainvision_data',
+        'GTecAdapter', 'convert_gtec_to_standard',
+    ]
+except ImportError:
+    pass  # sub-modules loaded on demand
