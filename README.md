@@ -69,23 +69,23 @@ Brain-Computer Interfaces (BCIs) represent one of the most promising frontiers i
 
 ### Why This Matters
 
-| Without This Toolkit | With This Toolkit |
+| <sub>Without This Toolkit</sub> | <sub>With This Toolkit</sub> |
 |---------------------|-------------------|
-| ❌ Wireless BCIs limited to minutes of recording | ✅ Hours of continuous wireless neural streaming |
-| ❌ Expensive high-bandwidth transmitters required | ✅ 5-10x reduction in transmission costs |
-| ❌ Researchers forced to downsample or select channels | ✅ Full-resolution multi-channel recordings |
-| ❌ Real-time processing limited by data bottlenecks | ✅ Sub-millisecond compression for closed-loop control |
-| ❌ Neural datasets too large to share easily | ✅ Shareable compressed datasets for reproducibility |
+| <sub>❌ Wireless BCIs limited to minutes of recording</sub> | <sub>✅ Hours of continuous wireless neural streaming</sub> |
+| <sub>❌ Expensive high-bandwidth transmitters required</sub> | <sub>✅ 5-10x reduction in transmission costs</sub> |
+| <sub>❌ Researchers forced to downsample or select channels</sub> | <sub>✅ Full-resolution multi-channel recordings</sub> |
+| <sub>❌ Real-time processing limited by data bottlenecks</sub> | <sub>✅ Sub-millisecond compression for closed-loop control</sub> |
+| <sub>❌ Neural datasets too large to share easily</sub> | <sub>✅ Shareable compressed datasets for reproducibility</sub> |
 
 ### The Challenge We're Addressing
 
-| Challenge | Impact | Current Solutions | Our Approach |
+| <sub>Challenge</sub> | <sub>Impact</sub> | <sub>Current Solutions</sub> | <sub>Our Approach</sub> |
 |-----------|--------|------------------|--------------|
-| **Data Volume** | 100+ channels × 30kHz = 3M+ samples/sec | Basic compression (20-30% reduction) | Neural-aware algorithms (60-80% reduction) |
-| **Real-time Requirements** | <1ms latency for closed-loop control | Hardware buffers, simplified algorithms | GPU-accelerated processing |
-| **Signal Fidelity** | Lossless preservation of neural features | Generic compression loses critical features | BCI-specific feature preservation |
-| **Resource Constraints** | Mobile/embedded devices with limited power | CPU-only, high power consumption | Optimized GPU kernels, adaptive selection |
-| **Accessibility** | Expensive infrastructure required | Limited to well-funded labs | Open-source, cloud-deployable solution |
+| <sub>**Data Volume**</sub> | <sub>100+ channels × 30kHz = 3M+ samples/sec</sub> | <sub>Basic compression (20-30% reduction)</sub> | <sub>Neural-aware algorithms (60-80% reduction)</sub> |
+| <sub>**Real-time Requirements**</sub> | <sub><1ms latency for closed-loop control</sub> | <sub>Hardware buffers, simplified algorithms</sub> | <sub>GPU-accelerated processing</sub> |
+| <sub>**Signal Fidelity**</sub> | <sub>Lossless preservation of neural features</sub> | <sub>Generic compression loses critical features</sub> | <sub>BCI-specific feature preservation</sub> |
+| <sub>**Resource Constraints**</sub> | <sub>Mobile/embedded devices with limited power</sub> | <sub>CPU-only, high power consumption</sub> | <sub>Optimized GPU kernels, adaptive selection</sub> |
+| <sub>**Accessibility**</sub> | <sub>Expensive infrastructure required</sub> | <sub>Limited to well-funded labs</sub> | <sub>Open-source, cloud-deployable solution</sub> |
 
 ### Who Benefits From This
 
@@ -139,12 +139,12 @@ mindmap
 
 ### Key Innovation Areas
 
-| Innovation | Description | Benefit |
+| <sub>Innovation</sub> | <sub>Description</sub> | <sub>Benefit</sub> |
 |------------|-------------|---------|
-| **Neural-Aware Compression** | Algorithms designed specifically for neural signal characteristics | 2-3x better compression ratios than generic methods |
-| **GPU Acceleration** | CUDA/ROCm optimized kernels for parallel processing | 10-100x faster than CPU-only implementations |
-| **Adaptive Selection** | Real-time algorithm selection based on signal properties | Optimal balance of speed, quality, and compression ratio |
-| **Streaming Architecture** | Designed for continuous data streams with minimal buffering | Enables real-time BCI applications |
+| <sub>**Neural-Aware Compression**</sub> | <sub>Algorithms designed specifically for neural signal characteristics</sub> | <sub>2-3x better compression ratios than generic methods</sub> |
+| <sub>**GPU Acceleration**</sub> | <sub>CUDA/ROCm optimized kernels for parallel processing</sub> | <sub>10-100x faster than CPU-only implementations</sub> |
+| <sub>**Adaptive Selection**</sub> | <sub>Real-time algorithm selection based on signal properties</sub> | <sub>Optimal balance of speed, quality, and compression ratio</sub> |
+| <sub>**Streaming Architecture**</sub> | <sub>Designed for continuous data streams with minimal buffering</sub> | <sub>Enables real-time BCI applications</sub> |
 ---
 
 ## 🔀 Multi-BCI Systems & Electrode Mapping
@@ -153,16 +153,16 @@ Different BCI systems use different electrode layouts, channel naming convention
 
 ### Supported BCI Devices
 
-| Device | Channels | Sampling Rate | Adapter Status | Use Case |
+| <sub>Device</sub> | <sub>Channels</sub> | <sub>Sampling Rate</sub> | <sub>Adapter Status</sub> | <sub>Use Case</sub> |
 |--------|----------|---------------|----------------|----------|
-| **OpenBCI Cyton** | 8 | 250 Hz | ✅ Complete | Scalp EEG, consumer BCIs |
-| **OpenBCI Daisy** | 16 | 250 Hz | ✅ Complete | Multi-channel EEG |
-| **Blackrock Neuroport** | 96 | 30 kHz | ✅ Complete | Utah array, intracortical recording |
-| **Blackrock Cerebus** | 128 | 30 kHz | ✅ Complete | Dual Utah arrays, high-density recording |
-| **Intan RHD2132** | 32 | 20 kHz | ✅ Complete | LFP, research applications |
-| **Intan RHD2164** | 64 | 20 kHz | ✅ Complete | Multi-area recording |
-| **Intan RHS128** | 128 | 30 kHz | ✅ Complete | Stimulation-capable headstage |
-| **Generic HDF5** | Variable | Variable | ✅ Complete | Any HDF5-formatted neural data |
+| <sub>**OpenBCI Cyton**</sub> | <sub>8</sub> | <sub>250 Hz</sub> | <sub>✅ Complete</sub> | <sub>Scalp EEG, consumer BCIs</sub> |
+| <sub>**OpenBCI Daisy**</sub> | <sub>16</sub> | <sub>250 Hz</sub> | <sub>✅ Complete</sub> | <sub>Multi-channel EEG</sub> |
+| <sub>**Blackrock Neuroport**</sub> | <sub>96</sub> | <sub>30 kHz</sub> | <sub>✅ Complete</sub> | <sub>Utah array, intracortical recording</sub> |
+| <sub>**Blackrock Cerebus**</sub> | <sub>128</sub> | <sub>30 kHz</sub> | <sub>✅ Complete</sub> | <sub>Dual Utah arrays, high-density recording</sub> |
+| <sub>**Intan RHD2132**</sub> | <sub>32</sub> | <sub>20 kHz</sub> | <sub>✅ Complete</sub> | <sub>LFP, research applications</sub> |
+| <sub>**Intan RHD2164**</sub> | <sub>64</sub> | <sub>20 kHz</sub> | <sub>✅ Complete</sub> | <sub>Multi-area recording</sub> |
+| <sub>**Intan RHS128**</sub> | <sub>128</sub> | <sub>30 kHz</sub> | <sub>✅ Complete</sub> | <sub>Stimulation-capable headstage</sub> |
+| <sub>**Generic HDF5**</sub> | <sub>Variable</sub> | <sub>Variable</sub> | <sub>✅ Complete</sub> | <sub>Any HDF5-formatted neural data</sub> |
 
 ### Adapter Features
 
@@ -564,17 +564,17 @@ graph TB
 
 **Technology Rationale Summary:**
 
-| Layer | Key Technologies | Why This Combination |
+| <sub>Layer</sub> | <sub>Key Technologies</sub> | <sub>Why This Combination</sub> |
 |-------|-----------------|---------------------|
-| **Frontend** | React + TypeScript | Type safety, component reusability, real-time updates |
-| **API** | FastAPI + Pydantic | Automatic docs, type validation, high performance |
-| **Core** | NumPy + SciPy | Scientific computing standard, optimized algorithms |
-| **GPU** | CUDA + ROCm + CuPy | Broad GPU support, minimal code changes |
-| **Algorithms** | LZ4 + Zstandard + AI | Speed/ratio trade-offs, neural-specific optimization |
-| **Storage** | HDF5 | Scientific data standard, efficient compression |
-| **Monitoring** | Prometheus + JSON logs | Industry standard, powerful querying |
-| **Deployment** | Docker + K8s | Reproducibility, scalability, platform independence |
-| **Testing** | Pytest + Benchmarks | Comprehensive coverage, performance tracking |
+| <sub>**Frontend**</sub> | <sub>React + TypeScript</sub> | <sub>Type safety, component reusability, real-time updates</sub> |
+| <sub>**API**</sub> | <sub>FastAPI + Pydantic</sub> | <sub>Automatic docs, type validation, high performance</sub> |
+| <sub>**Core**</sub> | <sub>NumPy + SciPy</sub> | <sub>Scientific computing standard, optimized algorithms</sub> |
+| <sub>**GPU**</sub> | <sub>CUDA + ROCm + CuPy</sub> | <sub>Broad GPU support, minimal code changes</sub> |
+| <sub>**Algorithms**</sub> | <sub>LZ4 + Zstandard + AI</sub> | <sub>Speed/ratio trade-offs, neural-specific optimization</sub> |
+| <sub>**Storage**</sub> | <sub>HDF5</sub> | <sub>Scientific data standard, efficient compression</sub> |
+| <sub>**Monitoring**</sub> | <sub>Prometheus + JSON logs</sub> | <sub>Industry standard, powerful querying</sub> |
+| <sub>**Deployment**</sub> | <sub>Docker + K8s</sub> | <sub>Reproducibility, scalability, platform independence</sub> |
+| <sub>**Testing**</sub> | <sub>Pytest + Benchmarks</sub> | <sub>Comprehensive coverage, performance tracking</sub> |
 
 ---
 
@@ -582,12 +582,12 @@ graph TB
 
 ### Prerequisites
 
-| Requirement | Version | Purpose | Installation |
+| <sub>Requirement</sub> | <sub>Version</sub> | <sub>Purpose</sub> | <sub>Installation</sub> |
 |-------------|---------|---------|--------------|
-| **Python** | 3.8+ | Core runtime environment | [Download Python](https://python.org/downloads) |
-| **Docker** | 20.10+ | Containerized deployment | [Install Docker](https://docs.docker.com/get-docker/) |
-| **GPU Drivers** | Latest | Hardware acceleration | [NVIDIA](https://developer.nvidia.com/cuda-downloads) \| [AMD](https://rocmdocs.amd.com/en/latest/Installation_Guide/Installation-Guide.html) |
-| **Git** | 2.25+ | Version control | [Install Git](https://git-scm.com/downloads) |
+| <sub>**Python**</sub> | <sub>3.8+</sub> | <sub>Core runtime environment</sub> | <sub>[Download Python](https://python.org/downloads)</sub> |
+| <sub>**Docker**</sub> | <sub>20.10+</sub> | <sub>Containerized deployment</sub> | <sub>[Install Docker](https://docs.docker.com/get-docker/)</sub> |
+| <sub>**GPU Drivers**</sub> | <sub>Latest</sub> | <sub>Hardware acceleration</sub> | <sub>[NVIDIA](https://developer.nvidia.com/cuda-downloads) \</sub> | <sub>[AMD](https://rocmdocs.amd.com/en/latest/Installation_Guide/Installation-Guide.html)</sub> |
+| <sub>**Git**</sub> | <sub>2.25+</sub> | <sub>Version control</sub> | <sub>[Install Git](https://git-scm.com/downloads)</sub> |
 
 ### Installation & Setup
 
@@ -654,62 +654,62 @@ make lint
 
 ### Core Technologies
 
-| Technology | Version | Purpose | Why Chosen |
+| <sub>Technology</sub> | <sub>Version</sub> | <sub>Purpose</sub> | <sub>Why Chosen</sub> |
 |------------|---------|---------|------------|
-| **Python** | 3.8-3.12 | Primary language | • Excellent scientific computing ecosystem<br/>• Rich neural data processing libraries<br/>• Easy integration with ML frameworks |
-| **NumPy** | 1.21+ | Numerical computing | • Optimized array operations for neural data<br/>• Memory-efficient multi-dimensional arrays<br/>• Foundation for scientific Python stack |
-| **SciPy** | 1.7+ | Scientific algorithms | • Signal processing functions (filters, FFT)<br/>• Statistical analysis for neural patterns<br/>• Optimized implementations of math functions |
-| **PyTorch** | 1.13+ | Machine learning | • GPU acceleration for neural networks<br/>• Dynamic computation graphs<br/>• Strong ecosystem for research |
+| <sub>**Python**</sub> | <sub>3.8-3.12</sub> | <sub>Primary language</sub> | <sub>• Excellent scientific computing ecosystem<br/>• Rich neural data processing libraries<br/>• Easy integration with ML frameworks</sub> |
+| <sub>**NumPy**</sub> | <sub>1.21+</sub> | <sub>Numerical computing</sub> | <sub>• Optimized array operations for neural data<br/>• Memory-efficient multi-dimensional arrays<br/>• Foundation for scientific Python stack</sub> |
+| <sub>**SciPy**</sub> | <sub>1.7+</sub> | <sub>Scientific algorithms</sub> | <sub>• Signal processing functions (filters, FFT)<br/>• Statistical analysis for neural patterns<br/>• Optimized implementations of math functions</sub> |
+| <sub>**PyTorch**</sub> | <sub>1.13+</sub> | <sub>Machine learning</sub> | <sub>• GPU acceleration for neural networks<br/>• Dynamic computation graphs<br/>• Strong ecosystem for research</sub> |
 
 ### GPU Acceleration
 
-| Technology | Purpose | Implementation | Benefits |
+| <sub>Technology</sub> | <sub>Purpose</sub> | <sub>Implementation</sub> | <sub>Benefits</sub> |
 |------------|---------|----------------|----------|
-| **CUDA 12.x** | NVIDIA GPU support | CuPy integration + custom kernels | • 10-100x speedup for parallel operations<br/>• Mature ecosystem with extensive libraries<br/>• Optimized memory management |
-| **ROCm 6.x** | AMD GPU support | HIP kernels + PyTorch backend | • Open-source alternative to CUDA<br/>• Growing support for scientific computing<br/>• Better price/performance for some workloads |
-| **CuPy** | GPU-accelerated NumPy | Drop-in replacement for NumPy | • Minimal code changes for GPU acceleration<br/>• Automatic memory management<br/>• Seamless CPU-GPU transfers |
+| <sub>**CUDA 12.x**</sub> | <sub>NVIDIA GPU support</sub> | <sub>CuPy integration + custom kernels</sub> | <sub>• 10-100x speedup for parallel operations<br/>• Mature ecosystem with extensive libraries<br/>• Optimized memory management</sub> |
+| <sub>**ROCm 6.x**</sub> | <sub>AMD GPU support</sub> | <sub>HIP kernels + PyTorch backend</sub> | <sub>• Open-source alternative to CUDA<br/>• Growing support for scientific computing<br/>• Better price/performance for some workloads</sub> |
+| <sub>**CuPy**</sub> | <sub>GPU-accelerated NumPy</sub> | <sub>Drop-in replacement for NumPy</sub> | <sub>• Minimal code changes for GPU acceleration<br/>• Automatic memory management<br/>• Seamless CPU-GPU transfers</sub> |
 
 ### Web & API Framework
 
-| Component | Technology | Purpose | Why Chosen |
+| <sub>Component</sub> | <sub>Technology</sub> | <sub>Purpose</sub> | <sub>Why Chosen</sub> |
 |-----------|------------|---------|------------|
-| **FastAPI** | Modern Python web framework | RESTful API server | • Automatic API documentation<br/>• Type validation and serialization<br/>• High performance (comparable to Node.js)<br/>• Built-in async support |
-| **Pydantic** | Data validation | Request/response models | • Runtime type checking<br/>• Automatic JSON serialization<br/>• Clear error messages<br/>• Integration with FastAPI |
-| **Uvicorn** | ASGI server | Production deployment | • High-performance async server<br/>• Hot reloading for development<br/>• WebSocket support for streaming |
+| <sub>**FastAPI**</sub> | <sub>Modern Python web framework</sub> | <sub>RESTful API server</sub> | <sub>• Automatic API documentation<br/>• Type validation and serialization<br/>• High performance (comparable to Node.js)<br/>• Built-in async support</sub> |
+| <sub>**Pydantic**</sub> | <sub>Data validation</sub> | <sub>Request/response models</sub> | <sub>• Runtime type checking<br/>• Automatic JSON serialization<br/>• Clear error messages<br/>• Integration with FastAPI</sub> |
+| <sub>**Uvicorn**</sub> | <sub>ASGI server</sub> | <sub>Production deployment</sub> | <sub>• High-performance async server<br/>• Hot reloading for development<br/>• WebSocket support for streaming</sub> |
 
 ### Containerization & Orchestration
 
-| Technology | Purpose | Configuration | Benefits |
+| <sub>Technology</sub> | <sub>Purpose</sub> | <sub>Configuration</sub> | <sub>Benefits</sub> |
 |------------|---------|---------------|----------|
-| **Docker** | Application containerization | Multi-stage builds | • Consistent environments across platforms<br/>• Isolated dependencies<br/>• Easy deployment and scaling |
-| **Docker Compose** | Service orchestration | Profile-based configs | • Multi-service coordination<br/>• Environment-specific configurations<br/>• Development vs production profiles |
-| **Multi-stage Builds** | Optimized images | CPU/CUDA/ROCm variants | • Smaller production images<br/>• Backend-specific optimizations<br/>• Reduced attack surface |
+| <sub>**Docker**</sub> | <sub>Application containerization</sub> | <sub>Multi-stage builds</sub> | <sub>• Consistent environments across platforms<br/>• Isolated dependencies<br/>• Easy deployment and scaling</sub> |
+| <sub>**Docker Compose**</sub> | <sub>Service orchestration</sub> | <sub>Profile-based configs</sub> | <sub>• Multi-service coordination<br/>• Environment-specific configurations<br/>• Development vs production profiles</sub> |
+| <sub>**Multi-stage Builds**</sub> | <sub>Optimized images</sub> | <sub>CPU/CUDA/ROCm variants</sub> | <sub>• Smaller production images<br/>• Backend-specific optimizations<br/>• Reduced attack surface</sub> |
 
 ### Development & Quality Tools
 
-| Category | Tools | Purpose | Integration |
+| <sub>Category</sub> | <sub>Tools</sub> | <sub>Purpose</sub> | <sub>Integration</sub> |
 |----------|-------|---------|-------------|
-| **Code Quality** | Ruff, Black, MyPy | Linting, formatting, type checking | Pre-commit hooks + CI/CD |
-| **Testing** | Pytest, Hypothesis | Unit tests, property-based testing | Automated test discovery |
-| **Benchmarking** | pytest-benchmark | Performance measurement | Integrated with test suite |
-| **Documentation** | Sphinx, MkDocs | API docs, user guides | Auto-generated from docstrings |
+| <sub>**Code Quality**</sub> | <sub>Ruff, Black, MyPy</sub> | <sub>Linting, formatting, type checking</sub> | <sub>Pre-commit hooks + CI/CD</sub> |
+| <sub>**Testing**</sub> | <sub>Pytest, Hypothesis</sub> | <sub>Unit tests, property-based testing</sub> | <sub>Automated test discovery</sub> |
+| <sub>**Benchmarking**</sub> | <sub>pytest-benchmark</sub> | <sub>Performance measurement</sub> | <sub>Integrated with test suite</sub> |
+| <sub>**Documentation**</sub> | <sub>Sphinx, MkDocs</sub> | <sub>API docs, user guides</sub> | <sub>Auto-generated from docstrings</sub> |
 
 ### Data Storage & Formats
 
-| Technology | Use Case | Features | Why Chosen |
+| <sub>Technology</sub> | <sub>Use Case</sub> | <sub>Features</sub> | <sub>Why Chosen</sub> |
 |------------|----------|----------|------------|
-| **HDF5** | Neural data archives | Hierarchical, compressed | • Industry standard for scientific data<br/>• Built-in compression<br/>• Metadata support<br/>• Cross-platform compatibility |
-| **JSON** | Configuration, API | Human-readable, structured | • Universal support<br/>• Easy debugging<br/>• Schema validation with Pydantic |
-| **MessagePack** | Binary serialization | Compact, fast | • Smaller than JSON<br/>• Faster parsing<br/>• Maintains type information |
+| <sub>**HDF5**</sub> | <sub>Neural data archives</sub> | <sub>Hierarchical, compressed</sub> | <sub>• Industry standard for scientific data<br/>• Built-in compression<br/>• Metadata support<br/>• Cross-platform compatibility</sub> |
+| <sub>**JSON**</sub> | <sub>Configuration, API</sub> | <sub>Human-readable, structured</sub> | <sub>• Universal support<br/>• Easy debugging<br/>• Schema validation with Pydantic</sub> |
+| <sub>**MessagePack**</sub> | <sub>Binary serialization</sub> | <sub>Compact, fast</sub> | <sub>• Smaller than JSON<br/>• Faster parsing<br/>• Maintains type information</sub> |
 
 ### Compression Libraries
 
-| Library | Purpose | Performance | Integration |
+| <sub>Library</sub> | <sub>Purpose</sub> | <sub>Performance</sub> | <sub>Integration</sub> |
 |---------|---------|-------------|-------------|
-| **LZ4** | Ultra-fast compression | < 0.1ms latency | Direct Python bindings |
-| **Zstandard** | Balanced compression | < 1ms latency | Facebook's library with Python API |
-| **Blosc** | Array compression | Optimized for NumPy | Native multi-threading support |
-| **PyWavelets** | Wavelet transforms | Scientific-grade | SciPy ecosystem integration |
+| <sub>**LZ4**</sub> | <sub>Ultra-fast compression</sub> | <sub>< 0.1ms latency</sub> | <sub>Direct Python bindings</sub> |
+| <sub>**Zstandard**</sub> | <sub>Balanced compression</sub> | <sub>< 1ms latency</sub> | <sub>Facebook's library with Python API</sub> |
+| <sub>**Blosc**</sub> | <sub>Array compression</sub> | <sub>Optimized for NumPy</sub> | <sub>Native multi-threading support</sub> |
+| <sub>**PyWavelets**</sub> | <sub>Wavelet transforms</sub> | <sub>Scientific-grade</sub> | <sub>SciPy ecosystem integration</sub> |
 
 ---
 
@@ -757,21 +757,21 @@ flowchart TD
 
 ### Performance Optimization Strategies
 
-| Strategy | Implementation | Benefit | Use Case |
+| <sub>Strategy</sub> | <sub>Implementation</sub> | <sub>Benefit</sub> | <sub>Use Case</sub> |
 |----------|----------------|---------|----------|
-| **Memory Coalescing** | Aligned memory access patterns | 2-10x bandwidth improvement | Large array operations |
-| **Stream Processing** | Overlapped compute and memory | Reduced latency, higher throughput | Real-time streaming |
-| **Kernel Fusion** | Combined operations in single kernel | Reduced memory overhead | Complex transformations |
-| **Adaptive Block Size** | Dynamic workload partitioning | Optimal GPU utilization | Variable input sizes |
+| <sub>**Memory Coalescing**</sub> | <sub>Aligned memory access patterns</sub> | <sub>2-10x bandwidth improvement</sub> | <sub>Large array operations</sub> |
+| <sub>**Stream Processing**</sub> | <sub>Overlapped compute and memory</sub> | <sub>Reduced latency, higher throughput</sub> | <sub>Real-time streaming</sub> |
+| <sub>**Kernel Fusion**</sub> | <sub>Combined operations in single kernel</sub> | <sub>Reduced memory overhead</sub> | <sub>Complex transformations</sub> |
+| <sub>**Adaptive Block Size**</sub> | <sub>Dynamic workload partitioning</sub> | <sub>Optimal GPU utilization</sub> | <sub>Variable input sizes</sub> |
 
 ### Hardware Requirements & Performance
 
-| GPU Tier | Examples | Expected Performance | Supported Features |
+| <sub>GPU Tier</sub> | <sub>Examples</sub> | <sub>Expected Performance</sub> | <sub>Supported Features</sub> |
 |----------|----------|---------------------|-------------------|
-| **High-End** | RTX 4090, A100, MI300X | > 1000 MB/s throughput | All algorithms, maximum parallelism |
-| **Mid-Range** | RTX 3060, RX 6600 XT | 200-500 MB/s throughput | Most algorithms, good parallelism |
-| **Entry-Level** | GTX 1660, RX 5500 XT | 50-200 MB/s throughput | Basic algorithms, limited parallelism |
-| **CPU Fallback** | Any modern CPU | 10-50 MB/s throughput | All algorithms, multi-threading |
+| <sub>**High-End**</sub> | <sub>RTX 4090, A100, MI300X</sub> | <sub>> 1000 MB/s throughput</sub> | <sub>All algorithms, maximum parallelism</sub> |
+| <sub>**Mid-Range**</sub> | <sub>RTX 3060, RX 6600 XT</sub> | <sub>200-500 MB/s throughput</sub> | <sub>Most algorithms, good parallelism</sub> |
+| <sub>**Entry-Level**</sub> | <sub>GTX 1660, RX 5500 XT</sub> | <sub>50-200 MB/s throughput</sub> | <sub>Basic algorithms, limited parallelism</sub> |
+| <sub>**CPU Fallback**</sub> | <sub>Any modern CPU</sub> | <sub>10-50 MB/s throughput</sub> | <sub>All algorithms, multi-threading</sub> |
 
 ---
 
@@ -825,12 +825,12 @@ graph TD
 
 **Purpose**: Absolute minimum latency for real-time BCI control applications
 
-| Metric | Performance | Use Case |
+| <sub>Metric</sub> | <sub>Performance</sub> | <sub>Use Case</sub> |
 |--------|-------------|----------|
-| **Latency** | < 0.1ms | Prosthetic control, gaming interfaces |
-| **Compression Ratio** | 1.5-2.5x | Moderate compression, high speed priority |
-| **Throughput** | > 500 MB/s | Continuous neural streaming |
-| **Memory Usage** | Very Low | Embedded BCI systems |
+| <sub>**Latency**</sub> | <sub>< 0.1ms</sub> | <sub>Prosthetic control, gaming interfaces</sub> |
+| <sub>**Compression Ratio**</sub> | <sub>1.5-2.5x</sub> | <sub>Moderate compression, high speed priority</sub> |
+| <sub>**Throughput**</sub> | <sub>> 500 MB/s</sub> | <sub>Continuous neural streaming</sub> |
+| <sub>**Memory Usage**</sub> | <sub>Very Low</sub> | <sub>Embedded BCI systems</sub> |
 
 **Technical Details**:
 - **Algorithm Type**: Dictionary-based LZ77 variant with fast parsing
@@ -842,12 +842,12 @@ graph TD
 
 **Purpose**: Balanced performance for most neural data processing scenarios
 
-| Metric | Performance | Use Case |
+| <sub>Metric</sub> | <sub>Performance</sub> | <sub>Use Case</sub> |
 |--------|-------------|----------|
-| **Latency** | < 1ms | Real-time analysis, data logging |
-| **Compression Ratio** | 3-6x | Good balance of speed and compression |
-| **Throughput** | 100-300 MB/s | Multi-channel recordings |
-| **Memory Usage** | Moderate | Standard workstation deployment |
+| <sub>**Latency**</sub> | <sub>< 1ms</sub> | <sub>Real-time analysis, data logging</sub> |
+| <sub>**Compression Ratio**</sub> | <sub>3-6x</sub> | <sub>Good balance of speed and compression</sub> |
+| <sub>**Throughput**</sub> | <sub>100-300 MB/s</sub> | <sub>Multi-channel recordings</sub> |
+| <sub>**Memory Usage**</sub> | <sub>Moderate</sub> | <sub>Standard workstation deployment</sub> |
 
 **Technical Details**:
 - **Algorithm Type**: Advanced dictionary compression with entropy coding
@@ -859,12 +859,12 @@ graph TD
 
 **Purpose**: Optimized for multi-channel neural array data with spatial correlations
 
-| Metric | Performance | Use Case |
+| <sub>Metric</sub> | <sub>Performance</sub> | <sub>Use Case</sub> |
 |--------|-------------|----------|
-| **Latency** | < 0.5ms | Array-based recordings (Utah arrays, ECoG) |
-| **Compression Ratio** | 4-8x | Excellent for structured neural data |
-| **Throughput** | 200-400 MB/s | High-density electrode arrays |
-| **Memory Usage** | Low | Memory-efficient streaming |
+| <sub>**Latency**</sub> | <sub>< 0.5ms</sub> | <sub>Array-based recordings (Utah arrays, ECoG)</sub> |
+| <sub>**Compression Ratio**</sub> | <sub>4-8x</sub> | <sub>Excellent for structured neural data</sub> |
+| <sub>**Throughput**</sub> | <sub>200-400 MB/s</sub> | <sub>High-density electrode arrays</sub> |
+| <sub>**Memory Usage**</sub> | <sub>Low</sub> | <sub>Memory-efficient streaming</sub> |
 
 **Technical Details**:
 - **Algorithm Type**: Chunked compression with multiple algorithms (LZ4, ZSTD, ZLIB)
@@ -907,12 +907,12 @@ graph TD
 
 **Purpose**: End-to-end learned compression optimized for neural data
 
-| Component | Architecture | Innovation |
+| <sub>Component</sub> | <sub>Architecture</sub> | <sub>Innovation</sub> |
 |-----------|--------------|------------|
-| **Encoder** | 1D CNN + LSTM | Captures temporal dependencies |
-| **Bottleneck** | Learned compression | Adaptive rate control |
-| **Decoder** | Transposed CNN | Reconstruction optimization |
-| **Training** | Neural data corpus | Domain-specific learning |
+| <sub>**Encoder**</sub> | <sub>1D CNN + LSTM</sub> | <sub>Captures temporal dependencies</sub> |
+| <sub>**Bottleneck**</sub> | <sub>Learned compression</sub> | <sub>Adaptive rate control</sub> |
+| <sub>**Decoder**</sub> | <sub>Transposed CNN</sub> | <sub>Reconstruction optimization</sub> |
+| <sub>**Training**</sub> | <sub>Neural data corpus</sub> | <sub>Domain-specific learning</sub> |
 
 **Performance**:
 - **Compression Ratio**: 15-30x depending on signal type
@@ -924,12 +924,12 @@ graph TD
 
 **Purpose**: Captures long-range temporal dependencies in neural signals
 
-| Component | Architecture | Purpose |
+| <sub>Component</sub> | <sub>Architecture</sub> | <sub>Purpose</sub> |
 |-----------|--------------|---------|
-| **Positional Encoding** | Sinusoidal + learned | Temporal position awareness |
-| **Multi-Head Attention** | 8-16 heads | Parallel pattern recognition |
-| **Feed-Forward** | Gated linear units | Non-linear transformations |
-| **Compression Head** | Learned quantization | Rate-distortion optimization |
+| <sub>**Positional Encoding**</sub> | <sub>Sinusoidal + learned</sub> | <sub>Temporal position awareness</sub> |
+| <sub>**Multi-Head Attention**</sub> | <sub>8-16 heads</sub> | <sub>Parallel pattern recognition</sub> |
+| <sub>**Feed-Forward**</sub> | <sub>Gated linear units</sub> | <sub>Non-linear transformations</sub> |
+| <sub>**Compression Head**</sub> | <sub>Learned quantization</sub> | <sub>Rate-distortion optimization</sub> |
 
 **Performance**:
 - **Compression Ratio**: 20-40x with quality control
@@ -941,12 +941,12 @@ graph TD
 
 **Purpose**: Provides uncertainty estimates and quality guarantees
 
-| Component | Function | Benefit |
+| <sub>Component</sub> | <sub>Function</sub> | <sub>Benefit</sub> |
 |-----------|----------|---------|
-| **Probabilistic Encoder** | Uncertainty quantification | Quality assessment |
-| **Latent Space** | Structured representation | Interpretable compression |
-| **Decoder** | Reconstruction + uncertainty | Error bounds |
-| **Rate Control** | Adaptive bitrate | Quality-based allocation |
+| <sub>**Probabilistic Encoder**</sub> | <sub>Uncertainty quantification</sub> | <sub>Quality assessment</sub> |
+| <sub>**Latent Space**</sub> | <sub>Structured representation</sub> | <sub>Interpretable compression</sub> |
+| <sub>**Decoder**</sub> | <sub>Reconstruction + uncertainty</sub> | <sub>Error bounds</sub> |
+| <sub>**Rate Control**</sub> | <sub>Adaptive bitrate</sub> | <sub>Quality-based allocation</sub> |
 
 **Performance**:
 - **Compression Ratio**: 10-25x with quality bounds
@@ -958,30 +958,30 @@ graph TD
 
 #### Real-Time Processing Guarantees
 
-| Algorithm Class | Worst-Case Latency | Throughput | Memory | Use Case |
+| <sub>Algorithm Class</sub> | <sub>Worst-Case Latency</sub> | <sub>Throughput</sub> | <sub>Memory</sub> | <sub>Use Case</sub> |
 |-----------------|-------------------|------------|--------|----------|
-| **Ultra-Fast** | < 0.1ms | > 500 MB/s | < 10MB | Real-time control |
-| **Balanced** | < 1ms | 100-500 MB/s | 10-50MB | General purpose |
-| **High-Ratio** | < 2ms | 50-200 MB/s | 50-200MB | Storage/transmission |
-| **AI-Powered** | < 10ms | 20-100 MB/s | 200MB-2GB | Research/analysis |
+| <sub>**Ultra-Fast**</sub> | <sub>< 0.1ms</sub> | <sub>> 500 MB/s</sub> | <sub>< 10MB</sub> | <sub>Real-time control</sub> |
+| <sub>**Balanced**</sub> | <sub>< 1ms</sub> | <sub>100-500 MB/s</sub> | <sub>10-50MB</sub> | <sub>General purpose</sub> |
+| <sub>**High-Ratio**</sub> | <sub>< 2ms</sub> | <sub>50-200 MB/s</sub> | <sub>50-200MB</sub> | <sub>Storage/transmission</sub> |
+| <sub>**AI-Powered**</sub> | <sub>< 10ms</sub> | <sub>20-100 MB/s</sub> | <sub>200MB-2GB</sub> | <sub>Research/analysis</sub> |
 
 #### Hardware Acceleration Benefits
 
-| Hardware | Speedup vs CPU | Supported Algorithms | Optimal Use Cases |
+| <sub>Hardware</sub> | <sub>Speedup vs CPU</sub> | <sub>Supported Algorithms</sub> | <sub>Optimal Use Cases</sub> |
 |----------|----------------|---------------------|-------------------|
-| **High-End GPU** | 50-100x | All algorithms | Real-time + AI compression |
-| **Mid-Range GPU** | 20-50x | Traditional + some AI | Balanced workloads |
-| **Entry GPU** | 5-20x | Traditional algorithms | Cost-effective acceleration |
-| **Multi-Core CPU** | 1-4x | All algorithms | Compatibility fallback |
+| <sub>**High-End GPU**</sub> | <sub>50-100x</sub> | <sub>All algorithms</sub> | <sub>Real-time + AI compression</sub> |
+| <sub>**Mid-Range GPU**</sub> | <sub>20-50x</sub> | <sub>Traditional + some AI</sub> | <sub>Balanced workloads</sub> |
+| <sub>**Entry GPU**</sub> | <sub>5-20x</sub> | <sub>Traditional algorithms</sub> | <sub>Cost-effective acceleration</sub> |
+| <sub>**Multi-Core CPU**</sub> | <sub>1-4x</sub> | <sub>All algorithms</sub> | <sub>Compatibility fallback</sub> |
 
 #### Memory Efficiency
 
-| Optimization | Technique | Benefit | Implementation |
+| <sub>Optimization</sub> | <sub>Technique</sub> | <sub>Benefit</sub> | <sub>Implementation</sub> |
 |--------------|-----------|---------|----------------|
-| **Streaming** | Chunk-based processing | Constant memory usage | Sliding window buffers |
-| **In-Place** | No intermediate copies | 50% memory reduction | Zero-copy operations |
-| **Memory Pools** | Pre-allocated buffers | Reduced allocation overhead | GPU memory management |
-| **Compression Caching** | LRU cache for patterns | Faster repeated patterns | Dictionary reuse |
+| <sub>**Streaming**</sub> | <sub>Chunk-based processing</sub> | <sub>Constant memory usage</sub> | <sub>Sliding window buffers</sub> |
+| <sub>**In-Place**</sub> | <sub>No intermediate copies</sub> | <sub>50% memory reduction</sub> | <sub>Zero-copy operations</sub> |
+| <sub>**Memory Pools**</sub> | <sub>Pre-allocated buffers</sub> | <sub>Reduced allocation overhead</sub> | <sub>GPU memory management</sub> |
+| <sub>**Compression Caching**</sub> | <sub>LRU cache for patterns</sub> | <sub>Faster repeated patterns</sub> | <sub>Dictionary reuse</sub> |
 
 ## 📁 Project Structure
 
@@ -1013,11 +1013,11 @@ brain-computer-compression/
 
 Comprehensive examples demonstrating BCI device integration:
 
-| Example | File | Description | Features |
+| <sub>Example</sub> | <sub>File</sub> | <sub>Description</sub> | <sub>Features</sub> |
 |---------|------|-------------|----------|
-| **OpenBCI Demo** | `examples/openbci_adapter_demo.py` | 6 scenarios for OpenBCI devices | Basic conversion, resampling, channel grouping, calibration, full pipeline, multi-device |
-| **Streaming Compression** | `examples/streaming_compression_example.py` | Real-time streaming with <1ms latency | Sliding windows, circular buffers, latency monitoring, throughput stats |
-| **Multi-Device Pipeline** | `examples/multi_device_pipeline_example.py` | Unified pipeline for multiple BCI systems | OpenBCI + Blackrock + Intan integration, hierarchical compression, channel alignment |
+| <sub>**OpenBCI Demo**</sub> | <sub>`examples/openbci_adapter_demo.py`</sub> | <sub>6 scenarios for OpenBCI devices</sub> | <sub>Basic conversion, resampling, channel grouping, calibration, full pipeline, multi-device</sub> |
+| <sub>**Streaming Compression**</sub> | <sub>`examples/streaming_compression_example.py`</sub> | <sub>Real-time streaming with <1ms latency</sub> | <sub>Sliding windows, circular buffers, latency monitoring, throughput stats</sub> |
+| <sub>**Multi-Device Pipeline**</sub> | <sub>`examples/multi_device_pipeline_example.py`</sub> | <sub>Unified pipeline for multiple BCI systems</sub> | <sub>OpenBCI + Blackrock + Intan integration, hierarchical compression, channel alignment</sub> |
 
 ### Running Examples
 
@@ -1126,16 +1126,16 @@ Utility scripts are in `scripts/tools/`:
 
 Full adapter implementations with tested, production-ready code:
 
-| System | Channels | Sampling | Status | Implementation |
+| <sub>System</sub> | <sub>Channels</sub> | <sub>Sampling</sub> | <sub>Status</sub> | <sub>Implementation</sub> |
 |--------|----------|----------|--------|----------------|
-| **OpenBCI Cyton/Daisy** | 8-16 | 250 Hz | ✅ Complete | Full adapter with electrode mapping |
-| **Blackrock Neuroport** | 96 | 30 kHz | ✅ Complete | Utah array grid layout, NEV support |
-| **Blackrock Cerebus** | 128 | 30 kHz | ✅ Complete | Dual Utah arrays, cortical regions |
-| **Intan RHD2132** | 32 | 20 kHz | ✅ Complete | LFP recording, headstage tracking |
-| **Intan RHD2164** | 64 | 20 kHz | ✅ Complete | Multi-area recording |
-| **Intan RHS128** | 128 | 30 kHz | ✅ Complete | Stimulation-capable |
-| **Generic HDF5** | Variable | Variable | ✅ Complete | Auto-detection, flexible loading |
-| **Custom Devices** | Any | Any | ✅ Supported | YAML/JSON mapping files |
+| <sub>**OpenBCI Cyton/Daisy**</sub> | <sub>8-16</sub> | <sub>250 Hz</sub> | <sub>✅ Complete</sub> | <sub>Full adapter with electrode mapping</sub> |
+| <sub>**Blackrock Neuroport**</sub> | <sub>96</sub> | <sub>30 kHz</sub> | <sub>✅ Complete</sub> | <sub>Utah array grid layout, NEV support</sub> |
+| <sub>**Blackrock Cerebus**</sub> | <sub>128</sub> | <sub>30 kHz</sub> | <sub>✅ Complete</sub> | <sub>Dual Utah arrays, cortical regions</sub> |
+| <sub>**Intan RHD2132**</sub> | <sub>32</sub> | <sub>20 kHz</sub> | <sub>✅ Complete</sub> | <sub>LFP recording, headstage tracking</sub> |
+| <sub>**Intan RHD2164**</sub> | <sub>64</sub> | <sub>20 kHz</sub> | <sub>✅ Complete</sub> | <sub>Multi-area recording</sub> |
+| <sub>**Intan RHS128**</sub> | <sub>128</sub> | <sub>30 kHz</sub> | <sub>✅ Complete</sub> | <sub>Stimulation-capable</sub> |
+| <sub>**Generic HDF5**</sub> | <sub>Variable</sub> | <sub>Variable</sub> | <sub>✅ Complete</sub> | <sub>Auto-detection, flexible loading</sub> |
+| <sub>**Custom Devices**</sub> | <sub>Any</sub> | <sub>Any</sub> | <sub>✅ Supported</sub> | <sub>YAML/JSON mapping files</sub> |
 
 **Additional Systems** (via configuration):
 - **Emotiv EPOC** (14 channels, 128 Hz) - Consumer EEG headsets
@@ -1432,23 +1432,23 @@ quadrantChart
   Diffusion EEG: [0.70, 0.80]
 ```
 
-| # | Research Finding | Source | What It Enables | Project Gap | Status |
+| <sub>#</sub> | <sub>Research Finding</sub> | <sub>Source</sub> | <sub>What It Enables</sub> | <sub>Project Gap</sub> | <sub>Status</sub> |
 |---|-----------------|--------|-----------------|-------------|--------|
-| 1 | **DS-CAE: 150x LFP compression** via Depthwise-Separable Convolutional Autoencoder + hardware-aware balanced stochastic pruning (32.4% parameter reduction, 15.1 μW/channel, SNDR 22.6–27.4 dB, R² 0.81–0.94) | arXiv 2504.06996 — *RAMAN tinyML Accelerator* (Apr 2025) | Ultra-high-ratio LFP compression for implantable edge hardware | VAE/Transformer achieved 2–8x; no depthwise-separable arch; no hardware-aware pruning | ✅ Implemented (`cae_compression.py`) |
-| 2 | **BrainCodec RVQ-VAE: 64x EEG/iEEG** — Residual Vector Quantization autoencoder with line-length loss for transient preservation; iEEG→EEG transfer learning; no downstream task degradation | [github.com/IBM/eeg-ieeg-brain-compressor](https://github.com/IBM/eeg-ieeg-brain-compressor) — ICLR 2025 | Codec-quality EEG storage with neural-specific perceptual loss | `vae_compression.py` had dense VAE, no RVQ stages, no transient-preserving loss | ✅ Implemented (`rvq_compressor.py`) |
-| 3 | **LLCSpike CLEM: lossless spike trains** — Categorical Logit-based Entropy Model learns spike-sequence distributions; short-term aggregation + intensity remapping | *IEEE TIP 2025* DOI:10.1109/TIP.2025.3630868 | Optimal lossless archival of single-unit recordings | `NeuralLZ77` used generic zlib entropy coder; no learned spike priors | ✅ Implemented (`llc_spike_compressor.py`) |
-| 4 | **EEGCiD diffusion reconstruction** — Encode only a compact latent; pre-trained diffusion prior reconstructs full signal on the receiver; extreme semantic compression for long recordings | *IEEE EMBC 2025* + *The Innovation Life* (2026) | >100x archival compression for offline EEG analysis | No generative prior; all compressors required symmetric encode/decode | ✅ Implemented (`diffusion_compressor.py`) |
+| <sub>1</sub> | <sub>**DS-CAE: 150x LFP compression** via Depthwise-Separable Convolutional Autoencoder + hardware-aware balanced stochastic pruning (32.4% parameter reduction, 15.1 μW/channel, SNDR 22.6–27.4 dB, R² 0.81–0.94)</sub> | <sub>arXiv 2504.06996 — *RAMAN tinyML Accelerator* (Apr 2025)</sub> | <sub>Ultra-high-ratio LFP compression for implantable edge hardware</sub> | <sub>VAE/Transformer achieved 2–8x; no depthwise-separable arch; no hardware-aware pruning</sub> | <sub>✅ Implemented (`cae_compression.py`)</sub> |
+| <sub>2</sub> | <sub>**BrainCodec RVQ-VAE: 64x EEG/iEEG** — Residual Vector Quantization autoencoder with line-length loss for transient preservation; iEEG→EEG transfer learning; no downstream task degradation</sub> | <sub>[github.com/IBM/eeg-ieeg-brain-compressor](https://github.com/IBM/eeg-ieeg-brain-compressor) — ICLR 2025</sub> | <sub>Codec-quality EEG storage with neural-specific perceptual loss</sub> | <sub>`vae_compression.py` had dense VAE, no RVQ stages, no transient-preserving loss</sub> | <sub>✅ Implemented (`rvq_compressor.py`)</sub> |
+| <sub>3</sub> | <sub>**LLCSpike CLEM: lossless spike trains** — Categorical Logit-based Entropy Model learns spike-sequence distributions; short-term aggregation + intensity remapping</sub> | <sub>*IEEE TIP 2025* DOI:10.1109/TIP.2025.3630868</sub> | <sub>Optimal lossless archival of single-unit recordings</sub> | <sub>`NeuralLZ77` used generic zlib entropy coder; no learned spike priors</sub> | <sub>✅ Implemented (`llc_spike_compressor.py`)</sub> |
+| <sub>4</sub> | <sub>**EEGCiD diffusion reconstruction** — Encode only a compact latent; pre-trained diffusion prior reconstructs full signal on the receiver; extreme semantic compression for long recordings</sub> | <sub>*IEEE EMBC 2025* + *The Innovation Life* (2026)</sub> | <sub>>100x archival compression for offline EEG analysis</sub> | <sub>No generative prior; all compressors required symmetric encode/decode</sub> | <sub>✅ Implemented (`diffusion_compressor.py`)</sub> |
 
 ---
 
 ### 🧠 Why These Algorithms? Design Rationale vs Alternatives
 
-| Algorithm | Module | Signal Type | Why Chosen | Alternatives Considered | How It Improves Compression |
+| <sub>Algorithm</sub> | <sub>Module</sub> | <sub>Signal Type</sub> | <sub>Why Chosen</sub> | <sub>Alternatives Considered</sub> | <sub>How It Improves Compression</sub> |
 |-----------|--------|-------------|------------|------------------------|-----------------------------|
-| **RVQ-VAE** (BrainCodec) | `rvq_compressor.py` | EEG / iEEG | RVQ provides a discrete codebook bottleneck — unlike a continuous VAE latent, each residual stage refines quantization error, giving predictable bit-rate control and enabling codec-style streaming. The **line-length loss** penalises waveform smoothing so sharp transients (epileptic spikes, P300) are preserved, whereas MSE-only VAE blurs them. | Plain VAE (`vae_compression.py`), transformer compression, JPEG2000-style wavelet | Adds 4 residual codebook stages → 4× more expressive prior per channel; line-length loss recovers high-freq energy lost by naive MSE; iEEG→EEG transfer lets a single model handle both signal types |
-| **DS-CAE + pruning** (RAMAN) | `cae_compression.py` | LFP | Depthwise-separable convolutions cut multiply-accumulates by ~9× vs dense conv, enabling implantable hardware at **15.1 μW/channel**. **Balanced stochastic pruning** eliminates 32.4% of weights while preserving per-channel pruning balance — critical for FPGA/ASIC where unbalanced sparsity creates routing bottlenecks. | Standard CAE, dense VAE, wavelet | DS-conv reduces parameter count 9×; pruning cuts 32.4% more; SNDR stays 22.6–27.4 dB vs 18–21 dB for equivalent dense model at same ratio |
-| **CLEM entropy model** (LLCSpike) | `llc_spike_compressor.py` | Spike trains | Generic zlib/LZ77 treats spike trains as raw bytes, ignoring that inter-spike intervals follow heavy-tailed distributions. CLEM **learns the marginal and transition probabilities** of spike intensity frames, then remaps symbols by learned frequency order so the downstream entropy coder sees near-i.i.d. input — optimal entropy coding condition. Lossless: exact bit reconstruction guaranteed. | `NeuralLZ77` + zlib, BLOSC, Huffman on raw binary | Learned symbol remapping reduces average code length by matching coder alphabet to actual spike statistics; bitpacked position representation halves storage of sparse spike patterns vs int8 |
-| **Diffusion prior** (EEGCiD) | `diffusion_compressor.py` | Long EEG recordings | For **archival** use cases where exact waveform fidelity is secondary to event detection (sleep stages, slow oscillations, BCI trial labels), a generative prior can reconstruct plausible signals from 64–128× compressed latents. The spectral prior in the score network enforces empirically known EEG band structure (delta/theta/alpha/beta/gamma), injecting domain knowledge that a generic auto-decoder lacks. | Variational AE, GANs, simple downsampling | Score network bends reconstruction toward neural oscillation priors; cosine noise schedule reduces perceptual artifacts vs linear schedule; float16 latent quantization reduces stored coefficients to 2 bytes each |
+| <sub>**RVQ-VAE** (BrainCodec)</sub> | <sub>`rvq_compressor.py`</sub> | <sub>EEG / iEEG</sub> | <sub>RVQ provides a discrete codebook bottleneck — unlike a continuous VAE latent, each residual stage refines quantization error, giving predictable bit-rate control and enabling codec-style streaming. The **line-length loss** penalises waveform smoothing so sharp transients (epileptic spikes, P300) are preserved, whereas MSE-only VAE blurs them.</sub> | <sub>Plain VAE (`vae_compression.py`), transformer compression, JPEG2000-style wavelet</sub> | <sub>Adds 4 residual codebook stages → 4× more expressive prior per channel; line-length loss recovers high-freq energy lost by naive MSE; iEEG→EEG transfer lets a single model handle both signal types</sub> |
+| <sub>**DS-CAE + pruning** (RAMAN)</sub> | <sub>`cae_compression.py`</sub> | <sub>LFP</sub> | <sub>Depthwise-separable convolutions cut multiply-accumulates by ~9× vs dense conv, enabling implantable hardware at **15.1 μW/channel**. **Balanced stochastic pruning** eliminates 32.4% of weights while preserving per-channel pruning balance — critical for FPGA/ASIC where unbalanced sparsity creates routing bottlenecks.</sub> | <sub>Standard CAE, dense VAE, wavelet</sub> | <sub>DS-conv reduces parameter count 9×; pruning cuts 32.4% more; SNDR stays 22.6–27.4 dB vs 18–21 dB for equivalent dense model at same ratio</sub> |
+| <sub>**CLEM entropy model** (LLCSpike)</sub> | <sub>`llc_spike_compressor.py`</sub> | <sub>Spike trains</sub> | <sub>Generic zlib/LZ77 treats spike trains as raw bytes, ignoring that inter-spike intervals follow heavy-tailed distributions. CLEM **learns the marginal and transition probabilities** of spike intensity frames, then remaps symbols by learned frequency order so the downstream entropy coder sees near-i.i.d. input — optimal entropy coding condition. Lossless: exact bit reconstruction guaranteed.</sub> | <sub>`NeuralLZ77` + zlib, BLOSC, Huffman on raw binary</sub> | <sub>Learned symbol remapping reduces average code length by matching coder alphabet to actual spike statistics; bitpacked position representation halves storage of sparse spike patterns vs int8</sub> |
+| <sub>**Diffusion prior** (EEGCiD)</sub> | <sub>`diffusion_compressor.py`</sub> | <sub>Long EEG recordings</sub> | <sub>For **archival** use cases where exact waveform fidelity is secondary to event detection (sleep stages, slow oscillations, BCI trial labels), a generative prior can reconstruct plausible signals from 64–128× compressed latents. The spectral prior in the score network enforces empirically known EEG band structure (delta/theta/alpha/beta/gamma), injecting domain knowledge that a generic auto-decoder lacks.</sub> | <sub>Variational AE, GANs, simple downsampling</sub> | <sub>Score network bends reconstruction toward neural oscillation priors; cosine noise schedule reduces perceptual artifacts vs linear schedule; float16 latent quantization reduces stored coefficients to 2 bytes each</sub> |
 
 ---
 
@@ -1524,16 +1524,16 @@ print(f"Ratio: {meta['compression_ratio']:.1f}x  |  Latency: {meta['latency_ms']
 
 **All registered algorithm keys:**
 
-| Key | Class | Best For |
+| <sub>Key</sub> | <sub>Class</sub> | <sub>Best For</sub> |
 |-----|-------|---------|
-| `"rvq"` | `RVQCompressor` | Broadband EEG / iEEG (BrainCodec, 64x) |
-| `"ds_cae"` | `DSCAECompressor` | Local Field Potentials / implantable hardware (RAMAN, 150x) |
-| `"llc_spike"` | `LLCSpikeCompressor` | Binary spike trains — lossless (CLEM, IEEE TIP) |
-| `"diffusion"` | `DiffusionCompressor` | Long archival EEG recordings (EEGCiD, >100x) |
-| `"transformer"` | `TransformerCompressor` | High-SNR multi-channel EEG |
-| `"vae"` | `VAECompressor` | Non-Gaussian / kurtotic neural signals |
-| `"neural_lz77"` | `NeuralLZ77Compressor` | Correlated broadband LFP / EEG |
-| `"adaptive_lz"` | `AdaptiveLZCompressor` | Fast lossless — any signal type |
+| <sub>`"rvq"`</sub> | <sub>`RVQCompressor`</sub> | <sub>Broadband EEG / iEEG (BrainCodec, 64x)</sub> |
+| <sub>`"ds_cae"`</sub> | <sub>`DSCAECompressor`</sub> | <sub>Local Field Potentials / implantable hardware (RAMAN, 150x)</sub> |
+| <sub>`"llc_spike"`</sub> | <sub>`LLCSpikeCompressor`</sub> | <sub>Binary spike trains — lossless (CLEM, IEEE TIP)</sub> |
+| <sub>`"diffusion"`</sub> | <sub>`DiffusionCompressor`</sub> | <sub>Long archival EEG recordings (EEGCiD, >100x)</sub> |
+| <sub>`"transformer"`</sub> | <sub>`TransformerCompressor`</sub> | <sub>High-SNR multi-channel EEG</sub> |
+| <sub>`"vae"`</sub> | <sub>`VAECompressor`</sub> | <sub>Non-Gaussian / kurtotic neural signals</sub> |
+| <sub>`"neural_lz77"`</sub> | <sub>`NeuralLZ77Compressor`</sub> | <sub>Correlated broadband LFP / EEG</sub> |
+| <sub>`"adaptive_lz"`</sub> | <sub>`AdaptiveLZCompressor`</sub> | <sub>Fast lossless — any signal type</sub> |
 
 **Benefit:** A **single line of config** (`algorithm: "ds_cae"`) switches from a general-purpose compressor to the hardware-optimised LFP algorithm — no code changes, no re-imports, no API differences.
 
@@ -1608,12 +1608,12 @@ High cross-channel correlation  → neural_lz77         Redundant multi-channel 
 
 The new algorithms are designed as **replacements** for existing ones in the same use case, not additions that break existing workflows:
 
-| Existing Workflow | New Drop-In | What Changes | What Stays the Same |
+| <sub>Existing Workflow</sub> | <sub>New Drop-In</sub> | <sub>What Changes</sub> | <sub>What Stays the Same</sub> |
 |-------------------|------------|--------------|---------------------|
-| `VAECompressor` for EEG | `RVQCompressor` (`"rvq"`) | 4 RVQ codebook stages + line-length loss added | Same `compress()` / `decompress()` API; same metadata keys |
-| `NeuralLZ77` for spike trains | `LLCSpikeCompressor` (`"llc_spike"`) | Generic zlib → CLEM learned entropy model | Lossless guarantee preserved; API identical |
-| Dense CAE for LFP | `DSCAECompressor` (`"ds_cae"`) | Dense conv → depthwise-separable + balanced pruning | Same `_compress_impl` hook; `sndr_estimate()` added as bonus |
-| Any compressor for long EEG | `DiffusionCompressor` (`"diffusion"`) | Adds generative prior reconstruction on decompress | Same interface; `set_inference_steps()` controls quality/speed |
+| <sub>`VAECompressor` for EEG</sub> | <sub>`RVQCompressor` (`"rvq"`)</sub> | <sub>4 RVQ codebook stages + line-length loss added</sub> | <sub>Same `compress()` / `decompress()` API; same metadata keys</sub> |
+| <sub>`NeuralLZ77` for spike trains</sub> | <sub>`LLCSpikeCompressor` (`"llc_spike"`)</sub> | <sub>Generic zlib → CLEM learned entropy model</sub> | <sub>Lossless guarantee preserved; API identical</sub> |
+| <sub>Dense CAE for LFP</sub> | <sub>`DSCAECompressor` (`"ds_cae"`)</sub> | <sub>Dense conv → depthwise-separable + balanced pruning</sub> | <sub>Same `_compress_impl` hook; `sndr_estimate()` added as bonus</sub> |
+| <sub>Any compressor for long EEG</sub> | <sub>`DiffusionCompressor` (`"diffusion"`)</sub> | <sub>Adds generative prior reconstruction on decompress</sub> | <sub>Same interface; `set_inference_steps()` controls quality/speed</sub> |
 
 ```python
 # Before — existing code unchanged:
@@ -1700,31 +1700,31 @@ print(f"Ratio: {meta['compression_ratio']:.1f}x  |  Ratio estimate: {comp.get_co
 
 #### 🔧 Integration with Existing Components — Full Mapping
 
-| Component | File | How New Algorithms Connect | Benefit |
+| <sub>Component</sub> | <sub>File</sub> | <sub>How New Algorithms Connect</sub> | <sub>Benefit</sub> |
 |-----------|------|----------------------------|---------|
-| **AlgorithmFactory** | `algorithms/factory.py` | All 4 registered in `register_default_algorithms()` under `"rvq"`, `"ds_cae"`, `"llc_spike"`, `"diffusion"` | Create by name from config/CLI without code changes |
-| **AdaptiveSelector** | `algorithms/adaptive_selector.py` | `score_algorithms()` extended with 4 new scoring heuristics based on delta power, spike rate, kurtosis, and inter-channel correlation | Automatic best-algorithm routing per window; no manual epoch labelling |
-| **BaseCompressor** | `core.py` | All 4 implement `_compress_impl(data)→(bytes, dict)` and `_decompress_impl(bytes, dict)→ndarray` | Timing, metadata, streaming, and benchmarking work without modification |
-| **NeuralLZ77** | `algorithms/neural_lz.py` | `LLCSpikeCompressor` provides a learned-entropy replacement for the zlib stage when data is spike trains | Better compression ratio vs generic zlib on structured spike data |
-| **VAECompressor** | `algorithms/vae_compression.py` | `RVQCompressor` is a direct upgrade: same dense encoder replaced with RVQ stages + line-length loss | 4–64x vs 2–8x; transient fidelity preserved without rewriting downstream code |
-| **Benchmark Runner** | `scripts/benchmark_runner.py` | New algorithms appear automatically via factory registry | Zero-effort benchmarking; `--algorithms rvq ds_cae llc_spike diffusion` |
-| **Streaming Pipeline** | `core.py` `StreamContext` | `compress()` / `decompress()` calls are streaming-safe via `BaseCompressor` chunk handling | Real-time frame processing with `< 5 ms` per window for all four |
+| <sub>**AlgorithmFactory**</sub> | <sub>`algorithms/factory.py`</sub> | <sub>All 4 registered in `register_default_algorithms()` under `"rvq"`, `"ds_cae"`, `"llc_spike"`, `"diffusion"`</sub> | <sub>Create by name from config/CLI without code changes</sub> |
+| <sub>**AdaptiveSelector**</sub> | <sub>`algorithms/adaptive_selector.py`</sub> | <sub>`score_algorithms()` extended with 4 new scoring heuristics based on delta power, spike rate, kurtosis, and inter-channel correlation</sub> | <sub>Automatic best-algorithm routing per window; no manual epoch labelling</sub> |
+| <sub>**BaseCompressor**</sub> | <sub>`core.py`</sub> | <sub>All 4 implement `_compress_impl(data)→(bytes, dict)` and `_decompress_impl(bytes, dict)→ndarray`</sub> | <sub>Timing, metadata, streaming, and benchmarking work without modification</sub> |
+| <sub>**NeuralLZ77**</sub> | <sub>`algorithms/neural_lz.py`</sub> | <sub>`LLCSpikeCompressor` provides a learned-entropy replacement for the zlib stage when data is spike trains</sub> | <sub>Better compression ratio vs generic zlib on structured spike data</sub> |
+| <sub>**VAECompressor**</sub> | <sub>`algorithms/vae_compression.py`</sub> | <sub>`RVQCompressor` is a direct upgrade: same dense encoder replaced with RVQ stages + line-length loss</sub> | <sub>4–64x vs 2–8x; transient fidelity preserved without rewriting downstream code</sub> |
+| <sub>**Benchmark Runner**</sub> | <sub>`scripts/benchmark_runner.py`</sub> | <sub>New algorithms appear automatically via factory registry</sub> | <sub>Zero-effort benchmarking; `--algorithms rvq ds_cae llc_spike diffusion`</sub> |
+| <sub>**Streaming Pipeline**</sub> | <sub>`core.py` `StreamContext`</sub> | <sub>`compress()` / `decompress()` calls are streaming-safe via `BaseCompressor` chunk handling</sub> | <sub>Real-time frame processing with `< 5 ms` per window for all four</sub> |
 
 ### Key Metrics from RAMAN Paper (arXiv 2504.06996)
 
 <details>
 <summary>📊 DS-CAE Hardware Performance Details</summary>
 
-| Metric | Value |
+| <sub>Metric</sub> | <sub>Value</sub> |
 |--------|-------|
-| Compression Ratio (LFP) | Up to **150x** |
-| Power per Channel | **15.1 μW** @ 2 MHz |
-| Technology Node | TSMC 65-nm |
-| Area per Channel | 0.0187 mm² |
-| Parameter Reduction (pruning) | **32.4%** via balanced stochastic pruning |
-| Reconstruction Quality (SNDR) | 22.6–27.4 dB |
-| R² Score on Monkey Neural Data | 0.81–0.94 |
-| Architecture | Depthwise-Separable CAE (DS-CAE) with zero-skipping + weight gating |
+| <sub>Compression Ratio (LFP)</sub> | <sub>Up to **150x**</sub> |
+| <sub>Power per Channel</sub> | <sub>**15.1 μW** @ 2 MHz</sub> |
+| <sub>Technology Node</sub> | <sub>TSMC 65-nm</sub> |
+| <sub>Area per Channel</sub> | <sub>0.0187 mm²</sub> |
+| <sub>Parameter Reduction (pruning)</sub> | <sub>**32.4%** via balanced stochastic pruning</sub> |
+| <sub>Reconstruction Quality (SNDR)</sub> | <sub>22.6–27.4 dB</sub> |
+| <sub>R² Score on Monkey Neural Data</sub> | <sub>0.81–0.94</sub> |
+| <sub>Architecture</sub> | <sub>Depthwise-Separable CAE (DS-CAE) with zero-skipping + weight gating</sub> |
 
 </details>
 
@@ -1736,37 +1736,37 @@ print(f"Ratio: {meta['compression_ratio']:.1f}x  |  Ratio estimate: {comp.get_co
 
 #### Core Algorithm Performance
 
-| Algorithm | Compression Ratio | Latency | Throughput | Quality | Memory Usage | GPU Speedup |
+| <sub>Algorithm</sub> | <sub>Compression Ratio</sub> | <sub>Latency</sub> | <sub>Throughput</sub> | <sub>Quality</sub> | <sub>Memory Usage</sub> | <sub>GPU Speedup</sub> |
 |-----------|------------------|---------|------------|---------|--------------|-------------|
-| **LZ4** | 1.5-2x | < 0.1ms | 675+ MB/s | Lossless | 32KB | 2x |
-| **Zstandard** | 2-4x | < 0.5ms | 510 MB/s | Lossless | 128KB | 3x |
-| **Blosc** | 1.8-3x | < 0.2ms | 800+ MB/s | Lossless | 64KB | 4x |
-| **Neural LZ77** | 1.5-3x | < 1ms | 400 MB/s | Lossless | 256KB | 2.5x |
-| **Perceptual Quant** | 2-10x | < 1ms | 300 MB/s | 15-25 dB SNR | 512KB | 5x |
-| **Adaptive Wavelets** | 3-15x | < 1ms | 250 MB/s | Configurable | 1MB | 6x |
-| **Transformers** | 3-5x | < 2ms | 150 MB/s | 25-35 dB SNR | 2MB | 8x |
-| **VAE** | 2-8x | < 5ms | 100 MB/s | Statistical | 4MB | 10x |
+| <sub>**LZ4**</sub> | <sub>1.5-2x</sub> | <sub>< 0.1ms</sub> | <sub>675+ MB/s</sub> | <sub>Lossless</sub> | <sub>32KB</sub> | <sub>2x</sub> |
+| <sub>**Zstandard**</sub> | <sub>2-4x</sub> | <sub>< 0.5ms</sub> | <sub>510 MB/s</sub> | <sub>Lossless</sub> | <sub>128KB</sub> | <sub>3x</sub> |
+| <sub>**Blosc**</sub> | <sub>1.8-3x</sub> | <sub>< 0.2ms</sub> | <sub>800+ MB/s</sub> | <sub>Lossless</sub> | <sub>64KB</sub> | <sub>4x</sub> |
+| <sub>**Neural LZ77**</sub> | <sub>1.5-3x</sub> | <sub>< 1ms</sub> | <sub>400 MB/s</sub> | <sub>Lossless</sub> | <sub>256KB</sub> | <sub>2.5x</sub> |
+| <sub>**Perceptual Quant**</sub> | <sub>2-10x</sub> | <sub>< 1ms</sub> | <sub>300 MB/s</sub> | <sub>15-25 dB SNR</sub> | <sub>512KB</sub> | <sub>5x</sub> |
+| <sub>**Adaptive Wavelets**</sub> | <sub>3-15x</sub> | <sub>< 1ms</sub> | <sub>250 MB/s</sub> | <sub>Configurable</sub> | <sub>1MB</sub> | <sub>6x</sub> |
+| <sub>**Transformers**</sub> | <sub>3-5x</sub> | <sub>< 2ms</sub> | <sub>150 MB/s</sub> | <sub>25-35 dB SNR</sub> | <sub>2MB</sub> | <sub>8x</sub> |
+| <sub>**VAE**</sub> | <sub>2-8x</sub> | <sub>< 5ms</sub> | <sub>100 MB/s</sub> | <sub>Statistical</sub> | <sub>4MB</sub> | <sub>10x</sub> |
 
 #### Neural Signal Specific Performance
 
-| Signal Type | Best Algorithm | Compression Ratio | Latency | Fidelity |
+| <sub>Signal Type</sub> | <sub>Best Algorithm</sub> | <sub>Compression Ratio</sub> | <sub>Latency</sub> | <sub>Fidelity</sub> |
 |-------------|---------------|------------------|---------|----------|
-| **Motor Cortex** | LZ4 + Neural LZ77 | 2.1x | < 0.5ms | 100% |
-| **Visual Cortex** | Zstandard | 3.2x | < 0.8ms | 100% |
-| **EMG Signals** | Blosc + Wavelets | 8.5x | < 1.2ms | 98.5% |
-| **EEG Arrays** | Perceptual Quant | 6.8x | < 1.5ms | 22 dB SNR |
-| **Spike Trains** | Neural LZ77 | 2.8x | < 0.3ms | 99.8% |
-| **Multi-Channel** | Blosc | 4.1x | < 0.4ms | 100% |
+| <sub>**Motor Cortex**</sub> | <sub>LZ4 + Neural LZ77</sub> | <sub>2.1x</sub> | <sub>< 0.5ms</sub> | <sub>100%</sub> |
+| <sub>**Visual Cortex**</sub> | <sub>Zstandard</sub> | <sub>3.2x</sub> | <sub>< 0.8ms</sub> | <sub>100%</sub> |
+| <sub>**EMG Signals**</sub> | <sub>Blosc + Wavelets</sub> | <sub>8.5x</sub> | <sub>< 1.2ms</sub> | <sub>98.5%</sub> |
+| <sub>**EEG Arrays**</sub> | <sub>Perceptual Quant</sub> | <sub>6.8x</sub> | <sub>< 1.5ms</sub> | <sub>22 dB SNR</sub> |
+| <sub>**Spike Trains**</sub> | <sub>Neural LZ77</sub> | <sub>2.8x</sub> | <sub>< 0.3ms</sub> | <sub>99.8%</sub> |
+| <sub>**Multi-Channel**</sub> | <sub>Blosc</sub> | <sub>4.1x</sub> | <sub>< 0.4ms</sub> | <sub>100%</sub> |
 
 #### Hardware Platform Support
 
-| Platform | CPU Architecture | GPU Support | Max Channels | Max Sampling Rate |
+| <sub>Platform</sub> | <sub>CPU Architecture</sub> | <sub>GPU Support</sub> | <sub>Max Channels</sub> | <sub>Max Sampling Rate</sub> |
 |----------|-----------------|-------------|--------------|------------------|
-| **Desktop** | x86-64, ARM64 | CUDA, OpenCL | 1024+ | 50kHz |
-| **Mobile** | ARM Cortex-A | GPU Compute | 256 | 30kHz |
-| **Embedded** | ARM Cortex-M | None | 64 | 10kHz |
-| **FPGA** | Custom | Hardware | 2048+ | 100kHz |
-| **Cloud** | x86-64 | CUDA, TPU | Unlimited | Unlimited |
+| <sub>**Desktop**</sub> | <sub>x86-64, ARM64</sub> | <sub>CUDA, OpenCL</sub> | <sub>1024+</sub> | <sub>50kHz</sub> |
+| <sub>**Mobile**</sub> | <sub>ARM Cortex-A</sub> | <sub>GPU Compute</sub> | <sub>256</sub> | <sub>30kHz</sub> |
+| <sub>**Embedded**</sub> | <sub>ARM Cortex-M</sub> | <sub>None</sub> | <sub>64</sub> | <sub>10kHz</sub> |
+| <sub>**FPGA**</sub> | <sub>Custom</sub> | <sub>Hardware</sub> | <sub>2048+</sub> | <sub>100kHz</sub> |
+| <sub>**Cloud**</sub> | <sub>x86-64</sub> | <sub>CUDA, TPU</sub> | <sub>Unlimited</sub> | <sub>Unlimited</sub> |
 
 ### 🎯 Specialized Applications & Use Cases
 
@@ -2122,13 +2122,13 @@ graph LR
 
 **Neural Data Specific Benchmarks**
 
-| Dataset | Algorithm | Compression Ratio | Latency | SNR | Spike Accuracy |
+| <sub>Dataset</sub> | <sub>Algorithm</sub> | <sub>Compression Ratio</sub> | <sub>Latency</sub> | <sub>SNR</sub> | <sub>Spike Accuracy</sub> |
 |---------|-----------|------------------|---------|-----|----------------|
-| **Motor Cortex (128ch, 30kHz)** | LZ4 + Neural LZ77 | 2.1x | 0.5ms | ∞ (lossless) | 100% |
-| **Visual Cortex (256ch, 40kHz)** | Blosc + ZSTD | 3.8x | 0.8ms | ∞ (lossless) | 100% |
-| **EMG Arrays (64ch, 10kHz)** | Perceptual Quant | 8.2x | 1.2ms | 28.5 dB | 98.7% |
-| **EEG (32ch, 1kHz)** | Adaptive Wavelets | 12.5x | 1.8ms | 32.1 dB | 99.2% |
-| **Spike Trains (Single Unit)** | Neural LZ77 | 2.9x | 0.3ms | ∞ (lossless) | 99.9% |
+| <sub>**Motor Cortex (128ch, 30kHz)**</sub> | <sub>LZ4 + Neural LZ77</sub> | <sub>2.1x</sub> | <sub>0.5ms</sub> | <sub>∞ (lossless)</sub> | <sub>100%</sub> |
+| <sub>**Visual Cortex (256ch, 40kHz)**</sub> | <sub>Blosc + ZSTD</sub> | <sub>3.8x</sub> | <sub>0.8ms</sub> | <sub>∞ (lossless)</sub> | <sub>100%</sub> |
+| <sub>**EMG Arrays (64ch, 10kHz)**</sub> | <sub>Perceptual Quant</sub> | <sub>8.2x</sub> | <sub>1.2ms</sub> | <sub>28.5 dB</sub> | <sub>98.7%</sub> |
+| <sub>**EEG (32ch, 1kHz)**</sub> | <sub>Adaptive Wavelets</sub> | <sub>12.5x</sub> | <sub>1.8ms</sub> | <sub>32.1 dB</sub> | <sub>99.2%</sub> |
+| <sub>**Spike Trains (Single Unit)**</sub> | <sub>Neural LZ77</sub> | <sub>2.9x</sub> | <sub>0.3ms</sub> | <sub>∞ (lossless)</sub> | <sub>99.9%</sub> |
 
 ### Test Suite Coverage
 
