@@ -147,4 +147,3 @@ npm run preview
 ---
 
 This dashboard is intended to be integrated with the main BCI compression pipeline for real-time monitoring and visualization.
-
